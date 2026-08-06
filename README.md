@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Job Application Tracker
 
-## Getting Started
+A single-user Next.js application for tracking job applications after submission. The repository currently contains the verified application foundation; product workflows are delivered feature by feature.
 
-First, run the development server:
+## Requirements
+
+- Node.js `22.23.1`
+- pnpm `11.20.0`
+- Docker Engine with Docker Compose
+
+Corepack can activate the pinned package manager:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+corepack enable
+corepack prepare pnpm@11.20.0 --activate
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Install the locked dependencies and create a local environment file:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm install --frozen-lockfile
+cp .env.example .env.local
+```
 
-## Learn More
+Start the development and test PostgreSQL services, then initialize the development database:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+docker compose up -d postgres postgres-test
+pnpm db:migrate
+pnpm db:seed
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Start the application at [http://localhost:3000](http://localhost:3000):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm dev
+```
 
-## Deploy on Vercel
+The seed command is idempotent and may be rerun whenever a known foundation state is required. To target the test database, set `DATABASE_URL` to the value documented as `TEST_DATABASE_URL` in `.env.example` before running migration or seed commands.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Database workflow
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Schema definitions live in `src/server/db/schema.ts`; database access lives under `src/server/` and must never be imported by client components. After a schema change:
+
+```bash
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
+```
+
+Commit generated migrations under `drizzle/`. Identifiers use PostgreSQL UUID defaults and stored timestamps use UTC-aware columns.
+
+## Verification
+
+Run an individual layer while developing:
+
+```bash
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:e2e
+pnpm build
+```
+
+Run the complete local completion pipeline with:
+
+```bash
+pnpm verify
+```
+
+Playwright starts the Next.js development server automatically. Install its Chromium binary once if it is not already available:
+
+```bash
+pnpm exec playwright install chromium
+```
+
+## Containers
+
+`docker compose up --build` starts PostgreSQL and the production Next.js container. The app service starts only after PostgreSQL passes its health check. Development data is stored in the named `postgres_data` volume; test data is intentionally ephemeral.
+
+## Code quality and commits
+
+Prettier, ESLint, strict TypeScript, Vitest, and Playwright form the quality gate. Husky runs lint-staged before commits. Use Conventional Commit messages, for example:
+
+```text
+feat(applications): add application creation
+fix(database): preserve status history transaction
+chore(tooling): update test configuration
+```
+
+Do not commit `.env.local`, secrets, build output, coverage, or browser-test artifacts.
