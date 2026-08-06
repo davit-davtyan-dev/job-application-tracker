@@ -9,7 +9,9 @@ export const metadata: Metadata = {
   description: "Track job applications, interviews, and next steps.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="flex min-h-full flex-col">

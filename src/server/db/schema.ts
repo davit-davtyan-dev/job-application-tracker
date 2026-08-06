@@ -1,4 +1,3 @@
-import { sql } from "drizzle-orm";
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const systemMetadata = pgTable("system_metadata", {
@@ -7,8 +6,8 @@ export const systemMetadata = pgTable("system_metadata", {
   value: text("value").notNull(),
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
     .notNull()
-    .default(sql`timezone('utc', now())`),
+    .defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
     .notNull()
-    .default(sql`timezone('utc', now())`),
+    .defaultNow(),
 });

@@ -1,5 +1,5 @@
 {
-  "id": "cc9943af-3cc5-4b57-a1b5-fb52bb54f601",
+  "id": "28afc1c4-4045-4a9c-bc31-7e9a488ae2a1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -32,14 +32,14 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "default": "timezone('utc', now())"
+          "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "default": "timezone('utc', now())"
+          "default": "now()"
         }
       },
       "indexes": {},

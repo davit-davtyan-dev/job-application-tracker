@@ -15,7 +15,7 @@ try {
     .onConflictDoUpdate({
       target: systemMetadata.key,
       set: {
-        updatedAt: sql`timezone('utc', now())`,
+        updatedAt: sql`now()`,
         value: "ready",
       },
     });
