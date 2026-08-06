@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
-- **Active Feature**: `F00`
-- **Generator Commit**: `none`
-- **Evaluator Verdict**: `pending`
+- **Phase**: `passing`
+- **Active Feature**: `none`
+- **Generator Commit**: `de12250608b3210ec4b4506bfb6176a1360a2eab`
+- **Evaluator Verdict**: `PASS`
 
 ## Active Sprint Contract
 
@@ -34,43 +34,43 @@
 
 ## Generator Report
 
-- **Commit**: `[hash]`
-- **Changed Files**: `[paths]`
-- **Tests Run**: `[commands and results]`
-- **Known Risks**: `[none or exact risks]`
+- **Commit**: `de12250608b3210ec4b4506bfb6176a1360a2eab`
+- **Changed Files**: `Project tooling and dependency configuration; tracker landing UI and runtime providers; server-only Drizzle/PostgreSQL foundation; baseline migration and database scripts; Dockerfile and Compose services; Vitest/RTL and Playwright smoke tests; README and environment templates.`
+- **Tests Run**: `PASS: pnpm format:check, pnpm lint, pnpm typecheck, pnpm test (2 files/2 tests), docker compose config --quiet, pnpm db:generate consistency, git diff --check, no-any scan. BLOCKED in Generator environment: Playwright Chromium installation, production build port binding, live PostgreSQL migration/seed, Docker service startup.`
+- **Known Risks**: `Evaluator must independently verify E2E, production build, live migration/seed, and containers; Generator shell reported Node 26 rather than declared Node 22.23.1.`
 
 ## Evaluator Report
 
-- **Verdict**: `PASS | FAIL | BLOCKED`
-- **Commit Verified**: `[hash]`
-- **Checks Run**: `[commands and results]`
-- **Findings**: `[none or exact failures]`
-- **Required Fix**: `[none or one bounded correction]`
+- **Verdict**: `PASS`
+- **Commit Verified**: `de12250608b3210ec4b4506bfb6176a1360a2eab`
+- **Checks Run**: `PASS: clean Prettier, ESLint, TypeScript, Vitest (2/2), Drizzle migration consistency, Docker Compose validation, architecture/timestamp inspection; local Playwright install, healthy development/test PostgreSQL, db:migrate, db:seed, full pnpm verify including E2E and production build.`
+- **Findings**: `All F00 acceptance criteria and applicable architectural constraints are satisfied. Independent live-database duplication was sandbox-restricted, while the local full pipeline and healthy service evidence passed.`
+- **Required Fix**: `none`
 
 ## Current Status
 
-- **Active**: `F00 — project foundation bootstrap`
-- **Completed**: `none`
+- **Active**: `none`
+- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-The repository began with planning documents only and was not yet initialized as Git. Required Node, pnpm, Docker, and Docker Compose versions are available locally.
+F00 established the complete application foundation at commit `de12250608b3210ec4b4506bfb6176a1360a2eab`. The Evaluator returned `PASS` after clean static/test checks and a successful local full pipeline with healthy development and test PostgreSQL services.
 
 ## Next Step
 
-1. `Generator implements and commits the F00 sprint contract.`
+1. `Orchestrator may select F01 and write its sprint contract when the user is ready to begin product work.`
 
 ## Verification Status
 
-- **Build**: `Passing | Failing | Not Run`
-- **Lint**: `Passing | Failing | Not Run`
-- **Unit/Integration**: `Passing | Failing | Not Run`
-- **E2E**: `Passing | Failing | Not Run`
+- **Build**: `Passing`
+- **Lint**: `Passing`
+- **Unit/Integration**: `Passing (2 files/2 tests)`
+- **E2E**: `Passing`
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Track initial repository bootstrap as F00 so the lifecycle remains explicit and WIP=1.`
-- **Context Summary**: `Empty application repository; exact setup contract above.`
-- **Remaining Blockers**: `none known`
-- **Next Owner**: `Generator`
+- **Decisions Made**: `Track initial repository bootstrap as F00 so the lifecycle remains explicit and WIP=1; accept corrected foundation commit de12250608b3210ec4b4506bfb6176a1360a2eab after Evaluator PASS.`
+- **Context Summary**: `Runnable Next.js foundation with validated server-only PostgreSQL/Drizzle setup, Docker services, quality tooling, unit/E2E smoke tests, and documented workflow. No product-domain feature is active.`
+- **Remaining Blockers**: `none`
+- **Next Owner**: `Orchestrator selects F01 when requested.`
