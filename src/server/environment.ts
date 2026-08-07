@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const serverEnvironmentSchema = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+  TEST_DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }).optional(),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),

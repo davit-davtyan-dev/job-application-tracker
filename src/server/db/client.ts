@@ -8,9 +8,14 @@ import { serverEnvironment } from "@/server/env";
 import * as schema from "./schema";
 
 const createClient = () =>
-  postgres(serverEnvironment.DATABASE_URL, {
-    max: serverEnvironment.NODE_ENV === "production" ? 10 : 1,
-  });
+  postgres(
+    serverEnvironment.NODE_ENV === "test" && serverEnvironment.TEST_DATABASE_URL
+      ? serverEnvironment.TEST_DATABASE_URL
+      : serverEnvironment.DATABASE_URL,
+    {
+      max: serverEnvironment.NODE_ENV === "production" ? 10 : 1,
+    },
+  );
 
 type SqlClient = ReturnType<typeof createClient>;
 
