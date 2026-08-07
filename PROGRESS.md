@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
+- **Phase**: `active`
 - **Active Feature**: `F02`
 - **Generator Commit**: `8ee087d6c502bc2ca5f4d25d08ea9327fb85eadc`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `FAIL`
 
 ## Active Sprint Contract
 
@@ -41,11 +41,11 @@
 
 ## Evaluator Report
 
-- **Verdict**: `pending`
-- **Commit Verified**: `pending`
-- **Checks Run**: `pending`
-- **Findings**: `pending`
-- **Required Fix**: `pending`
+- **Verdict**: `FAIL`
+- **Commit Verified**: `8ee087d6c502bc2ca5f4d25d08ea9327fb85eadc`
+- **Checks Run**: `PASS: test/dev migrations and seed; pnpm db:generate no drift; focused Vitest 29/29; pnpm format:check; pnpm lint; pnpm typecheck; full Vitest 30/30; pnpm build; schema/UUID/UTC/FK/Zod/missing-company/transaction/server-only/enum/shared-response/no-any/scope audit. FAIL: focused F02 Playwright timed out waiting for the inline-company field; full Playwright 1 passed/1 failed; the original machine-readable F02 command path found no tests.`
+- **Findings**: `Next.js 16.3 blocked dev assets requested through Playwright's 127.0.0.1 base URL while next dev initialized for localhost, preventing client hydration. Reference-link Zod errors occur at referenceLinks[index].value but the form renders only a root-level array error, so invalid URL errors are not visible or associated with the field. The FEATURES.md F02 verification path omitted the tests/e2e directory.`
+- **Required Fix**: `Generator: align Playwright baseURL with localhost (or explicitly allow 127.0.0.1), render each reference URL field error beside and associated via aria-describedby with a test proving invalid URL shows the error and sends no POST, then rerun focused/full Playwright plus affected static/unit/build checks and commit one bounded correction. Orchestrator corrected the FEATURES.md command to pnpm test:e2e tests/e2e/create-application.spec.ts.`
 
 ## Current Status
 
@@ -59,7 +59,7 @@ F02 is active. The sprint contract covers the manual creation UI and API, existi
 
 ## Next Step
 
-1. `Evaluator independently verifies exact Generator commit 8ee087d6c502bc2ca5f4d25d08ea9327fb85eadc in a clean workspace and returns PASS, FAIL, or BLOCKED.`
+1. `Generator applies the single bounded correction from the Evaluator FAIL, verifies it, and produces one correction commit for reevaluation.`
 
 ## Verification Status
 
@@ -73,4 +73,4 @@ F02 is active. The sprint contract covers the manual creation UI and API, existi
 - **Decisions Made**: `Activate F02 as one complete manual-creation vertical slice, including the UI required by its Playwright verification and the initial activity row required by the database transaction standard; defer listing, searching, status changes, interviews, and history display.`
 - **Context Summary**: `F00 and F01 are passing. F02 is the only active feature. Dependencies are installed; development and test PostgreSQL are healthy, migrated, and seeded; the baseline example Vitest test passes.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator verifies exact Generator commit 8ee087d6c502bc2ca5f4d25d08ea9327fb85eadc.`
+- **Next Owner**: `Generator fixes the Playwright origin and accessible per-link validation findings, then returns one correction commit.`
