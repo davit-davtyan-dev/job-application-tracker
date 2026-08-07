@@ -214,27 +214,42 @@ export function CreateApplicationForm() {
               <Plus className="size-4" /> Add link
             </Button>
           </div>
-          {links.fields.map((field, index) => (
-            <div className="mt-2 flex gap-2" key={field.id}>
-              <label className="sr-only" htmlFor={`reference-${index}`}>
-                Reference URL {index + 1}
-              </label>
-              <input
-                id={`reference-${index}`}
-                className="input"
-                type="url"
-                {...form.register(`referenceLinks.${index}.value`)}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                aria-label={`Remove reference URL ${index + 1}`}
-                onClick={() => links.remove(index)}
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          ))}
+          {links.fields.map((field, index) => {
+            const error =
+              form.formState.errors.referenceLinks?.[index]?.value?.message;
+            const errorId = `reference-${index}-error`;
+
+            return (
+              <div className="mt-2" key={field.id}>
+                <div className="flex gap-2">
+                  <label className="sr-only" htmlFor={`reference-${index}`}>
+                    Reference URL {index + 1}
+                  </label>
+                  <input
+                    id={`reference-${index}`}
+                    className="input"
+                    type="url"
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? errorId : undefined}
+                    {...form.register(`referenceLinks.${index}.value`)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    aria-label={`Remove reference URL ${index + 1}`}
+                    onClick={() => links.remove(index)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+                {error && (
+                  <p className="error" id={errorId}>
+                    {error}
+                  </p>
+                )}
+              </div>
+            );
+          })}
           {form.formState.errors.referenceLinks?.root?.message && (
             <p className="error">
               {form.formState.errors.referenceLinks.root.message}

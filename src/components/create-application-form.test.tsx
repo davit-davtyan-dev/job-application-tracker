@@ -92,6 +92,42 @@ describe("CreateApplicationForm", () => {
     expect(await screen.findByRole("alert")).toBeVisible();
     expect(screen.getByLabelText("New company name")).toHaveValue("New Co");
   });
+
+  it("shows an associated URL error and does not submit invalid links", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify([
+            { id: "bc76d153-54f0-46d5-86ff-b5d65b60bccb", name: "Acme" },
+          ]),
+          { status: 200 },
+        ),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    renderForm();
+
+    await screen.findByRole("option", { name: "Acme" });
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: "Company" }),
+      "bc76d153-54f0-46d5-86ff-b5d65b60bccb",
+    );
+    await user.type(screen.getByLabelText("Position title"), "Engineer");
+    await user.click(screen.getByRole("button", { name: "Add link" }));
+    const urlInput = screen.getByLabelText("Reference URL 1");
+    await user.type(urlInput, "not-a-url");
+    await user.click(
+      screen.getByRole("button", { name: "Create application" }),
+    );
+
+    const error = await screen.findByText("Enter a valid URL.");
+    expect(error).toBeVisible();
+    expect(urlInput).toHaveAccessibleDescription("Enter a valid URL.");
+    expect(urlInput).toHaveAttribute("aria-invalid", "true");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith("/api/companies");
+  });
 });
 
 function localDateForTest() {

@@ -14,7 +14,7 @@ test("creates an application and its initial history entry", async ({
   await page.getByLabel("Position title").fill(position);
   await page.getByRole("button", { name: "Add link" }).click();
   await page
-    .getByLabel("Reference URL 1")
+    .getByRole("textbox", { name: "Reference URL 1", exact: true })
     .fill("https://example.com/jobs/engineer");
   await page.getByRole("button", { name: "Create application" }).click();
   await expect(page.getByRole("status")).toContainText(
