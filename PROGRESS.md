@@ -10,9 +10,9 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F02`
-- **Generator Commit**: `pending`
+- **Generator Commit**: `8ee087d6c502bc2ca5f4d25d08ea9327fb85eadc`
 - **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
@@ -34,10 +34,10 @@
 
 ## Generator Report
 
-- **Commit**: `pending`
-- **Changed Files**: `pending`
-- **Tests Run**: `pending`
-- **Known Risks**: `pending`
+- **Commit**: `8ee087d6c502bc2ca5f4d25d08ea9327fb85eadc`
+- **Changed Files**: `21 files: Drizzle schema/migration/metadata; atomic application/history query layer; strict application service; company listing/inline creation support; application and company Route Handlers; shared API error-response utility; status enum; accessible React Hook Form/TanStack Query creation UI; route/service/component/landing/Playwright tests.`
+- **Tests Run**: `PASS: pnpm format:check; pnpm lint; pnpm typecheck; pnpm db:generate no drift; test-database migration; focused amended suite (6 files, 29 tests); full Vitest before final enum/shared-response amendment (7 files, 30 tests); focused F02 Playwright (1/1); production build before final enum/shared-response amendment.`
+- **Known Risks**: `Generator did not run full Playwright. Production build was not rerun after the final enum/shared-response-only amendment. Local shell warns Node 26 differs from project-pinned Node 22.23.1. Evaluator full clean-workspace pipeline is authoritative.`
 
 ## Evaluator Report
 
@@ -59,7 +59,7 @@ F02 is active. The sprint contract covers the manual creation UI and API, existi
 
 ## Next Step
 
-1. `Generator implements only the active F02 sprint contract and produces one logical commit with targeted verification evidence.`
+1. `Evaluator independently verifies exact Generator commit 8ee087d6c502bc2ca5f4d25d08ea9327fb85eadc in a clean workspace and returns PASS, FAIL, or BLOCKED.`
 
 ## Verification Status
 
@@ -73,4 +73,4 @@ F02 is active. The sprint contract covers the manual creation UI and API, existi
 - **Decisions Made**: `Activate F02 as one complete manual-creation vertical slice, including the UI required by its Playwright verification and the initial activity row required by the database transaction standard; defer listing, searching, status changes, interviews, and history display.`
 - **Context Summary**: `F00 and F01 are passing. F02 is the only active feature. Dependencies are installed; development and test PostgreSQL are healthy, migrated, and seeded; the baseline example Vitest test passes.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator implements F02 from the active sprint contract.`
+- **Next Owner**: `Evaluator verifies exact Generator commit 8ee087d6c502bc2ca5f4d25d08ea9327fb85eadc.`
