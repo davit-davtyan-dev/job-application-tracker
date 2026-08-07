@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `blocked`
-- **Active Feature**: `F01`
+- **Phase**: `passing`
+- **Active Feature**: `none`
 - **Generator Commit**: `22c535fd8ebd5cbcaf64d91ef65b8aab641d923f`
-- **Evaluator Verdict**: `BLOCKED`
+- **Evaluator Verdict**: `PASS`
 
 ## Active Sprint Contract
 
@@ -40,37 +40,36 @@
 
 ## Evaluator Report
 
-- **Verdict**: `BLOCKED`
+- **Verdict**: `PASS`
 - **Commit Verified**: `22c535fd8ebd5cbcaf64d91ef65b8aab641d923f`
-- **Checks Run**: `PASS: live test-database migration; pnpm test src/services/company.test.ts (5/5); focused route tests (4/4); full pnpm test (11/11); pnpm test:e2e (1/1); pnpm format:check; pnpm lint; pnpm typecheck; pnpm db:generate no schema drift; UUID, UTC timestamp, Zod validation, server-only layering, and no-any inspection. BLOCKED: pnpm build.`
-- **Findings**: `No implementation defect identified. Next/Turbopack repeatedly failed while creating its CSS worker because the verification host prohibited internal port binding with Operation not permitted, including approved outside-sandbox reruns. Diagnostic webpack build also hit a host toolchain error parsing TypeScript --showConfig.`
-- **Required Fix**: `No product-code correction requested. Re-run DATABASE_URL=postgres://job_tracker:job_tracker@localhost:5432/job_tracker NODE_ENV=production pnpm build on a host that permits Turbopack worker port binding, then have the Evaluator re-verify exact commit 22c535fd8ebd5cbcaf64d91ef65b8aab641d923f and return PASS before F01 can be marked passing.`
+- **Checks Run**: `PASS: live test-database migration; pnpm test src/services/company.test.ts (5/5); focused route tests (4/4); full pnpm test (11/11); pnpm test:e2e (1/1); pnpm format:check; pnpm lint; pnpm typecheck; pnpm db:generate no schema drift; clean-checkout pnpm build; UUID, UTC timestamp, Zod validation, server-only layering, and no-any inspection.`
+- **Findings**: `All F01 acceptance criteria and completion gates are satisfied for exact Generator commit 22c535fd8ebd5cbcaf64d91ef65b8aab641d923f. The previously blocked production build passed in a clean checkout on a compatible host.`
+- **Required Fix**: `none`
 
 ## Current Status
 
 - **Active**: `none`
-- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS)`
-- **Blocked**: `F01 — external verification host prevents mandatory production build`
+- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS)`
+- **Blocked**: `none`
 
 ## Current Session Summary
 
-F01 implementation is committed at `22c535fd8ebd5cbcaf64d91ef65b8aab641d923f`. All functional, database, E2E, static, and architectural checks passed, but the Evaluator returned BLOCKED because the host prevents Turbopack's CSS worker from binding during the mandatory production build.
+F01 is complete at `22c535fd8ebd5cbcaf64d91ef65b8aab641d923f`. The Evaluator returned PASS after the exact commit passed functional, database, E2E, static, architectural, and clean-checkout production-build verification.
 
 ## Next Step
 
-1. `On a host permitting Turbopack worker port binding, run DATABASE_URL=postgres://job_tracker:job_tracker@localhost:5432/job_tracker NODE_ENV=production pnpm build.`
-2. `Evaluator re-verifies exact commit 22c535fd8ebd5cbcaf64d91ef65b8aab641d923f and must return PASS before Orchestrator marks F01 passing.`
+1. `Orchestrator may select F02 and write its sprint contract when the user is ready.`
 
 ## Verification Status
 
-- **Build**: `BLOCKED by verification host port-binding restriction`
+- **Build**: `Passing`
 - **Lint**: `Passing`
 - **Unit/Integration**: `Passing (11 tests; F01 service 5/5, route 4/4)`
 - **E2E**: `Passing (1/1)`
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Activate F01 as a bounded server-side vertical slice: schema/migration, query module, validated service, POST route, and focused tests; defer UI and all application/history behavior. Record Evaluator BLOCKED rather than PASS because the mandatory build could not run on this host.`
-- **Context Summary**: `F00 is passing. F01 implementation and all non-build checks pass at exact commit 22c535fd8ebd5cbcaf64d91ef65b8aab641d923f, but F01 remains blocked pending a production build and Evaluator PASS.`
-- **Remaining Blockers**: `Verification host denies Turbopack internal CSS worker port binding (Operation not permitted), preventing pnpm build.`
-- **Next Owner**: `Evaluator re-verifies the exact Generator commit on a compatible host after the build proof is available.`
+- **Decisions Made**: `Activate F01 as a bounded server-side vertical slice: schema/migration, query module, validated service, POST route, and focused tests; defer UI and all application/history behavior. Accept exact Generator commit 22c535fd8ebd5cbcaf64d91ef65b8aab641d923f after Evaluator PASS, including clean-checkout production-build evidence.`
+- **Context Summary**: `F00 and F01 are passing. No feature is active, and WIP=1 is clear for the next sprint.`
+- **Remaining Blockers**: `none`
+- **Next Owner**: `Orchestrator selects F02 when requested.`
