@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-const { createCompany } = vi.hoisted(() => ({ createCompany: vi.fn() }));
+const { createCompany, listCompanies } = vi.hoisted(() => ({
+  createCompany: vi.fn(),
+  listCompanies: vi.fn(),
+}));
 
-vi.mock("@/services/company", () => ({ createCompany }));
+vi.mock("@/services/company", () => ({ createCompany, listCompanies }));
 
-import { POST } from "./route";
+import { GET, POST } from "./route";
 
 const request = (body: string) =>
   new Request("http://localhost/api/companies", {
@@ -17,6 +20,7 @@ const request = (body: string) =>
 describe("POST /api/companies", () => {
   beforeEach(() => {
     createCompany.mockReset();
+    listCompanies.mockReset();
   });
 
   it("delegates to the service and returns the created company", async () => {
@@ -85,5 +89,21 @@ describe("POST /api/companies", () => {
         message: "Company could not be created.",
       },
     });
+  });
+});
+
+describe("GET /api/companies", () => {
+  it("returns companies from the service", async () => {
+    listCompanies.mockResolvedValue([{ id: "1", name: "Acme" }]);
+    const response = await GET();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual([{ id: "1", name: "Acme" }]);
+  });
+
+  it("hides internal list errors", async () => {
+    listCompanies.mockRejectedValue(new Error("secret"));
+    const response = await GET();
+    expect(response.status).toBe(500);
+    expect(await response.text()).not.toContain("secret");
   });
 });

@@ -1,18 +1,7 @@
 import { z } from "zod";
 
-import { createCompany } from "@/services/company";
-
-const invalidRequest = (message: string, issues?: z.core.$ZodIssue[]) =>
-  Response.json(
-    {
-      error: {
-        code: "INVALID_REQUEST",
-        message,
-        ...(issues ? { issues } : {}),
-      },
-    },
-    { status: 400 },
-  );
+import { apiErrorResponse } from "@/app/api/responses";
+import { createCompany, listCompanies } from "@/services/company";
 
 export async function POST(request: Request): Promise<Response> {
   let input: unknown;
@@ -20,7 +9,11 @@ export async function POST(request: Request): Promise<Response> {
   try {
     input = await request.json();
   } catch {
-    return invalidRequest("Request body must be valid JSON.");
+    return apiErrorResponse({
+      code: "INVALID_REQUEST",
+      message: "Request body must be valid JSON.",
+      status: 400,
+    });
   }
 
   try {
@@ -28,17 +21,30 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json(company, { status: 201 });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return invalidRequest("Company input is invalid.", error.issues);
+      return apiErrorResponse({
+        code: "INVALID_REQUEST",
+        message: "Company input is invalid.",
+        status: 400,
+        issues: error.issues,
+      });
     }
 
-    return Response.json(
-      {
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Company could not be created.",
-        },
-      },
-      { status: 500 },
-    );
+    return apiErrorResponse({
+      code: "INTERNAL_ERROR",
+      message: "Company could not be created.",
+      status: 500,
+    });
+  }
+}
+
+export async function GET(): Promise<Response> {
+  try {
+    return Response.json(await listCompanies());
+  } catch {
+    return apiErrorResponse({
+      code: "INTERNAL_ERROR",
+      message: "Companies could not be loaded.",
+      status: 500,
+    });
   }
 }

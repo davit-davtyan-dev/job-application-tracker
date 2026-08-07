@@ -1,6 +1,8 @@
 import "server-only";
 
 import { database } from "@/server/db/client";
+import { asc } from "drizzle-orm";
+
 import { companies } from "@/server/db/schema";
 
 export type NewCompany = typeof companies.$inferInsert;
@@ -17,4 +19,8 @@ export async function insertCompany(company: NewCompany): Promise<Company> {
   }
 
   return createdCompany;
+}
+
+export async function selectCompanies(): Promise<Company[]> {
+  return database.select().from(companies).orderBy(asc(companies.name));
 }

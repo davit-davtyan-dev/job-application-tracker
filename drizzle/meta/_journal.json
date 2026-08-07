@@ -15,6 +15,13 @@
       "when": 1786094752771,
       "tag": "0001_cool_pyro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786125458411,
+      "tag": "0002_wise_blackheart",
+      "breakpoints": true
     }
   ]
 }

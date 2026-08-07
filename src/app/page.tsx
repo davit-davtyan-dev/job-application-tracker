@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { BriefcaseBusiness, CheckCircle2, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { CreateApplicationForm } from "@/components/create-application-form";
 
 export default function Home() {
   return (
@@ -52,14 +53,19 @@ export default function Home() {
               keep the next step visible.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button disabled>Add first application</Button>
+              <a
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-medium text-white hover:bg-slate-800"
+                href="#create-application"
+              >
+                Add first application
+              </a>
               <Button variant="outline" disabled>
                 <Search className="size-4" aria-hidden="true" />
                 Search applications
               </Button>
             </div>
             <p className="mt-3 text-sm text-slate-500">
-              Application workflows arrive in the next feature.
+              Add the details you want to remember after submitting.
             </p>
           </div>
 
@@ -87,6 +93,9 @@ export default function Home() {
           </aside>
         </div>
       </section>
+      <div id="create-application" className="pb-16">
+        <CreateApplicationForm />
+      </div>
     </main>
   );
 }

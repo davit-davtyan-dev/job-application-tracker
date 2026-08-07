@@ -22,7 +22,26 @@ body {
 }
 
 button:focus-visible,
-a:focus-visible {
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   outline: 3px solid #2563eb;
   outline-offset: 3px;
+}
+
+@utility input {
+  width: 100%;
+  border-radius: 0.5rem;
+  border-width: 1px;
+  background: white;
+  padding: 0.625rem 0.75rem;
+  color: #0f172a;
+}
+
+@utility error {
+  display: block;
+  margin-top: 0.25rem;
+  color: #b91c1c;
+  font-size: 0.875rem;
 }

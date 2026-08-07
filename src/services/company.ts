@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { type Company, insertCompany } from "@/server/db/queries/company";
+import {
+  type Company,
+  insertCompany,
+  selectCompanies,
+} from "@/server/db/queries/company";
 
 export const createCompanyInputSchema = z.strictObject({
   name: z.string().trim().min(1, "Company name is required."),
@@ -16,4 +20,8 @@ export async function createCompany(input: unknown): Promise<Company> {
     name: company.name,
     notes: company.notes ?? null,
   });
+}
+
+export async function listCompanies(): Promise<Company[]> {
+  return selectCompanies();
 }
