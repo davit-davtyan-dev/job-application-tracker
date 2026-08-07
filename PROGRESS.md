@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
-- **Active Feature**: `F02`
+- **Phase**: `passing`
+- **Active Feature**: `none`
 - **Generator Commit**: `cd0333b99f212f10771fefdd7fb6460eb1316387`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `PASS`
 
 ## Active Sprint Contract
 
@@ -41,36 +41,36 @@
 
 ## Evaluator Report
 
-- **Verdict**: `FAIL`
-- **Commit Verified**: `8ee087d6c502bc2ca5f4d25d08ea9327fb85eadc`
-- **Checks Run**: `PASS: test/dev migrations and seed; pnpm db:generate no drift; focused Vitest 29/29; pnpm format:check; pnpm lint; pnpm typecheck; full Vitest 30/30; pnpm build; schema/UUID/UTC/FK/Zod/missing-company/transaction/server-only/enum/shared-response/no-any/scope audit. FAIL: focused F02 Playwright timed out waiting for the inline-company field; full Playwright 1 passed/1 failed; the original machine-readable F02 command path found no tests.`
-- **Findings**: `Next.js 16.3 blocked dev assets requested through Playwright's 127.0.0.1 base URL while next dev initialized for localhost, preventing client hydration. Reference-link Zod errors occur at referenceLinks[index].value but the form renders only a root-level array error, so invalid URL errors are not visible or associated with the field. The FEATURES.md F02 verification path omitted the tests/e2e directory.`
-- **Required Fix**: `Generator: align Playwright baseURL with localhost (or explicitly allow 127.0.0.1), render each reference URL field error beside and associated via aria-describedby with a test proving invalid URL shows the error and sends no POST, then rerun focused/full Playwright plus affected static/unit/build checks and commit one bounded correction. Orchestrator corrected the FEATURES.md command to pnpm test:e2e tests/e2e/create-application.spec.ts.`
+- **Verdict**: `PASS`
+- **Commit Verified**: `cd0333b99f212f10771fefdd7fb6460eb1316387`
+- **Checks Run**: `PASS in fresh clean detached worktree: test/dev PostgreSQL migrations and seed; pnpm db:generate no drift; focused Vitest 6 files/30 tests; literal F02 Playwright 1/1; pnpm format:check; pnpm lint; pnpm typecheck; full Vitest 7 files/31 tests; full Playwright 2/2; production build; corrected FEATURES.md command; exact-commit clean status.`
+- **Findings**: `All F02 acceptance criteria pass. The prior hydration failure is fixed by consistent localhost Playwright/dev-server URLs. Per-reference URL errors are visible and associated with aria-describedby/aria-invalid, and invalid input sends no POST. Schema, UUID, UTC, FK, strict Zod, atomic application/history transaction, server-only layering, ApplicationStatus enum, shared API response utility, no-any, accessibility, and bounded scope audits pass.`
+- **Required Fix**: `none`
 
 ## Current Status
 
-- **Active**: `F02 — manual job-application creation`
-- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS)`
+- **Active**: `none`
+- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F02 is active. The sprint contract covers the manual creation UI and API, existing-or-inline company selection, fixed status/date/application fields, and atomic persistence of the application with its initial creation history row.
+F02 is complete at `cd0333b99f212f10771fefdd7fb6460eb1316387`. The exact correction commit passed independent clean-worktree database, migration, focused/full unit, focused/full browser, static, accessibility, architecture, and production-build verification.
 
 ## Next Step
 
-1. `Evaluator independently verifies exact correction commit cd0333b99f212f10771fefdd7fb6460eb1316387 in a clean workspace and returns PASS, FAIL, or BLOCKED.`
+1. `Orchestrator may select F03 and write its sprint contract when the user is ready.`
 
 ## Verification Status
 
-- **Build**: `Baseline passing; F02 pending`
-- **Lint**: `Baseline passing; F02 pending`
-- **Unit/Integration**: `Baseline passing; F02 pending`
-- **E2E**: `Baseline passing; F02 pending`
+- **Build**: `Passing`
+- **Lint**: `Passing`
+- **Unit/Integration**: `Passing (31 tests)`
+- **E2E**: `Passing (2/2)`
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Activate F02 as one complete manual-creation vertical slice, including the UI required by its Playwright verification and the initial activity row required by the database transaction standard; defer listing, searching, status changes, interviews, and history display.`
-- **Context Summary**: `F00 and F01 are passing. F02 is the only active feature. Dependencies are installed; development and test PostgreSQL are healthy, migrated, and seeded; the baseline example Vitest test passes.`
+- **Decisions Made**: `Complete F02 as one manual-creation vertical slice; use a string ApplicationStatus enum as the single Drizzle/Zod/UI source of truth; share structured API error construction through src/app/api/responses.ts; align Playwright and Next dev-server origin at localhost; expose per-reference URL validation accessibly.`
+- **Context Summary**: `F00, F01, and F02 are passing. No feature is active, and WIP=1 is clear. F02's exact correction commit cd0333b99f212f10771fefdd7fb6460eb1316387 has independent Evaluator PASS evidence.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator verifies exact correction commit cd0333b99f212f10771fefdd7fb6460eb1316387.`
+- **Next Owner**: `Orchestrator selects F03 when requested.`

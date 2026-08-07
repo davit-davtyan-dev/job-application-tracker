@@ -33,3 +33,8 @@
 
 - **Decision**: Treat initial application and tooling bootstrap as feature F00 before starting product feature F01.
 - **Reasoning**: The empty repository needs a reproducible, independently verified platform first. Tracking it explicitly preserves WIP=1 and prevents foundational setup from being mixed into the first domain feature.
+
+### 2026-08-07: Shared Application Status and API Error Primitives
+
+- **Decision**: Define the fixed job-application status vocabulary once as the string `ApplicationStatus` enum and reuse it across Drizzle, Zod, and UI options. Construct structured Route Handler errors through the shared `src/app/api/responses.ts` utility.
+- **Reasoning**: The installed Drizzle and Zod versions accept enum objects directly, so an `as const` tuple adds no required capability. A single enum prevents status vocabulary drift across persistence, validation, and rendering. Centralizing the common API error envelope removes duplicated response construction while preserving route-specific codes, messages, issues, and statuses.
