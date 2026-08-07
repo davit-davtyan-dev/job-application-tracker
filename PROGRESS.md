@@ -10,67 +10,67 @@
 
 ## Orchestration State
 
-- **Phase**: `passing`
-- **Active Feature**: `none`
-- **Generator Commit**: `de12250608b3210ec4b4506bfb6176a1360a2eab`
-- **Evaluator Verdict**: `PASS`
+- **Phase**: `blocked`
+- **Active Feature**: `F01`
+- **Generator Commit**: `22c535fd8ebd5cbcaf64d91ef65b8aab641d923f`
+- **Evaluator Verdict**: `BLOCKED`
 
 ## Active Sprint Contract
 
-- **Feature ID**: `F00`
-- **Scope**: Bootstrap the empty repository as a runnable single-app Next.js project with the agreed stack and development infrastructure. Do not implement product-domain features F01-F12.
+- **Feature ID**: `F01`
+- **Scope**: Add the server-side vertical slice for creating and storing a Company independently, with a required company name and optional general notes. Include the PostgreSQL schema/migration, server-only query module, validated service, and a POST Route Handler. Do not add job applications, company listing/edit/delete behavior, activity history, Markdown rendering, or new product UI.
 - **Acceptance Criteria**:
-  1. A Next.js App Router application uses strict TypeScript, Tailwind CSS, ESLint, Prettier/import sorting, and the `src/` layout, and displays a minimal accessible tracker landing page.
-  2. Runtime foundations are installed and minimally wired: Drizzle ORM with postgres.js in server-only modules, Zod-validated environment variables, TanStack Query provider, Zustand, React Hook Form/Zod resolver, Lucide, date-fns, and shadcn/ui configuration with one reusable component.
-  3. PostgreSQL development/test configuration includes `.env.example`, Docker Compose health checks and named storage, baseline Drizzle configuration and migration, and idempotent migration/seed scripts that can run against a healthy database.
-  4. Vitest + React Testing Library and Playwright are configured with passing smoke tests. Scripts include `dev`, `build`, `lint`, `test`, `test:e2e`, `db:migrate`, `db:seed`, and `verify`.
-  5. Repository quality tooling includes `.gitignore`, `.editorconfig`, Prettier, lint-staged, Husky pre-commit configuration, and Conventional Commit guidance. No secrets, generated build output, or `any` types are committed.
-  6. A multi-stage production Dockerfile and Compose `app` service are present; the app service waits for PostgreSQL health.
-  7. Setup and local workflow are documented in `README.md`; dependency versions are locked with pnpm and the project declares Node 22.23.1 and pnpm 11.20.0.
-- **Relevant Constraints**: `No product behavior; server-only database access; strict TypeScript; no any; UUID/UTC schema defaults; Zod environment validation; preserve all existing planning documents.`
-- **Expected Files or Layers**: `package/tooling configs; src/app; src/components/ui; src/lib/providers; src/server/db; drizzle; tests; public; Dockerfile; compose.yaml; README.md; environment templates.`
-- **Targeted Verification**: `pnpm verify; docker compose config; pnpm db:generate or equivalent migration consistency check; migration and seed against healthy PostgreSQL when Docker is available.`
+  1. A `companies` table is introduced through the Drizzle schema and a committed migration, with a database-generated UUID primary key, a non-null company name, nullable general notes, and UTC-aware `createdAt` and `updatedAt` timestamps.
+  2. Company creation follows `Route Handler -> Service -> Database Query Module`; all database imports and queries remain in server-only modules, and neither the Route Handler nor UI code contains a direct Drizzle query.
+  3. The service validates input with Zod even when called independently of the HTTP boundary. A valid trimmed name creates and returns the stored company; omitted notes are stored as `null`. Blank/whitespace-only names and malformed payloads are rejected without inserting a record.
+  4. `POST /api/companies` parses JSON with Zod-compatible server validation, delegates to the company service, returns the created company with HTTP 201, returns a structured client error for invalid JSON or invalid input, and does not expose internal database error details.
+  5. `src/services/company.test.ts` verifies successful persistence and invalid-input rejection against PostgreSQL, including the no-write guarantee for rejected input. Directly affected route behavior is covered by focused tests.
+  6. The migration applies cleanly to a healthy test database, generated migration metadata remains consistent, strict TypeScript and lint pass, and no `any` type is introduced.
+- **Relevant Constraints**: `Server-only database access; Route Handler -> Service -> Database Query Module; Zod validation at the service boundary; UUID primary keys; UTC-aware timestamps; strict TypeScript; no any; preserve unrelated work; one logical Generator commit; Generator must not edit FEATURES.md, PROGRESS.md, or DECISIONS.md.`
+- **Expected Files or Layers**: `src/server/db/schema.ts and committed drizzle migration; server-only company query module; company validation/service module; src/app/api/companies/route.ts; src/services/company.test.ts plus focused route tests and any minimal test utilities required for database isolation.`
+- **Targeted Verification**: `pnpm test src/services/company.test.ts; focused company route test command; pnpm db:generate consistency check; pnpm db:migrate against healthy PostgreSQL; pnpm lint; pnpm typecheck.`
 - **Final Verification**: `pnpm lint && pnpm test && pnpm test:e2e && pnpm build`
 
 ## Generator Report
 
-- **Commit**: `de12250608b3210ec4b4506bfb6176a1360a2eab`
-- **Changed Files**: `Project tooling and dependency configuration; tracker landing UI and runtime providers; server-only Drizzle/PostgreSQL foundation; baseline migration and database scripts; Dockerfile and Compose services; Vitest/RTL and Playwright smoke tests; README and environment templates.`
-- **Tests Run**: `PASS: pnpm format:check, pnpm lint, pnpm typecheck, pnpm test (2 files/2 tests), docker compose config --quiet, pnpm db:generate consistency, git diff --check, no-any scan. BLOCKED in Generator environment: Playwright Chromium installation, production build port binding, live PostgreSQL migration/seed, Docker service startup.`
-- **Known Risks**: `Evaluator must independently verify E2E, production build, live migration/seed, and containers; Generator shell reported Node 26 rather than declared Node 22.23.1.`
+- **Commit**: `22c535fd8ebd5cbcaf64d91ef65b8aab641d923f`
+- **Changed Files**: `Company schema and Drizzle migration; server-only company query module; Zod-validated company service; POST /api/companies Route Handler; PostgreSQL-backed service tests; focused route tests; test database environment/client wiring and Vitest server-only shim.`
+- **Tests Run**: `PASS: test PostgreSQL migration; pnpm test src/services/company.test.ts (5/5); focused route tests (4/4); full Vitest (11/11); pnpm lint; pnpm typecheck; pnpm format:check; pnpm db:generate no-drift check; pnpm build.`
+- **Known Risks**: `Generator did not run pnpm test:e2e; integration tests require a migrated PostgreSQL instance and TEST_DATABASE_URL. Evaluator full pipeline remains authoritative.`
 
 ## Evaluator Report
 
-- **Verdict**: `PASS`
-- **Commit Verified**: `de12250608b3210ec4b4506bfb6176a1360a2eab`
-- **Checks Run**: `PASS: clean Prettier, ESLint, TypeScript, Vitest (2/2), Drizzle migration consistency, Docker Compose validation, architecture/timestamp inspection; local Playwright install, healthy development/test PostgreSQL, db:migrate, db:seed, full pnpm verify including E2E and production build.`
-- **Findings**: `All F00 acceptance criteria and applicable architectural constraints are satisfied. Independent live-database duplication was sandbox-restricted, while the local full pipeline and healthy service evidence passed.`
-- **Required Fix**: `none`
+- **Verdict**: `BLOCKED`
+- **Commit Verified**: `22c535fd8ebd5cbcaf64d91ef65b8aab641d923f`
+- **Checks Run**: `PASS: live test-database migration; pnpm test src/services/company.test.ts (5/5); focused route tests (4/4); full pnpm test (11/11); pnpm test:e2e (1/1); pnpm format:check; pnpm lint; pnpm typecheck; pnpm db:generate no schema drift; UUID, UTC timestamp, Zod validation, server-only layering, and no-any inspection. BLOCKED: pnpm build.`
+- **Findings**: `No implementation defect identified. Next/Turbopack repeatedly failed while creating its CSS worker because the verification host prohibited internal port binding with Operation not permitted, including approved outside-sandbox reruns. Diagnostic webpack build also hit a host toolchain error parsing TypeScript --showConfig.`
+- **Required Fix**: `No product-code correction requested. Re-run DATABASE_URL=postgres://job_tracker:job_tracker@localhost:5432/job_tracker NODE_ENV=production pnpm build on a host that permits Turbopack worker port binding, then have the Evaluator re-verify exact commit 22c535fd8ebd5cbcaf64d91ef65b8aab641d923f and return PASS before F01 can be marked passing.`
 
 ## Current Status
 
 - **Active**: `none`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS)`
-- **Blocked**: `none`
+- **Blocked**: `F01 — external verification host prevents mandatory production build`
 
 ## Current Session Summary
 
-F00 established the complete application foundation at commit `de12250608b3210ec4b4506bfb6176a1360a2eab`. The Evaluator returned `PASS` after clean static/test checks and a successful local full pipeline with healthy development and test PostgreSQL services.
+F01 implementation is committed at `22c535fd8ebd5cbcaf64d91ef65b8aab641d923f`. All functional, database, E2E, static, and architectural checks passed, but the Evaluator returned BLOCKED because the host prevents Turbopack's CSS worker from binding during the mandatory production build.
 
 ## Next Step
 
-1. `Orchestrator may select F01 and write its sprint contract when the user is ready to begin product work.`
+1. `On a host permitting Turbopack worker port binding, run DATABASE_URL=postgres://job_tracker:job_tracker@localhost:5432/job_tracker NODE_ENV=production pnpm build.`
+2. `Evaluator re-verifies exact commit 22c535fd8ebd5cbcaf64d91ef65b8aab641d923f and must return PASS before Orchestrator marks F01 passing.`
 
 ## Verification Status
 
-- **Build**: `Passing`
+- **Build**: `BLOCKED by verification host port-binding restriction`
 - **Lint**: `Passing`
-- **Unit/Integration**: `Passing (2 files/2 tests)`
-- **E2E**: `Passing`
+- **Unit/Integration**: `Passing (11 tests; F01 service 5/5, route 4/4)`
+- **E2E**: `Passing (1/1)`
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Track initial repository bootstrap as F00 so the lifecycle remains explicit and WIP=1; accept corrected foundation commit de12250608b3210ec4b4506bfb6176a1360a2eab after Evaluator PASS.`
-- **Context Summary**: `Runnable Next.js foundation with validated server-only PostgreSQL/Drizzle setup, Docker services, quality tooling, unit/E2E smoke tests, and documented workflow. No product-domain feature is active.`
-- **Remaining Blockers**: `none`
-- **Next Owner**: `Orchestrator selects F01 when requested.`
+- **Decisions Made**: `Activate F01 as a bounded server-side vertical slice: schema/migration, query module, validated service, POST route, and focused tests; defer UI and all application/history behavior. Record Evaluator BLOCKED rather than PASS because the mandatory build could not run on this host.`
+- **Context Summary**: `F00 is passing. F01 implementation and all non-build checks pass at exact commit 22c535fd8ebd5cbcaf64d91ef65b8aab641d923f, but F01 remains blocked pending a production build and Evaluator PASS.`
+- **Remaining Blockers**: `Verification host denies Turbopack internal CSS worker port binding (Operation not permitted), preventing pnpm build.`
+- **Next Owner**: `Evaluator re-verifies the exact Generator commit on a compatible host after the build proof is available.`
