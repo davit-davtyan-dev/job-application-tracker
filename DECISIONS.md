@@ -43,3 +43,8 @@
 
 - **Decision**: Update one application's status through a dedicated status endpoint. Allow direct movement to any shared `ApplicationStatus`. For a real change, atomically update the application and append exactly one `status_changed` activity-history row; treat a same-status request as a successful no-op without history or `updated_at` churn.
 - **Reasoning**: Direct transitions match the single-user tracker scope without introducing an unrequested workflow policy. The transaction preserves the required status/history invariant, while idempotent same-status requests avoid misleading duplicate activity and timestamp changes. Invalidating the application query root lets existing Active/Closed and search caches settle consistently after a mutation.
+
+### 2026-08-10: Minimal Interview Records and Serialized Database Tests
+
+- **Decision**: Model each interview as an application-owned record with a required UTC scheduled time and one fixed state (`Scheduled`, `Completed`, or `Cancelled`). Allow direct state changes, atomically record each real interview event in activity history, and treat same-state updates as idempotent. Serialize Vitest files because PostgreSQL integration suites share one database and install global failure triggers.
+- **Reasoning**: The minimal record satisfies the product brief without prematurely introducing interview rounds or auxiliary metadata. Transactions preserve interview/history integrity and direct states match the existing unrestricted status model. File serialization prevents destructive cleanup and test-only triggers from crossing integration-file boundaries; isolated schemas would add disproportionate infrastructure complexity at the current suite size.

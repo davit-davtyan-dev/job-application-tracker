@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
-- **Active Feature**: `F07`
+- **Phase**: `passing`
+- **Active Feature**: `none`
 - **Generator Commit**: `5271688650be136fd68a4e973b39776ee2403130`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `PASS`
 
 ## Active Sprint Contract
 
@@ -44,36 +44,36 @@
 
 ## Evaluator Report
 
-- **Verdict**: `FAIL`
-- **Commit Verified**: `98832955b6081eecdb35b33d9e7458b520412ac8`
-- **Checks Run**: `Clean isolated exact-commit clone: install offline PASS; migrations PASS; focused F07 Vitest PASS (42/42); format PASS; lint PASS; typecheck PASS; focused F07 plus F03–F06 Playwright PASS (7/7); full Playwright PASS (7/7); production build PASS; diff check PASS; full Vitest FAIL (92 passed, 13 failed).`
-- **Findings**: `The F07 behavior and static acceptance review otherwise pass, and the Generator's Turbopack caveat was not reproduced. Full Vitest fails because src/services/interview.test.ts and src/services/application.test.ts run concurrently against one PostgreSQL database: destructive shared-table cleanup and global forced-history triggers cross-contaminate the files, producing FK, missing-fixture, and forced-trigger failures.`
-- **Required Fix**: `Bounded correction: serialize PostgreSQL-mutating service test files (for example Vitest fileParallelism false, or an equivalently deterministic isolated database/schema/lock), keep cleanup FK-safe across activity_history, interviews, job_applications, and companies, and prevent forced trigger setup from overlapping another integration file. Prove with pnpm test twice, then targeted F07 verification and static checks. Do not change product behavior or scope.`
+- **Verdict**: `PASS`
+- **Commit Verified**: `5271688650be136fd68a4e973b39776ee2403130`
+- **Checks Run**: `Fresh isolated exact-commit checkout: offline install PASS; full Vitest run 1 PASS (105/105); full Vitest run 2 PASS (105/105); targeted F07 Vitest PASS (42/42); format PASS; lint PASS; typecheck PASS; full Playwright PASS (7/7); production build PASS; correction diff check PASS.`
+- **Findings**: `All ten F07 acceptance criteria and architectural constraints pass. The correction is bounded to serialized shared-PostgreSQL test files and FK-safe interview cleanup. Shared InterviewStatus, UUID/timestamptz migration, strict validation and safe errors, route/service/server-only query layering, atomic interview/history transactions and rollback, same-state idempotence, ownership and application-status preservation, deterministic ordering, accessible isolated UI behavior, TanStack Query ownership/invalidation, and no-any/dependency/unrelated-scope rules were independently verified.`
+- **Required Fix**: `none`
 
 ## Current Status
 
-- **Active**: `F07 — evaluating corrected Generator commit 5271688650be136fd68a4e973b39776ee2403130`
-- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS)`
+- **Active**: `none`
+- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F06 are passing. F07 test-isolation correction is committed at `5271688650be136fd68a4e973b39776ee2403130` after two full Vitest passes and awaits independent reevaluation.
+F00 through F07 are passing. F07 passed independent evaluation at exact corrected Generator commit `5271688650be136fd68a4e973b39776ee2403130`; no feature is active.
 
 ## Next Step
 
-1. `Evaluator verifies exact corrected Generator commit 5271688650be136fd68a4e973b39776ee2403130 in a clean workspace and returns PASS, FAIL, or BLOCKED.`
+1. `Orchestrator may activate F08 in a new sprint when requested.`
 
 ## Verification Status
 
-- **Build**: `PASS at efae1d6fece1825788c31f127245019beab073c2`
-- **Lint**: `PASS at efae1d6fece1825788c31f127245019beab073c2`
-- **Unit/Integration**: `PASS (76 tests) at efae1d6fece1825788c31f127245019beab073c2`
-- **E2E**: `PASS (6/6) at efae1d6fece1825788c31f127245019beab073c2`
+- **Build**: `PASS at 5271688650be136fd68a4e973b39776ee2403130`
+- **Lint**: `PASS at 5271688650be136fd68a4e973b39776ee2403130`
+- **Unit/Integration**: `PASS twice (105 tests) at 5271688650be136fd68a4e973b39776ee2403130`
+- **E2E**: `PASS (7/7) at 5271688650be136fd68a4e973b39776ee2403130`
 
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F07 for application-scoped interview creation, listing, and direct state changes. Keep the record minimal: scheduled UTC date/time plus fixed state; no rounds or auxiliary interview metadata. Require atomic activity-history entries for creation and real state changes.`
-- **Context Summary**: `F00 through F06 are passing. F07 is evaluating corrected Generator commit 5271688650be136fd68a4e973b39776ee2403130; the bounded isolation fix passed full Vitest twice.`
+- **Context Summary**: `F00 through F07 are passing. F07 was independently verified at exact corrected Generator commit 5271688650be136fd68a4e973b39776ee2403130. No feature is active.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator independently verifies exact corrected commit 5271688650be136fd68a4e973b39776ee2403130.`
+- **Next Owner**: `Orchestrator activates F08 only when requested.`
