@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { cloneElement } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { ApplicationStatus } from "@/lib/application";
+import { activeApplicationsQueryKey } from "@/lib/application-query";
 
 const formSchema = z
   .object({
@@ -52,6 +53,7 @@ async function responseJson(response: Response): Promise<unknown> {
 }
 
 export function CreateApplicationForm() {
+  const queryClient = useQueryClient();
   const companies = useQuery({
     queryKey: ["companies"],
     queryFn: async () => {
@@ -104,6 +106,11 @@ export function CreateApplicationForm() {
           "Application could not be saved. Check the form and try again.",
         );
       return body;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: activeApplicationsQueryKey,
+      });
     },
   });
   const successCompany =

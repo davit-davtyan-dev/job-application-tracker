@@ -3,6 +3,7 @@ import { BriefcaseBusiness, CheckCircle2, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CreateApplicationForm } from "@/components/create-application-form";
+import { ActiveApplicationList } from "@/components/active-application-list";
 
 export default function Home() {
   return (
@@ -93,6 +94,9 @@ export default function Home() {
           </aside>
         </div>
       </section>
+      <div className="pb-16">
+        <ActiveApplicationList />
+      </div>
       <div id="create-application" className="pb-16">
         <CreateApplicationForm />
       </div>

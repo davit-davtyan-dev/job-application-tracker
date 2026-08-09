@@ -1,6 +1,6 @@
 import "server-only";
 
-import { eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 
 import { database } from "@/server/db/client";
 import {
@@ -20,6 +20,37 @@ export interface CreateApplicationRecord {
   description: string | null;
   referenceLinks: string[];
   notes: string | null;
+}
+
+export interface ApplicationListRecord {
+  id: string;
+  companyName: string;
+  positionTitle: string;
+  appliedDate: string;
+  status: JobApplication["status"];
+}
+
+export async function selectApplicationsByStatuses(
+  statuses: JobApplication["status"][],
+): Promise<ApplicationListRecord[]> {
+  if (statuses.length === 0) return [];
+
+  return database
+    .select({
+      id: jobApplications.id,
+      companyName: companies.name,
+      positionTitle: jobApplications.positionTitle,
+      appliedDate: jobApplications.appliedDate,
+      status: jobApplications.status,
+    })
+    .from(jobApplications)
+    .innerJoin(companies, eq(jobApplications.companyId, companies.id))
+    .where(inArray(jobApplications.status, statuses))
+    .orderBy(
+      desc(jobApplications.appliedDate),
+      desc(jobApplications.createdAt),
+      desc(jobApplications.id),
+    );
 }
 
 export async function insertApplicationWithHistory(

@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
+import { ApplicationStatus } from "@/lib/application";
 import {
   activityHistory,
   companies,
@@ -13,6 +14,7 @@ import {
 import {
   CompanyNotFoundError,
   createApplication,
+  listActiveApplications,
 } from "@/services/application";
 
 const url = process.env.TEST_DATABASE_URL;
@@ -27,7 +29,6 @@ describe("createApplication", () => {
     await db.delete(jobApplications);
     await db.delete(companies);
   });
-  afterAll(() => client.end());
 
   it("persists an existing-company application and initial history with defaults", async () => {
     const [company] = await db
@@ -147,3 +148,88 @@ describe("createApplication", () => {
     }
   });
 });
+
+describe("listActiveApplications", () => {
+  beforeEach(async () => {
+    await db.delete(activityHistory);
+    await db.delete(jobApplications);
+    await db.delete(companies);
+  });
+
+  it("returns the exact active projection with company names and deterministic ordering", async () => {
+    const [company] = await db
+      .insert(companies)
+      .values({ name: "List Co" })
+      .returning();
+    const olderId = "10000000-0000-4000-8000-000000000000";
+    const newerId = "20000000-0000-4000-8000-000000000000";
+    const applications: (typeof jobApplications.$inferInsert)[] = [
+      {
+        id: olderId,
+        companyId: company!.id,
+        positionTitle: "Tie one",
+        appliedDate: "2026-08-08",
+        status: ApplicationStatus.Applied,
+        createdAt: new Date("2026-08-08T10:00:00Z"),
+      },
+      {
+        id: newerId,
+        companyId: company!.id,
+        positionTitle: "Tie two",
+        appliedDate: "2026-08-08",
+        status: ApplicationStatus.Offer,
+        createdAt: new Date("2026-08-08T10:00:00Z"),
+      },
+      {
+        companyId: company!.id,
+        positionTitle: "New date",
+        appliedDate: "2026-08-09",
+        status: ApplicationStatus.Interviewing,
+      },
+      ...(
+        [
+          ApplicationStatus.Accepted,
+          ApplicationStatus.Rejected,
+          ApplicationStatus.Withdrawn,
+          ApplicationStatus.Archived,
+        ] as const
+      ).map((status) => ({
+        companyId: company!.id,
+        positionTitle: `Closed ${status}`,
+        appliedDate: "2026-08-10",
+        status,
+      })),
+    ];
+    await db.insert(jobApplications).values(applications);
+
+    expect(await listActiveApplications()).toEqual([
+      {
+        id: expect.any(String),
+        companyName: "List Co",
+        positionTitle: "New date",
+        appliedDate: "2026-08-09",
+        status: "Interviewing",
+      },
+      {
+        id: newerId,
+        companyName: "List Co",
+        positionTitle: "Tie two",
+        appliedDate: "2026-08-08",
+        status: "Offer",
+      },
+      {
+        id: olderId,
+        companyName: "List Co",
+        positionTitle: "Tie one",
+        appliedDate: "2026-08-08",
+        status: "Applied",
+      },
+    ]);
+  });
+
+  it("returns an empty list when there are no active applications", async () => {
+    expect(await listActiveApplications()).toEqual([]);
+  });
+});
+
+afterAll(() => client.end());

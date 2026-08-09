@@ -4,7 +4,31 @@ import { ApplicationStatus } from "@/lib/application";
 import {
   insertApplicationWithHistory,
   type JobApplication,
+  selectApplicationsByStatuses,
 } from "@/server/db/queries/application";
+
+const activeApplicationStatuses = [
+  ApplicationStatus.Applied,
+  ApplicationStatus.Interviewing,
+  ApplicationStatus.Offer,
+];
+
+export const activeApplicationSchema = z.strictObject({
+  id: z.uuid(),
+  companyName: z.string(),
+  positionTitle: z.string(),
+  appliedDate: z.iso.date(),
+  status: z.enum(
+    activeApplicationStatuses as [
+      ApplicationStatus.Applied,
+      ApplicationStatus.Interviewing,
+      ApplicationStatus.Offer,
+    ],
+  ),
+});
+
+export const activeApplicationListSchema = z.array(activeApplicationSchema);
+export type ActiveApplication = z.infer<typeof activeApplicationSchema>;
 
 export const createApplicationInputSchema = z
   .strictObject({
@@ -46,4 +70,11 @@ export async function createApplication(
   });
   if (!created) throw new CompanyNotFoundError();
   return created;
+}
+
+export async function listActiveApplications(): Promise<ActiveApplication[]> {
+  const applications = await selectApplicationsByStatuses(
+    activeApplicationStatuses,
+  );
+  return activeApplicationListSchema.parse(applications);
 }

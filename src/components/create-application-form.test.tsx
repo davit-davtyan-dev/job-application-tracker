@@ -5,21 +5,20 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { CreateApplicationForm } from "./create-application-form";
 
-const renderForm = () =>
-  render(
-    <QueryClientProvider
-      client={
-        new QueryClient({
-          defaultOptions: {
-            queries: { retry: false },
-            mutations: { retry: false },
-          },
-        })
-      }
-    >
+const renderForm = () => {
+  const client = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+  const view = render(
+    <QueryClientProvider client={client}>
       <CreateApplicationForm />
     </QueryClientProvider>,
   );
+  return { client, ...view };
+};
 
 describe("CreateApplicationForm", () => {
   afterEach(() => {
@@ -43,7 +42,8 @@ describe("CreateApplicationForm", () => {
         new Response(JSON.stringify({ id: "app" }), { status: 201 }),
       );
     vi.stubGlobal("fetch", fetchMock);
-    renderForm();
+    const { client } = renderForm();
+    const invalidateQueries = vi.spyOn(client, "invalidateQueries");
 
     expect(screen.getByLabelText("Status")).toHaveValue("Applied");
     expect(screen.getByLabelText("Applied date")).toHaveValue(
@@ -69,6 +69,9 @@ describe("CreateApplicationForm", () => {
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Application for Engineer at Acme was created.",
     );
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["applications", "active"],
+    });
   });
 
   it("supports inline company and preserves values after a server error", async () => {

@@ -4,6 +4,7 @@ const {
   createApplication,
   CompanyNotFoundError,
   createApplicationInputSchema,
+  listActiveApplications,
 } = vi.hoisted(() => ({
   createApplication: vi.fn(),
   CompanyNotFoundError: class extends Error {},
@@ -21,17 +22,41 @@ const {
           } => ({ success: true, data: input }),
     ),
   },
+  listActiveApplications: vi.fn(),
 }));
 vi.mock("@/services/application", () => ({
   createApplication,
   CompanyNotFoundError,
   createApplicationInputSchema,
+  listActiveApplications,
 }));
 
-import { POST } from "./route";
+import { GET, POST } from "./route";
 
 const request = (body: string) =>
   new Request("http://localhost/api/applications", { method: "POST", body });
+
+describe("GET /api/applications", () => {
+  it("returns active applications in a stable object", async () => {
+    const applications = [{ id: "app", status: "Applied" }];
+    listActiveApplications.mockResolvedValueOnce(applications);
+    const response = await GET();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ applications });
+  });
+
+  it("maps failures to a client-safe structured error", async () => {
+    listActiveApplications.mockRejectedValueOnce(new Error("database-secret"));
+    const response = await GET();
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Applications could not be loaded.",
+      },
+    });
+  });
+});
 
 describe("POST /api/applications", () => {
   beforeEach(() => {

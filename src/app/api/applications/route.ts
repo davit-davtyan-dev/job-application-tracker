@@ -4,6 +4,7 @@ import {
   CompanyNotFoundError,
   createApplication,
   createApplicationInputSchema,
+  listActiveApplications,
 } from "@/services/application";
 import { apiErrorResponse } from "@/app/api/responses";
 
@@ -15,6 +16,21 @@ const isZodError = (error: unknown): error is z.ZodError =>
     "issues" in error &&
     Array.isArray(error.issues)) ||
   error instanceof z.ZodError;
+
+export async function GET(): Promise<Response> {
+  try {
+    return Response.json(
+      { applications: await listActiveApplications() },
+      { status: 200 },
+    );
+  } catch {
+    return apiErrorResponse({
+      code: "INTERNAL_ERROR",
+      message: "Applications could not be loaded.",
+      status: 500,
+    });
+  }
+}
 
 export async function POST(request: Request): Promise<Response> {
   let input: unknown;
