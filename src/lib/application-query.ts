@@ -1,24 +1,29 @@
-import type { ActiveApplication } from "@/services/application";
+import type { ApplicationListView } from "@/lib/application";
+import type { ApplicationListItem } from "@/services/application";
 
 export const normalizeApplicationSearch = (search: string) => search.trim();
 
-export const activeApplicationsQueryKey = ["applications", "active"] as const;
-export const activeApplicationsSearchQueryKey = (search: string) =>
-  [...activeApplicationsQueryKey, normalizeApplicationSearch(search)] as const;
+export const applicationsQueryRoot = ["applications"] as const;
+export const applicationsQueryKey = (
+  view: ApplicationListView,
+  search: string,
+) =>
+  [...applicationsQueryRoot, view, normalizeApplicationSearch(search)] as const;
 
-interface ActiveApplicationsResponse {
-  applications: ActiveApplication[];
+interface ApplicationsResponse {
+  applications: ApplicationListItem[];
 }
 
-export async function fetchActiveApplications(
+export async function fetchApplications(
+  view: ApplicationListView,
   search: string,
-): Promise<ActiveApplication[]> {
+): Promise<ApplicationListItem[]> {
   const normalizedSearch = normalizeApplicationSearch(search);
-  const parameters = new URLSearchParams();
+  const parameters = new URLSearchParams({ view });
   if (normalizedSearch) parameters.set("search", normalizedSearch);
   const query = parameters.toString();
   const response = await fetch(`/api/applications${query ? `?${query}` : ""}`);
   if (!response.ok) throw new Error("Applications could not be loaded.");
-  const body = (await response.json()) as ActiveApplicationsResponse;
+  const body = (await response.json()) as ApplicationsResponse;
   return body.applications;
 }

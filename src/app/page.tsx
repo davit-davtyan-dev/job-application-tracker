@@ -47,7 +47,7 @@ export default function Home() {
               </a>
               <a
                 className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 hover:bg-slate-50"
-                href="#active-application-search"
+                href="#application-search"
               >
                 Search applications
               </a>

@@ -70,7 +70,7 @@ describe("CreateApplicationForm", () => {
       "Application for Engineer at Acme was created.",
     );
     expect(invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ["applications", "active"],
+      queryKey: ["applications"],
     });
   });
 

@@ -4,8 +4,8 @@ const {
   createApplication,
   CompanyNotFoundError,
   createApplicationInputSchema,
-  listActiveApplications,
-  listActiveApplicationsInputSchema,
+  listApplications,
+  listApplicationsInputSchema,
 } = vi.hoisted(() => ({
   createApplication: vi.fn(),
   CompanyNotFoundError: class extends Error {},
@@ -23,11 +23,13 @@ const {
           } => ({ success: true, data: input }),
     ),
   },
-  listActiveApplications: vi.fn(),
-  listActiveApplicationsInputSchema: {
-    safeParse: vi.fn((input: { search?: string }) => {
+  listApplications: vi.fn(),
+  listApplicationsInputSchema: {
+    safeParse: vi.fn((input: { view?: unknown; search?: string }) => {
       const search = input.search?.trim() || undefined;
-      return search && search.length > 200
+      const view = input.view ?? "active";
+      return (view !== "active" && view !== "closed") ||
+        (search && search.length > 200)
         ? {
             success: false as const,
             error: {
@@ -40,7 +42,7 @@ const {
               ],
             },
           }
-        : { success: true as const, data: { search } };
+        : { success: true as const, data: { view, search } };
     }),
   },
 }));
@@ -48,8 +50,8 @@ vi.mock("@/services/application", () => ({
   createApplication,
   CompanyNotFoundError,
   createApplicationInputSchema,
-  listActiveApplications,
-  listActiveApplicationsInputSchema,
+  listApplications,
+  listApplicationsInputSchema,
 }));
 
 import { GET, POST } from "./route";
@@ -58,28 +60,44 @@ const request = (body: string) =>
   new Request("http://localhost/api/applications", { method: "POST", body });
 
 describe("GET /api/applications", () => {
-  beforeEach(() => listActiveApplications.mockReset());
+  beforeEach(() => listApplications.mockReset());
 
   it("returns active applications in a stable object", async () => {
     const applications = [{ id: "app", status: "Applied" }];
-    listActiveApplications.mockResolvedValueOnce(applications);
+    listApplications.mockResolvedValueOnce(applications);
     const response = await GET(
       new Request("http://localhost/api/applications"),
     );
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ applications });
-    expect(listActiveApplications).toHaveBeenCalledWith({
+    expect(listApplications).toHaveBeenCalledWith({
+      view: "active",
       search: undefined,
     });
   });
 
   it("parses and normalizes a search query", async () => {
-    listActiveApplications.mockResolvedValueOnce([]);
+    listApplications.mockResolvedValueOnce([]);
     const response = await GET(
       new Request("http://localhost/api/applications?search=%20AcMe%20"),
     );
     expect(response.status).toBe(200);
-    expect(listActiveApplications).toHaveBeenCalledWith({ search: "AcMe" });
+    expect(listApplications).toHaveBeenCalledWith({
+      view: "active",
+      search: "AcMe",
+    });
+  });
+
+  it("parses a closed view", async () => {
+    listApplications.mockResolvedValueOnce([]);
+    const response = await GET(
+      new Request("http://localhost/api/applications?view=closed"),
+    );
+    expect(response.status).toBe(200);
+    expect(listApplications).toHaveBeenCalledWith({
+      view: "closed",
+      search: undefined,
+    });
   });
 
   it("rejects an invalid search without calling the service", async () => {
@@ -92,11 +110,30 @@ describe("GET /api/applications", () => {
     expect(await response.json()).toMatchObject({
       error: { code: "INVALID_REQUEST" },
     });
-    expect(listActiveApplications).not.toHaveBeenCalled();
+    expect(listApplications).not.toHaveBeenCalled();
   });
 
+  it.each([
+    "view=",
+    "view=all",
+    "view=active&view=closed",
+    "view=active&view=active",
+  ])(
+    "rejects an invalid or ambiguous view (%s) without calling the service",
+    async (query) => {
+      const response = await GET(
+        new Request(`http://localhost/api/applications?${query}`),
+      );
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({
+        error: { code: "INVALID_REQUEST" },
+      });
+      expect(listApplications).not.toHaveBeenCalled();
+    },
+  );
+
   it("maps failures to a client-safe structured error", async () => {
-    listActiveApplications.mockRejectedValueOnce(new Error("database-secret"));
+    listApplications.mockRejectedValueOnce(new Error("database-secret"));
     const response = await GET(
       new Request("http://localhost/api/applications"),
     );

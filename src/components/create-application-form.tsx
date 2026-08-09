@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { ApplicationStatus } from "@/lib/application";
-import { activeApplicationsQueryKey } from "@/lib/application-query";
+import { applicationsQueryRoot } from "@/lib/application-query";
 
 const formSchema = z
   .object({
@@ -109,7 +109,7 @@ export function CreateApplicationForm() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: activeApplicationsQueryKey,
+        queryKey: applicationsQueryRoot,
       });
     },
   });

@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { ApplicationStatus } from "@/lib/application";
+import {
+  ApplicationListView,
+  type ApplicationListView as ApplicationListViewValue,
+  ApplicationStatus,
+} from "@/lib/application";
 import {
   insertApplicationWithHistory,
   type JobApplication,
@@ -11,26 +15,43 @@ const activeApplicationStatuses = [
   ApplicationStatus.Applied,
   ApplicationStatus.Interviewing,
   ApplicationStatus.Offer,
-];
+] as const;
 
-export const activeApplicationSchema = z.strictObject({
+const closedApplicationStatuses = [
+  ApplicationStatus.Accepted,
+  ApplicationStatus.Rejected,
+  ApplicationStatus.Withdrawn,
+  ApplicationStatus.Archived,
+] as const;
+
+const applicationStatusesByView = {
+  [ApplicationListView.Active]: activeApplicationStatuses,
+  [ApplicationListView.Closed]: closedApplicationStatuses,
+} satisfies Record<ApplicationListViewValue, readonly ApplicationStatus[]>;
+
+const applicationListItemFields = {
   id: z.uuid(),
   companyName: z.string(),
   positionTitle: z.string(),
   appliedDate: z.iso.date(),
-  status: z.enum(
-    activeApplicationStatuses as [
-      ApplicationStatus.Applied,
-      ApplicationStatus.Interviewing,
-      ApplicationStatus.Offer,
-    ],
-  ),
+};
+
+const activeApplicationSchema = z.strictObject({
+  ...applicationListItemFields,
+  status: z.enum(activeApplicationStatuses),
 });
+const closedApplicationSchema = z.strictObject({
+  ...applicationListItemFields,
+  status: z.enum(closedApplicationStatuses),
+});
+const activeApplicationListSchema = z.array(activeApplicationSchema);
+const closedApplicationListSchema = z.array(closedApplicationSchema);
+export type ApplicationListItem =
+  | z.infer<typeof activeApplicationSchema>
+  | z.infer<typeof closedApplicationSchema>;
 
-export const activeApplicationListSchema = z.array(activeApplicationSchema);
-export type ActiveApplication = z.infer<typeof activeApplicationSchema>;
-
-export const listActiveApplicationsInputSchema = z.strictObject({
+export const listApplicationsInputSchema = z.strictObject({
+  view: z.enum(ApplicationListView).default(ApplicationListView.Active),
   search: z
     .string()
     .trim()
@@ -81,13 +102,16 @@ export async function createApplication(
   return created;
 }
 
-export async function listActiveApplications(
+export async function listApplications(
   input: unknown = {},
-): Promise<ActiveApplication[]> {
-  const criteria = listActiveApplicationsInputSchema.parse(input);
+): Promise<ApplicationListItem[]> {
+  const criteria = listApplicationsInputSchema.parse(input);
+  const { view, search } = criteria;
   const applications = await selectApplicationsByStatuses(
-    activeApplicationStatuses,
-    criteria,
+    [...applicationStatusesByView[view]],
+    { search },
   );
-  return activeApplicationListSchema.parse(applications);
+  return view === ApplicationListView.Active
+    ? activeApplicationListSchema.parse(applications)
+    : closedApplicationListSchema.parse(applications);
 }

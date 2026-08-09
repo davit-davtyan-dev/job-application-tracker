@@ -30,9 +30,9 @@ describe("tracker landing page", () => {
     ).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Search applications" }),
-    ).toHaveAttribute("href", "#active-application-search");
+    ).toHaveAttribute("href", "#application-search");
     expect(
       screen.getByRole("searchbox", { name: "Search active applications" }),
-    ).toHaveAttribute("aria-controls", "active-application-results");
+    ).toHaveAttribute("aria-controls", "application-results");
   });
 });

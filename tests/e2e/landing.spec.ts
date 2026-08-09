@@ -18,11 +18,11 @@ test("shows the application navigation and primary workflows", async ({
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Search applications" }),
-  ).toHaveAttribute("href", "#active-application-search");
+  ).toHaveAttribute("href", "#application-search");
   await expect(
     page.getByRole("searchbox", { name: "Search active applications" }),
-  ).toHaveAttribute("aria-controls", "active-application-results");
+  ).toHaveAttribute("aria-controls", "application-results");
   await expect(page.locator("#create-application")).toBeVisible();
-  await expect(page.locator("#active-application-search")).toBeVisible();
-  await expect(page.locator("#active-application-results")).toBeVisible();
+  await expect(page.locator("#application-search")).toBeVisible();
+  await expect(page.locator("#application-results")).toBeVisible();
 });

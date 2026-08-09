@@ -118,11 +118,11 @@ describe("ActiveApplicationList", () => {
     await userEvent.type(input, "  Acme & Sons  ");
     expect(await screen.findByText("Acme & Sons")).toBeVisible();
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/applications?search=Acme+%26+Sons",
+      "/api/applications?view=active&search=Acme+%26+Sons",
     );
     await userEvent.click(screen.getByRole("button", { name: "Clear" }));
     expect(input).toHaveValue("");
-    expect(fetchMock).toHaveBeenCalledWith("/api/applications");
+    expect(fetchMock).toHaveBeenCalledWith("/api/applications?view=active");
   });
 
   it("shows a search-specific empty state", async () => {
@@ -162,7 +162,7 @@ describe("ActiveApplicationList", () => {
     });
     fireEvent.change(input, { target: { value: "older" } });
     fireEvent.change(input, { target: { value: "current" } });
-    resolvers.get("/api/applications?search=current")?.(
+    resolvers.get("/api/applications?view=active&search=current")?.(
       new Response(
         JSON.stringify({
           applications: [
@@ -179,7 +179,7 @@ describe("ActiveApplicationList", () => {
       ),
     );
     expect(await screen.findByText("Current result")).toBeVisible();
-    resolvers.get("/api/applications?search=older")?.(
+    resolvers.get("/api/applications?view=active&search=older")?.(
       new Response(
         JSON.stringify({
           applications: [
@@ -197,5 +197,103 @@ describe("ActiveApplicationList", () => {
     );
     expect(screen.getByText("Current result")).toBeVisible();
     expect(screen.queryByText("Stale result")).toBeNull();
+  });
+
+  it("switches accessibly between keyed views while preserving search and cached results", async () => {
+    const fetchMock = vi.fn((url: string) =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            applications: url.includes("view=closed")
+              ? [
+                  {
+                    id: "closed",
+                    companyName: "Closed Co",
+                    positionTitle: "Closed role",
+                    appliedDate: "2026-08-08",
+                    status: "Rejected",
+                  },
+                ]
+              : [
+                  {
+                    id: "active",
+                    companyName: "Active Co",
+                    positionTitle: "Active role",
+                    appliedDate: "2026-08-09",
+                    status: "Applied",
+                  },
+                ],
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    renderList();
+
+    const active = screen.getByRole("button", { name: "Active" });
+    const closed = screen.getByRole("button", { name: "Closed" });
+    expect(active).toHaveAttribute("aria-pressed", "true");
+    expect(closed).toHaveAttribute("aria-pressed", "false");
+    expect(await screen.findByText("Active role")).toBeVisible();
+
+    const search = screen.getByRole("searchbox", {
+      name: "Search active applications",
+    });
+    await userEvent.type(search, "Acme & Sons");
+    await userEvent.click(closed);
+    expect(search).toHaveValue("Acme & Sons");
+    expect(closed).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("heading", { name: "Closed applications" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("searchbox", { name: "Search closed applications" }),
+    ).toBe(search);
+    expect(await screen.findByText("Closed role")).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/applications?view=closed&search=Acme+%26+Sons",
+    );
+
+    await userEvent.click(active);
+    expect(await screen.findByText("Active role")).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/applications?view=active&search=Acme+%26+Sons",
+    );
+  });
+
+  it("uses selected-view loading, count, empty, error, and retry copy", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ applications: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(new Response("no", { status: 500 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            applications: [
+              {
+                id: "closed",
+                companyName: "Done Co",
+                positionTitle: "Done role",
+                appliedDate: "2026-08-09",
+                status: "Accepted",
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    renderList();
+    await screen.findByText(/No active applications yet/);
+    await userEvent.click(screen.getByRole("button", { name: "Closed" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Closed applications could not be loaded",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("Done role")).toBeVisible();
+    expect(screen.getByText("1 closed")).toBeVisible();
   });
 });

@@ -6,44 +6,77 @@ import { Search, X } from "lucide-react";
 import { useState } from "react";
 
 import {
-  activeApplicationsSearchQueryKey,
-  fetchActiveApplications,
+  applicationsQueryKey,
+  fetchApplications,
   normalizeApplicationSearch,
 } from "@/lib/application-query";
+import { ApplicationListView } from "@/lib/application";
 
 export function ActiveApplicationList() {
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<ApplicationListView>(
+    ApplicationListView.Active,
+  );
   const normalizedSearch = normalizeApplicationSearch(search);
+  const selectedLabel =
+    view === ApplicationListView.Active ? "Active" : "Closed";
+  const selectedLabelLower = selectedLabel.toLowerCase();
   const applications = useQuery({
-    queryKey: activeApplicationsSearchQueryKey(normalizedSearch),
-    queryFn: () => fetchActiveApplications(normalizedSearch),
+    queryKey: applicationsQueryKey(view, normalizedSearch),
+    queryFn: () => fetchApplications(view, normalizedSearch),
   });
 
   return (
-    <section aria-labelledby="active-applications-heading">
-      <div className="flex items-center justify-between gap-4">
+    <section aria-labelledby="applications-heading">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-emerald-700">Your pipeline</p>
           <h2
-            id="active-applications-heading"
+            id="applications-heading"
             className="text-2xl font-semibold text-slate-950"
           >
-            Active applications
+            {selectedLabel} applications
           </h2>
         </div>
         {applications.data && applications.data.length > 0 && (
           <p className="text-sm text-slate-500">
-            {applications.data.length} active
+            {applications.data.length} {selectedLabelLower}
           </p>
         )}
+      </div>
+
+      <div
+        className="mt-6 inline-flex rounded-xl border border-slate-300 bg-slate-50 p-1"
+        role="group"
+        aria-label="Application view"
+      >
+        {Object.values(ApplicationListView).map((option) => {
+          const label =
+            option === ApplicationListView.Active ? "Active" : "Closed";
+          return (
+            <button
+              key={option}
+              type="button"
+              aria-pressed={view === option}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                view === option
+                  ? "bg-slate-950 text-white"
+                  : "text-slate-700 hover:bg-white"
+              }`}
+              onClick={() => setView(option)}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
       <div className="mt-6 max-w-xl">
         <label
           className="text-sm font-medium text-slate-700"
-          htmlFor="active-application-search"
+          htmlFor="application-search"
         >
-          Search active applications
+          Search {selectedLabelLower} applications
         </label>
         <div className="relative mt-2">
           <Search
@@ -51,13 +84,13 @@ export function ActiveApplicationList() {
             aria-hidden="true"
           />
           <input
-            id="active-application-search"
+            id="application-search"
             className="h-11 w-full rounded-xl border border-slate-300 bg-white pr-24 pl-10 text-base text-slate-950 outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Company or position title"
-            aria-controls="active-application-results"
+            aria-controls="application-results"
           />
           {normalizedSearch && (
             <button
@@ -72,15 +105,17 @@ export function ActiveApplicationList() {
         </div>
       </div>
 
-      <div id="active-application-results" aria-live="polite">
+      <div id="application-results" aria-live="polite">
         {applications.isPending && (
           <p className="mt-6 rounded-2xl bg-slate-100 p-6" role="status">
-            Loading active applications…
+            Loading {selectedLabelLower} applications…
           </p>
         )}
         {applications.isError && (
           <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-6">
-            <p role="alert">Active applications could not be loaded.</p>
+            <p role="alert">
+              {selectedLabel} applications could not be loaded.
+            </p>
             <button
               className="mt-3 rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white"
               type="button"
@@ -93,8 +128,10 @@ export function ActiveApplicationList() {
         {applications.isSuccess && applications.data.length === 0 && (
           <p className="mt-6 rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-600">
             {normalizedSearch
-              ? `No active applications match “${normalizedSearch}”.`
-              : "No active applications yet. Add one to start your pipeline."}
+              ? `No ${selectedLabelLower} applications match “${normalizedSearch}”.`
+              : view === ApplicationListView.Active
+                ? "No active applications yet. Add one to start your pipeline."
+                : "No closed applications yet."}
           </p>
         )}
         {applications.isSuccess && applications.data.length > 0 && (

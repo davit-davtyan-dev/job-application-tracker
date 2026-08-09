@@ -14,7 +14,7 @@ import {
 import {
   CompanyNotFoundError,
   createApplication,
-  listActiveApplications,
+  listApplications,
 } from "@/services/application";
 
 const url = process.env.TEST_DATABASE_URL;
@@ -149,7 +149,7 @@ describe("createApplication", () => {
   });
 });
 
-describe("listActiveApplications", () => {
+describe("listApplications", () => {
   beforeEach(async () => {
     await db.delete(activityHistory);
     await db.delete(jobApplications);
@@ -202,7 +202,7 @@ describe("listActiveApplications", () => {
     ];
     await db.insert(jobApplications).values(applications);
 
-    expect(await listActiveApplications()).toEqual([
+    expect(await listApplications()).toEqual([
       {
         id: expect.any(String),
         companyName: "List Co",
@@ -228,7 +228,7 @@ describe("listActiveApplications", () => {
   });
 
   it("returns an empty list when there are no active applications", async () => {
-    expect(await listActiveApplications()).toEqual([]);
+    expect(await listApplications()).toEqual([]);
   });
 
   it("searches company or title by trimmed case-insensitive substring while preserving active ordering", async () => {
@@ -270,22 +270,74 @@ describe("listActiveApplications", () => {
       },
     ]);
 
-    const matches = await listActiveApplications({
+    const matches = await listApplications({
       search: "  nOrThStAr  ",
     });
     expect(matches.map(({ id }) => id)).toEqual([orderedIds[1], orderedIds[0]]);
-    expect(await listActiveApplications({ search: "no matches" })).toEqual([]);
-    expect(await listActiveApplications({ search: "   " })).toHaveLength(3);
+    expect(await listApplications({ search: "no matches" })).toEqual([]);
+    expect(await listApplications({ search: "   " })).toHaveLength(3);
   });
 
   it("rejects overlong or unexpected search criteria before querying", async () => {
     await expect(
-      listActiveApplications({ search: "x".repeat(201) }),
+      listApplications({ search: "x".repeat(201) }),
     ).rejects.toBeDefined();
     await expect(
-      listActiveApplications({ search: "x", unexpected: true }),
+      listApplications({ search: "x", unexpected: true }),
     ).rejects.toBeDefined();
   });
+
+  it("returns exactly the closed partition and composes it with search", async () => {
+    const [company] = await db
+      .insert(companies)
+      .values({ name: "Closed Search Co" })
+      .returning();
+    await db.insert(jobApplications).values([
+      ...(
+        [
+          ApplicationStatus.Accepted,
+          ApplicationStatus.Rejected,
+          ApplicationStatus.Withdrawn,
+          ApplicationStatus.Archived,
+        ] as const
+      ).map((status, index) => ({
+        companyId: company!.id,
+        positionTitle: `Closed match ${status}`,
+        appliedDate: `2026-08-0${index + 1}`,
+        status,
+      })),
+      {
+        companyId: company!.id,
+        positionTitle: "Active match",
+        appliedDate: "2026-08-09",
+        status: ApplicationStatus.Applied,
+      },
+    ]);
+
+    const closed = await listApplications({ view: "closed" });
+    expect(closed.map(({ status }) => status)).toEqual([
+      ApplicationStatus.Archived,
+      ApplicationStatus.Withdrawn,
+      ApplicationStatus.Rejected,
+      ApplicationStatus.Accepted,
+    ]);
+    expect(
+      await listApplications({ view: "closed", search: "  WITHDRAWN  " }),
+    ).toMatchObject([{ status: ApplicationStatus.Withdrawn }]);
+    expect(
+      await listApplications({ view: "active", search: "match" }),
+    ).toMatchObject([{ status: ApplicationStatus.Applied }]);
+    expect(
+      await listApplications({ view: "closed", search: "no matches" }),
+    ).toEqual([]);
+  });
+
+  it.each([{ view: "all" }, { view: "" }, { view: "closed", extra: true }])(
+    "rejects invalid view criteria before querying: %j",
+    async (input) => {
+      await expect(listApplications(input)).rejects.toBeDefined();
+    },
+  );
 });
 
 afterAll(() => client.end());
