@@ -7,7 +7,7 @@ import Home from "./page";
 describe("tracker landing page", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("identifies the application and its current readiness", () => {
+  it("renders the application navigation and primary workflows", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() => new Promise(() => undefined)),
