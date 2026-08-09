@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
-- **Active Feature**: `F05`
+- **Phase**: `passing`
+- **Active Feature**: `none`
 - **Generator Commit**: `d7a40faab134fd82bcadde2348961785d2842aeb`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `PASS`
 
 ## Active Sprint Contract
 
@@ -42,36 +42,36 @@
 
 ## Evaluator Report
 
-- **Verdict**: `pending`
-- **Commit Verified**: `pending`
-- **Checks Run**: `pending independent clean-workspace evaluation`
-- **Findings**: `pending`
-- **Required Fix**: `pending`
+- **Verdict**: `PASS`
+- **Commit Verified**: `d7a40faab134fd82bcadde2348961785d2842aeb`
+- **Checks Run**: `Isolated exact-commit git archive using Node 22.23.1 and pnpm 11.20.0: targeted Vitest (5 files/44 tests); focused filters Playwright (1/1); F01–F04 Playwright regressions (4/4); pnpm format:check; pnpm typecheck; pnpm lint; full pnpm test (8 files/56 tests); full pnpm test:e2e (5/5); pnpm build.`
+- **Findings**: `All F05 acceptance criteria and architectural constraints pass. Exact view parsing/defaulting and service-owned status partitions are validated; search/filter predicates compose with preserved projection and ordering; TanStack Query keys isolate view/search state; accessible controls and selected-view states are covered; POST and F01–F04 regressions remain intact. No source or project-state files were modified during evaluation.`
+- **Required Fix**: `none`
 
 ## Current Status
 
-- **Active**: `F05 — evaluating Generator commit d7a40faab134fd82bcadde2348961785d2842aeb`
-- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS)`
+- **Active**: `none`
+- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F04 are passing. F05 implementation is committed at `d7a40faab134fd82bcadde2348961785d2842aeb` and awaits independent Evaluator verification.
+F05 passed independent evaluation at exact Generator commit `d7a40faab134fd82bcadde2348961785d2842aeb`. F00 through F05 are passing and no feature is active.
 
 ## Next Step
 
-1. `Evaluator verifies exact Generator commit d7a40faab134fd82bcadde2348961785d2842aeb in a clean workspace and returns PASS, FAIL, or BLOCKED.`
+1. `Orchestrator may activate F06 in a new sprint when requested.`
 
 ## Verification Status
 
-- **Build**: `PASS at 60a739174effc0f8e5745abce8faf651c15876af`
-- **Lint**: `PASS at 60a739174effc0f8e5745abce8faf651c15876af`
-- **Unit/Integration**: `PASS (45 tests) at 60a739174effc0f8e5745abce8faf651c15876af`
-- **E2E**: `PASS (4/4) at 60a739174effc0f8e5745abce8faf651c15876af`
+- **Build**: `PASS at d7a40faab134fd82bcadde2348961785d2842aeb`
+- **Lint**: `PASS at d7a40faab134fd82bcadde2348961785d2842aeb`
+- **Unit/Integration**: `PASS (56 tests) at d7a40faab134fd82bcadde2348961785d2842aeb`
+- **E2E**: `PASS (5/5) at d7a40faab134fd82bcadde2348961785d2842aeb`
 
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F05 as a two-state Active/Closed filter; Active is Applied/Interviewing/Offer and remains the default; Closed is Accepted/Rejected/Withdrawn/Archived; filter composes with F04 search; defer all-status/per-status filters, URL persistence, and status mutation.`
-- **Context Summary**: `F00 through F04 are passing. F05 Generator implementation and tests are committed at d7a40faab134fd82bcadde2348961785d2842aeb; targeted checks passed; independent full evaluation is pending.`
+- **Context Summary**: `F00 through F05 are passing. F05 Active/Closed filtering was independently verified at d7a40faab134fd82bcadde2348961785d2842aeb. No feature is active.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator verifies exact commit d7a40faab134fd82bcadde2348961785d2842aeb without modifying implementation or orchestration state.`
+- **Next Owner**: `Orchestrator activates F06 only when requested.`
