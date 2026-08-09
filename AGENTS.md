@@ -99,6 +99,7 @@ not_started -> active -> evaluating -> passing
 - **Atomic Logic**: Operations updating multiple related records (e.g., status changes and history entries) must use database transactions.
 - **No `any`**: The use of the `any` type is prohibited unless explicitly justified.
 - **Data Integrity**: All data must be validated on the server with Zod, regardless of client-side checks.
+- **Pragmatic DRY**: Do not duplicate business rules, validation schemas, database logic, or shared domain transformations. Extract repeated implementation when it has the same meaning and is expected to evolve together. Small, incidental duplication is acceptable when abstraction would increase coupling or reduce clarity.
 - **Atomic Commits**: Each logical operation (e.g., "add endpoint and update tests") must be a single git commit.
 
 ## **Topic Documents**
