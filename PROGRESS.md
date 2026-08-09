@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
+- **Phase**: `active`
 - **Active Feature**: `F04`
 - **Generator Commit**: `6dc64877aba9b85a5b451b1596422c1cff44ac28`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `FAIL`
 
 ## Active Sprint Contract
 
@@ -42,11 +42,11 @@
 
 ## Evaluator Report
 
-- **Verdict**: `pending`
-- **Commit Verified**: `pending`
-- **Checks Run**: `pending`
-- **Findings**: `pending`
-- **Required Fix**: `pending`
+- **Verdict**: `FAIL`
+- **Commit Verified**: `6dc64877aba9b85a5b451b1596422c1cff44ac28`
+- **Checks Run**: `Clean detached workspace: PASS git diff --check; pnpm format:check; pnpm lint; pnpm typecheck; focused Vitest; full pnpm test (8 files/45 tests); focused search Playwright 1/1; list/create Playwright regressions 2/2; pnpm build. FAIL full pnpm test:e2e: 3 passed, 1 failed.`
+- **Findings**: `The full Playwright suite deterministically fails tests/e2e/landing.spec.ts because src/app/page.tsx removed the established level-one heading "Keep every application moving forward" and the expected "Workspace ready" content. This violates F04 criterion 8 requiring all existing browser regressions to pass. The earlier web-server startup issue was sandbox localhost EPERM rather than an implementation defect. /usr/local/bin/node and pnpm exec node report the required 22.23.1; pnpm's Node 26 engine warning is misleading and did not affect verification.`
+- **Required Fix**: `One bounded correction: restore the established landing hero/foundation content in src/app/page.tsx, including the semantic h1 and Workspace ready indicator, while retaining the new search link/control and all F04 behavior. Update only directly affected tests if necessary, then prove with pnpm test:e2e plus directly affected static/unit checks and produce one atomic correction commit for re-evaluation.`
 
 ## Current Status
 
@@ -56,11 +56,11 @@
 
 ## Current Session Summary
 
-F04 is evaluating at exact Generator commit `6dc64877aba9b85a5b451b1596422c1cff44ac28`. F00 through F03 remain passing; only an independent Evaluator PASS can complete F04.
+F04 returned to active after Evaluator FAIL on exact Generator commit `6dc64877aba9b85a5b451b1596422c1cff44ac28`. F00 through F03 remain passing. The Generator owns the single bounded landing-page regression correction recorded above.
 
 ## Next Step
 
-1. `Evaluator verifies exact Generator commit 6dc64877aba9b85a5b451b1596422c1cff44ac28 in a clean workspace against every F04 criterion and the full completion pipeline.`
+1. `Generator restores the established landing h1 and Workspace ready content without changing F04 search behavior, verifies the full browser suite, and returns one atomic correction commit.`
 
 ## Verification Status
 
@@ -74,4 +74,4 @@ F04 is evaluating at exact Generator commit `6dc64877aba9b85a5b451b1596422c1cff4
 - **Decisions Made**: `Activate F04 as case-insensitive trimmed substring search across active application company names and position titles; blank search restores the full active list; preserve F03 projection, ordering, and active-only semantics; defer filtering, fuzzy ranking, highlighting, pagination, and URL persistence.`
 - **Context Summary**: `F00 through F03 are passing. F04 is the sole active feature with a complete sprint contract; Generator implementation and independent evaluation remain.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator verifies exact Generator commit 6dc64877aba9b85a5b451b1596422c1cff44ac28.`
+- **Next Owner**: `Generator applies the bounded Evaluator correction.`
