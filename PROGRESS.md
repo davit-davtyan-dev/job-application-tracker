@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
-- **Active Feature**: `F04`
-- **Generator Commit**: `6dc64877aba9b85a5b451b1596422c1cff44ac28`
-- **Evaluator Verdict**: `FAIL`
+- **Phase**: `passing`
+- **Active Feature**: `none`
+- **Generator Commit**: `60a739174effc0f8e5745abce8faf651c15876af`
+- **Evaluator Verdict**: `PASS`
 
 ## Active Sprint Contract
 
@@ -35,43 +35,43 @@
 
 ## Generator Report
 
-- **Commit**: `6dc64877aba9b85a5b451b1596422c1cff44ac28`
-- **Changed Files**: `11 files: server-only application query; application service and PostgreSQL tests; GET route and tests; shared TanStack Query key/fetch utility; active-list search UI and tests; landing-page composition/tests; tests/e2e/search.spec.ts.`
-- **Tests Run**: `PASS: required focused Vitest command (29 tests across five files); focused active-list component Vitest 6/6; search Playwright 1/1; list/create regression Playwright 2/2 on unchanged rerun; pnpm format:check; pnpm lint; pnpm typecheck; git diff --check. One earlier regression Playwright invocation failed during transient Next web-server startup before tests ran, then passed unchanged on immediate rerun.`
-- **Known Risks**: `Evaluator must authoritatively run the exact-commit clean-workspace full pipeline and probe the reported transient browser web-server startup. Generator environment reported Node 26.0.0 while package.json requests Node 22.23.1.`
+- **Commit**: `60a739174effc0f8e5745abce8faf651c15876af`
+- **Changed Files**: `tests/e2e/landing.spec.ts only; stale removed hero/readiness assertions now cover the intentional current navigation, primary workflows, and accessible search/results linkage. src/app/page.tsx and orchestration state files were not changed by the Generator.`
+- **Tests Run**: `PASS: pnpm test src/app/page.test.tsx (1/1); pnpm format:check; pnpm typecheck; pnpm lint; pnpm test:e2e (4/4); git diff --check.`
+- **Known Risks**: `Existing Node v26 versus requested v22.23.1 engine warning. The existing ESLint ignore configuration can scan generated .next-e2e output if lint runs after E2E without isolating that artifact.`
 
 ## Evaluator Report
 
-- **Verdict**: `FAIL`
-- **Commit Verified**: `6dc64877aba9b85a5b451b1596422c1cff44ac28`
-- **Checks Run**: `Clean detached workspace: PASS git diff --check; pnpm format:check; pnpm lint; pnpm typecheck; focused Vitest; full pnpm test (8 files/45 tests); focused search Playwright 1/1; list/create Playwright regressions 2/2; pnpm build. FAIL full pnpm test:e2e: 3 passed, 1 failed.`
-- **Findings**: `The full Playwright suite deterministically fails tests/e2e/landing.spec.ts because src/app/page.tsx removed the established level-one heading "Keep every application moving forward" and the expected "Workspace ready" content. This violates F04 criterion 8 requiring all existing browser regressions to pass. The earlier web-server startup issue was sandbox localhost EPERM rather than an implementation defect. /usr/local/bin/node and pnpm exec node report the required 22.23.1; pnpm's Node 26 engine warning is misleading and did not affect verification.`
-- **Required Fix**: `One bounded correction: restore the established landing hero/foundation content in src/app/page.tsx, including the semantic h1 and Workspace ready indicator, while retaining the new search link/control and all F04 behavior. Update only directly affected tests if necessary, then prove with pnpm test:e2e plus directly affected static/unit checks and produce one atomic correction commit for re-evaluation.`
+- **Verdict**: `PASS`
+- **Commit Verified**: `60a739174effc0f8e5745abce8faf651c15876af`
+- **Checks Run**: `Clean exported workspace: PASS git diff --check; focused Vitest (5 files/33 tests); focused search Playwright (1/1); pnpm format:check; pnpm typecheck; pnpm lint; full pnpm test (8 files/45 tests); full pnpm test:e2e (4/4); pnpm build.`
+- **Findings**: `All F04 acceptance criteria and architectural constraints pass. The intentional src/app/page.tsx content remains unchanged; the landing E2E validates the current navigation, primary workflows, and accessible search/results linkage. No implementation or project-state files were modified during evaluation.`
+- **Required Fix**: `none`
 
 ## Current Status
 
-- **Active**: `F04 — search active applications by company name or position title`
-- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS)`
+- **Active**: `none`
+- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F04 returned to active after Evaluator FAIL on exact Generator commit `6dc64877aba9b85a5b451b1596422c1cff44ac28`. F00 through F03 remain passing. The Generator owns the single bounded landing-page regression correction recorded above.
+F04 passed independent evaluation at exact Generator correction commit `60a739174effc0f8e5745abce8faf651c15876af`. The user intentionally retained the landing-page changes and aligned the page unit test in commit `6acd3a76440ddb39e72cb3bd42a175acb98a610d`; those changes were not restored from `d1e65b4524a1e7206038086a55da9af0d6a47828`. F00 through F04 are passing and no feature is active.
 
 ## Next Step
 
-1. `Generator restores the established landing h1 and Workspace ready content without changing F04 search behavior, verifies the full browser suite, and returns one atomic correction commit.`
+1. `Orchestrator may activate F05 in a new sprint when requested.`
 
 ## Verification Status
 
-- **Build**: `Baseline passing; F04 pending`
-- **Lint**: `Baseline passing; F04 pending`
-- **Unit/Integration**: `Baseline passing (38 tests); F04 pending`
-- **E2E**: `Baseline passing (3/3); F04 pending`
+- **Build**: `PASS at 60a739174effc0f8e5745abce8faf651c15876af`
+- **Lint**: `PASS at 60a739174effc0f8e5745abce8faf651c15876af`
+- **Unit/Integration**: `PASS (45 tests) at 60a739174effc0f8e5745abce8faf651c15876af`
+- **E2E**: `PASS (4/4) at 60a739174effc0f8e5745abce8faf651c15876af`
 
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F04 as case-insensitive trimmed substring search across active application company names and position titles; blank search restores the full active list; preserve F03 projection, ordering, and active-only semantics; defer filtering, fuzzy ranking, highlighting, pagination, and URL persistence.`
-- **Context Summary**: `F00 through F03 are passing. F04 is the sole active feature with a complete sprint contract; Generator implementation and independent evaluation remain.`
+- **Context Summary**: `F00 through F04 are passing. F04 search and the intentional landing-page baseline were independently verified at 60a739174effc0f8e5745abce8faf651c15876af. No feature is active.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator applies the bounded Evaluator correction.`
+- **Next Owner**: `Orchestrator activates F05 only when requested.`
