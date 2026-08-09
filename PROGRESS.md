@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
+- **Phase**: `active`
 - **Active Feature**: `F06`
 - **Generator Commit**: `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `FAIL`
 
 ## Active Sprint Contract
 
@@ -43,11 +43,11 @@
 
 ## Evaluator Report
 
-- **Verdict**: `pending`
-- **Commit Verified**: `pending`
-- **Checks Run**: `pending`
-- **Findings**: `pending`
-- **Required Fix**: `pending`
+- **Verdict**: `FAIL`
+- **Commit Verified**: `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1`
+- **Checks Run**: `Isolated exact-commit archive: focused Vitest PASS (63/63); full Vitest PASS (75/75); F06 Playwright PASS (1/1); F01–F05 Playwright regressions FAIL (3 failed/2 passed); pnpm lint PASS; pnpm typecheck PASS; pnpm build PASS; git diff --check PASS; pnpm format:check FAIL.`
+- **Findings**: `The per-card visually hidden label repeats the position title and makes existing text locators ambiguous in filters/search/list E2E tests. src/lib/application-query.ts is not Prettier-clean. Contracted failed-mutation coverage is absent from the component test and status-transitions E2E test. Architecture inspection otherwise passed strict layering, Zod validation, shared status vocabulary, atomic transaction, idempotence, UUID/UTC behavior, rollback, dependency/schema constraints, and no-any.`
+- **Required Fix**: `Bounded correction only: preserve an explicit accessible status-selector name without duplicating visible position-title text semantics (or narrowly harden existing E2E locators); format src/lib/application-query.ts; add a component test showing failed PATCH retains persisted status and permits another selection; add Playwright coverage that forces a failed status request, verifies accessible recoverable feedback, retries, and confirms persistence. Prove with focused component/F06 E2E tests, F01–F05 Playwright regressions, format:check, and affected static checks.`
 
 ## Current Status
 
@@ -57,12 +57,12 @@
 
 ## Current Session Summary
 
-F00 through F05 are passing. F06 Generator commit `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1` is awaiting independent evaluation; Generator verification gaps are recorded above.
+F00 through F05 are passing. F06 returned to active after Evaluator FAIL on `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1`; one bounded correction is assigned.
 
 ## Next Step
 
-1. `Evaluator verifies exact Generator commit f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1 in a clean workspace, including every acceptance criterion and the full completion pipeline.`
-2. `Orchestrator accepts only an Evaluator PASS; on FAIL, return one bounded correction to the Generator.`
+1. `Generator applies only the Evaluator's bounded accessibility/regression, formatting, and failure/retry-test corrections and returns one correction commit.`
+2. `Orchestrator sends the resulting exact commit containing F06 implementation plus correction to the Evaluator and accepts only PASS.`
 
 ## Verification Status
 
@@ -74,6 +74,6 @@ F00 through F05 are passing. F06 Generator commit `f99bcaa1cbd17bd2fe4aafcd6600a
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F06 with a dedicated status endpoint; allow every fixed status without transition restrictions; atomically persist each real change with one status_changed history row; treat same-status requests as idempotent without history or updated_at churn; refresh TanStack Query list caches so cards move between Active and Closed views.`
-- **Context Summary**: `F00 through F05 are passing. F06 is evaluating at exact Generator commit f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1; independent verification must cover the Generator's incomplete database, E2E, lint, full-test, and build checks.`
+- **Context Summary**: `F00 through F05 are passing. F06 is active after Evaluator FAIL on f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1. Core behavior and architecture passed; bounded corrections are limited to selector text semantics, Prettier, and mutation failure/retry coverage.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator verifies exact Generator commit f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1 without modifying implementation or project state.`
+- **Next Owner**: `Generator applies the recorded bounded correction without changing project-state files.`
