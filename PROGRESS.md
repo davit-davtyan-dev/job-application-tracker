@@ -10,9 +10,9 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F03`
-- **Generator Commit**: `pending`
+- **Generator Commit**: `3dae583b4ae05a52684934f0368fca9e0b952b25`
 - **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
@@ -34,10 +34,10 @@
 
 ## Generator Report
 
-- **Commit**: `pending`
-- **Changed Files**: `pending`
-- **Tests Run**: `pending`
-- **Known Risks**: `pending`
+- **Commit**: `3dae583b4ae05a52684934f0368fca9e0b952b25`
+- **Changed Files**: `13 files: application GET route/tests; list database query, service, and PostgreSQL tests; shared application query key/fetch utility; active-list component/tests; creation-form invalidation integration/tests; landing-page composition/tests; tests/e2e/list-view.spec.ts.`
+- **Tests Run**: `PASS: pnpm format:check; pnpm lint; pnpm typecheck; focused non-database Vitest (4 files/13 tests); full PostgreSQL-backed pnpm test (8 files/38 tests). Not completed in Generator sandbox: Playwright command handoff stalled before execution; production build was denied Turbopack port binding while processing PostCSS.`
+- **Known Risks**: `Evaluator must authoritatively run the new focused Playwright spec, full browser regression suite, and production build outside the Generator's restricted sandbox. No known implementation defect remains from Generator verification.`
 
 ## Evaluator Report
 
@@ -49,17 +49,17 @@
 
 ## Current Status
 
-- **Active**: `F03 — default active-application list view`
+- **Evaluating**: `F03 — default active-application list view at 3dae583b4ae05a52684934f0368fca9e0b952b25`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F03 is active with a strict sprint contract for the default active-application list. F00 through F02 remain passing; Generator implementation is pending.
+F03 implementation is committed at `3dae583b4ae05a52684934f0368fca9e0b952b25` and is evaluating. Generator static and full PostgreSQL-backed Vitest checks pass; independent clean-workspace Playwright, build, and acceptance verification are pending.
 
 ## Next Step
 
-1. `Generator implements the F03 sprint contract and returns one logical commit with targeted verification evidence.`
+1. `Evaluator verifies exact Generator commit 3dae583b4ae05a52684934f0368fca9e0b952b25 in a clean workspace and returns PASS, FAIL, or BLOCKED.`
 
 ## Verification Status
 
@@ -71,6 +71,6 @@ F03 is active with a strict sprint contract for the default active-application l
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F03 as an active-only default list; define active statuses as Applied, Interviewing, and Offer; require deterministic applied-date/creation-time/ID descending order; reuse TanStack Query invalidation after F02 creation; defer all search/filter/status/detail/history/pagination behavior.`
-- **Context Summary**: `F00, F01, and F02 are passing. F03 is the sole active feature with Generator work pending.`
+- **Context Summary**: `F00, F01, and F02 are passing. F03 is the sole evaluating feature at exact Generator commit 3dae583b4ae05a52684934f0368fca9e0b952b25.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator implements F03 exactly as contracted.`
+- **Next Owner**: `Evaluator independently verifies exact commit 3dae583b4ae05a52684934f0368fca9e0b952b25.`
