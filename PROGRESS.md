@@ -10,9 +10,9 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F05`
-- **Generator Commit**: `none`
+- **Generator Commit**: `d7a40faab134fd82bcadde2348961785d2842aeb`
 - **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
@@ -35,32 +35,32 @@
 
 ## Generator Report
 
-- **Commit**: `60a739174effc0f8e5745abce8faf651c15876af`
-- **Changed Files**: `tests/e2e/landing.spec.ts only; stale removed hero/readiness assertions now cover the intentional current navigation, primary workflows, and accessible search/results linkage. src/app/page.tsx and orchestration state files were not changed by the Generator.`
-- **Tests Run**: `PASS: pnpm test src/app/page.test.tsx (1/1); pnpm format:check; pnpm typecheck; pnpm lint; pnpm test:e2e (4/4); git diff --check.`
-- **Known Risks**: `Existing Node v26 versus requested v22.23.1 engine warning. The existing ESLint ignore configuration can scan generated .next-e2e output if lint runs after E2E without isolating that artifact.`
+- **Commit**: `d7a40faab134fd82bcadde2348961785d2842aeb`
+- **Changed Files**: `src/lib/application.ts; src/services/application.ts and tests; src/app/api/applications/route.ts and tests; src/lib/application-query.ts; src/components/active-application-list.tsx and tests; create-form and page copy/regression tests; tests/e2e/filters.spec.ts; tests/e2e/landing.spec.ts.`
+- **Tests Run**: `PASS: targeted Vitest (5 files/44 tests); new filters E2E (1/1); search/list/create/landing E2E regressions (4/4); pnpm format:check; pnpm lint; pnpm typecheck; git diff --check.`
+- **Known Risks**: `Environment uses Node v26 instead of required v22.23.1 and emits the existing engine warning. Existing ESLint configuration can scan generated .next-e2e output if lint follows Playwright; Generator removed only that reproducible artifact before lint. Existing generic database query required no change.`
 
 ## Evaluator Report
 
-- **Verdict**: `PASS`
-- **Commit Verified**: `60a739174effc0f8e5745abce8faf651c15876af`
-- **Checks Run**: `Clean exported workspace: PASS git diff --check; focused Vitest (5 files/33 tests); focused search Playwright (1/1); pnpm format:check; pnpm typecheck; pnpm lint; full pnpm test (8 files/45 tests); full pnpm test:e2e (4/4); pnpm build.`
-- **Findings**: `All F04 acceptance criteria and architectural constraints pass. The intentional src/app/page.tsx content remains unchanged; the landing E2E validates the current navigation, primary workflows, and accessible search/results linkage. No implementation or project-state files were modified during evaluation.`
-- **Required Fix**: `none`
+- **Verdict**: `pending`
+- **Commit Verified**: `pending`
+- **Checks Run**: `pending independent clean-workspace evaluation`
+- **Findings**: `pending`
+- **Required Fix**: `pending`
 
 ## Current Status
 
-- **Active**: `F05 — filter application list between Active and Closed statuses`
+- **Active**: `F05 — evaluating Generator commit d7a40faab134fd82bcadde2348961785d2842aeb`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F04 are passing. F05 is active under the sprint contract above; implementation is assigned to the Generator next.
+F00 through F04 are passing. F05 implementation is committed at `d7a40faab134fd82bcadde2348961785d2842aeb` and awaits independent Evaluator verification.
 
 ## Next Step
 
-1. `Generator implements F05 and returns one logical commit plus targeted verification evidence.`
+1. `Evaluator verifies exact Generator commit d7a40faab134fd82bcadde2348961785d2842aeb in a clean workspace and returns PASS, FAIL, or BLOCKED.`
 
 ## Verification Status
 
@@ -72,6 +72,6 @@ F00 through F04 are passing. F05 is active under the sprint contract above; impl
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F05 as a two-state Active/Closed filter; Active is Applied/Interviewing/Offer and remains the default; Closed is Accepted/Rejected/Withdrawn/Archived; filter composes with F04 search; defer all-status/per-status filters, URL persistence, and status mutation.`
-- **Context Summary**: `F00 through F04 are passing. F05 is active and awaiting Generator implementation under the contract above.`
+- **Context Summary**: `F00 through F04 are passing. F05 Generator implementation and tests are committed at d7a40faab134fd82bcadde2348961785d2842aeb; targeted checks passed; independent full evaluation is pending.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator implements and commits F05 without editing orchestration state.`
+- **Next Owner**: `Evaluator verifies exact commit d7a40faab134fd82bcadde2348961785d2842aeb without modifying implementation or orchestration state.`
