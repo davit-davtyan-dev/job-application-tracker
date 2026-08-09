@@ -9,6 +9,7 @@ import { ApplicationStatus } from "@/lib/application";
 import {
   activityHistory,
   companies,
+  interviews,
   jobApplications,
 } from "@/server/db/schema";
 import {
@@ -28,6 +29,7 @@ const db = drizzle(client);
 describe("createApplication", () => {
   beforeEach(async () => {
     await db.delete(activityHistory);
+    await db.delete(interviews);
     await db.delete(jobApplications);
     await db.delete(companies);
   });
@@ -154,6 +156,7 @@ describe("createApplication", () => {
 describe("listApplications", () => {
   beforeEach(async () => {
     await db.delete(activityHistory);
+    await db.delete(interviews);
     await db.delete(jobApplications);
     await db.delete(companies);
   });
@@ -345,6 +348,7 @@ describe("listApplications", () => {
 describe("updateApplicationStatus", () => {
   beforeEach(async () => {
     await db.delete(activityHistory);
+    await db.delete(interviews);
     await db.delete(jobApplications);
     await db.delete(companies);
   });
