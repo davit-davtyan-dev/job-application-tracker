@@ -10,67 +10,68 @@
 
 ## Orchestration State
 
-- **Phase**: `passing`
-- **Active Feature**: `none`
-- **Generator Commit**: `3dae583b4ae05a52684934f0368fca9e0b952b25`
-- **Evaluator Verdict**: `PASS`
+- **Phase**: `active`
+- **Active Feature**: `F04`
+- **Generator Commit**: `pending`
+- **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
 
-- **Feature ID**: `F03`
-- **Scope**: Add the default list view of active job applications to the landing page. Load the list through the required Route Handler -> Service -> Database Query Module flow and render every application whose status is `Applied`, `Interviewing`, or `Offer`, ordered deterministically by applied date descending and then creation timestamp and identifier descending. Each row/card shows company name, position title, applied date, and current status, with accessible loading, error, empty, and populated states. Integrate the list alongside the existing F02 creation workflow and refresh it after a successful creation without a page reload. Include PostgreSQL-backed service coverage, focused route/component/page tests, and `tests/e2e/list-view.spec.ts`. Do not add search, filter controls, closed applications, pagination, status changes, application detail/history, company history, Markdown rendering, edit/delete actions, interview records, or schema changes unless an unavoidable schema defect is first escalated to the Orchestrator.
+- **Feature ID**: `F04`
+- **Scope**: Add search to the existing active-application list so the single user can find applications by company name or position title. Search is a trimmed, case-insensitive substring match across either field and remains limited to the F03 active-status set. A blank or whitespace-only search restores the complete active list. Extend the existing `GET /api/applications` flow through Route Handler -> Service -> Database Query Module, and integrate an accessible search control with the current TanStack Query list while preserving all F02/F03 behavior. Include PostgreSQL-backed service coverage, focused route/component/page regression tests, and `tests/e2e/search.spec.ts`. Do not add active/closed filtering, fuzzy/ranked search, pagination, highlighting, URL persistence, status changes, detail/history, edit/delete, interview records, schema changes, or new dependencies unless an unavoidable defect is first escalated to the Orchestrator.
 - **Acceptance Criteria**:
-  1. A server-only query returns only applications in the exact active-status set `Applied`, `Interviewing`, and `Offer`, joined with the owning company name. It selects only fields needed by the list and orders rows by `appliedDate DESC`, then `createdAt DESC`, then `id DESC`, so repeated reads are deterministic. Closed statuses (`Accepted`, `Rejected`, `Withdrawn`, and `Archived`) never appear.
-  2. Listing follows `GET Route Handler -> Service -> Database Query Module`; pages and client components contain no database imports or direct queries. The service owns the active-status business rule and validates the query result/output contract with Zod before returning it; shared domain status definitions remain the single source of truth and no `any` is introduced.
-  3. `GET /api/applications` delegates to the list service, returns a stable JSON object containing the active applications with HTTP 200, and maps unexpected failures to the existing structured client-safe `INTERNAL_ERROR` response without exposing database details. The existing `POST /api/applications` behavior remains unchanged.
-  4. The landing page renders a clearly named, responsive active-applications region. Populated entries expose company name, position title, human-readable applied date backed by semantic `<time dateTime=\"YYYY-MM-DD\">`, and current status text. Status is not conveyed by color alone, rows have stable application-ID keys, and the layout remains usable at narrow and wide viewports.
-  5. The client experience has explicit accessible loading and recoverable error states and an unambiguous empty state when no active applications exist. A successful F02 creation invalidates/refetches the same TanStack Query list and the new active application appears without a full-page reload or duplicate network-state implementation.
-  6. PostgreSQL-backed service tests prove active-only selection, company association, exact projected output, deterministic ordering including tie breakers, and an empty result. Focused route tests cover successful GET response and safe failure mapping while preserving POST coverage; component/page tests cover loading, empty, error/retry, populated rendering, semantic dates/statuses, and refresh after creation.
-  7. `tests/e2e/list-view.spec.ts` seeds or creates multiple active applications and at least one closed application, verifies the exact visible active rows and newest-first order, verifies the closed row is absent, and proves a newly created active application appears without page reload. Existing F01/F02 regressions, formatting, strict TypeScript, lint, full Vitest, full Playwright, and production build pass with no unrelated product scope.
-- **Relevant Constraints**: `Server-only database access; GET Route Handler -> Service -> Database Query Module; service-owned active-status rule and Zod output validation; reuse the shared ApplicationStatus source; no schema/migration changes expected; TanStack Query cache invalidation shared with F02 creation; strict TypeScript; no any; accessible responsive UI; preserve unrelated work; one logical Generator commit; Generator must read the relevant Next.js 16.3 App Router/Route Handler and data-fetching docs under node_modules/next/dist/docs before coding; Generator must not edit FEATURES.md, PROGRESS.md, or DECISIONS.md.`
-- **Expected Files or Layers**: `server-only application list query module; application list schema/service and PostgreSQL integration tests; GET extension to src/app/api/applications/route.ts with focused tests; active-application list client component and tests; minimal shared query-key/fetch types as needed; creation mutation invalidation integration; landing-page composition/tests; tests/e2e/list-view.spec.ts; seed/test helpers only when needed for deterministic isolation.`
-- **Targeted Verification**: `pnpm test src/services/application.test.ts src/app/api/applications/route.test.ts plus focused list/create/page component tests; pnpm test:e2e tests/e2e/list-view.spec.ts; pnpm test:e2e tests/e2e/create-application.spec.ts; pnpm format:check; pnpm lint; pnpm typecheck.`
+  1. The server accepts an optional `search` query parameter, normalizes it by trimming surrounding whitespace, and treats an omitted, empty, or whitespace-only value as no search. Non-empty input is validated with a bounded Zod schema; invalid input returns the existing structured client-safe `INVALID_REQUEST` response with HTTP 400 and does not call the service.
+  2. Search follows `GET Route Handler -> Service -> Database Query Module`. The service continues to own the exact active-status set (`Applied`, `Interviewing`, and `Offer`), validates input and database output with Zod, and passes only normalized search criteria to the server-only query module. Pages and client components contain no database imports or queries, shared status definitions remain authoritative, and no `any` is introduced.
+  3. The database query performs a parameterized, case-insensitive substring match against either company name or position title, combines it with the active-status predicate, selects only the existing list projection, and preserves F03 ordering (`appliedDate DESC`, `createdAt DESC`, `id DESC`). Closed applications never appear even when their company or title matches.
+  4. `GET /api/applications?search=...` returns the same stable `{ applications: [...] }` shape with HTTP 200 for valid searches. Unexpected failures still map to the structured `INTERNAL_ERROR` response without database details, and existing unsearched GET and POST behavior remains unchanged.
+  5. The landing page exposes a clearly labelled search input associated with the active-applications region. Typing a query updates the list without full-page navigation; a visible, keyboard-operable clear action appears when useful and restores the complete active list. Search state and results remain usable at narrow and wide viewports.
+  6. TanStack Query owns search request state using a query key that includes the normalized term, URL encoding is delegated to `URLSearchParams`, and stale responses do not replace results for the current term. Loading and recoverable error states remain accessible. A valid search with no matches has an unambiguous search-specific empty state distinct from the existing no-applications state.
+  7. PostgreSQL-backed tests prove company/title matching, mixed case, substring matching, surrounding-whitespace normalization, active-only enforcement, deterministic ordering, no matches, and unsearched regression behavior. Focused route tests cover parsed/normalized search, invalid input, successful response, and safe failure mapping; component/page tests cover search, clear, search-specific empty/error/loading behavior, encoding, and existing list/create regressions.
+  8. `tests/e2e/search.spec.ts` creates or seeds distinguishable active applications plus at least one matching closed application, verifies company and title searches case-insensitively, verifies no-match feedback, verifies clear restores the active list, verifies the closed match never appears, and observes no full-page reload. Existing F01–F03 regressions, formatting, strict TypeScript, lint, full Vitest, full Playwright, and production build pass with no unrelated scope.
+- **Relevant Constraints**: `Server-only database access; GET Route Handler -> Service -> Database Query Module; service-owned active-status rule and Zod input/output validation; parameterized database predicates; reuse shared ApplicationStatus; preserve F03 deterministic ordering and response projection; no schema/migration or dependency changes expected; TanStack Query remains the single network-state owner; strict TypeScript; no any; accessible responsive UI; preserve unrelated work; one logical Generator commit; Generator must read the relevant Next.js 16.3 App Router/Route Handler and data-fetching docs under node_modules/next/dist/docs before coding; Generator must not edit FEATURES.md, PROGRESS.md, or DECISIONS.md.`
+- **Expected Files or Layers**: `src/server/db/queries/application.ts and PostgreSQL-backed service tests; search input schema/service in src/services/application.ts; GET query parsing in src/app/api/applications/route.ts and route tests; src/lib/application-query.ts query-key/request updates; active-list search UI and focused component tests; landing-page regression tests as needed; tests/e2e/search.spec.ts; test helpers only when needed for deterministic isolation.`
+- **Targeted Verification**: `pnpm test src/services/application.test.ts src/app/api/applications/route.test.ts src/components/active-application-list.test.tsx src/components/create-application-form.test.tsx src/app/page.test.tsx; pnpm test:e2e tests/e2e/search.spec.ts; pnpm test:e2e tests/e2e/list-view.spec.ts tests/e2e/create-application.spec.ts; pnpm format:check; pnpm lint; pnpm typecheck.`
 - **Final Verification**: `pnpm lint && pnpm test && pnpm test:e2e && pnpm build`
 
 ## Generator Report
 
-- **Commit**: `3dae583b4ae05a52684934f0368fca9e0b952b25`
-- **Changed Files**: `13 files: application GET route/tests; list database query, service, and PostgreSQL tests; shared application query key/fetch utility; active-list component/tests; creation-form invalidation integration/tests; landing-page composition/tests; tests/e2e/list-view.spec.ts.`
-- **Tests Run**: `PASS: pnpm format:check; pnpm lint; pnpm typecheck; focused non-database Vitest (4 files/13 tests); full PostgreSQL-backed pnpm test (8 files/38 tests). Not completed in Generator sandbox: Playwright command handoff stalled before execution; production build was denied Turbopack port binding while processing PostCSS.`
-- **Known Risks**: `Evaluator must authoritatively run the new focused Playwright spec, full browser regression suite, and production build outside the Generator's restricted sandbox. No known implementation defect remains from Generator verification.`
+- **Commit**: `pending`
+- **Changed Files**: `pending`
+- **Tests Run**: `pending`
+- **Known Risks**: `pending`
 
 ## Evaluator Report
 
-- **Verdict**: `PASS`
-- **Commit Verified**: `3dae583b4ae05a52684934f0368fca9e0b952b25`
-- **Checks Run**: `PASS in a clean detached workspace: focused F03 Playwright 1/1; affected F02 Playwright 1/1; full Playwright 3/3; full PostgreSQL-backed Vitest 8 files/38 tests; pnpm format:check; pnpm lint; pnpm typecheck; production build; exact-commit clean status.`
-- **Findings**: `All F03 acceptance criteria and architecture constraints pass. The active-only query, deterministic ordering, company projection, service-owned status rule and Zod output validation, structured GET response, accessible list states and semantic dates, TanStack Query invalidation after creation, no-any rule, server-only layering, and scope exclusions were independently verified.`
-- **Required Fix**: `none`
+- **Verdict**: `pending`
+- **Commit Verified**: `pending`
+- **Checks Run**: `pending`
+- **Findings**: `pending`
+- **Required Fix**: `pending`
 
 ## Current Status
 
-- **Active**: `none`
+- **Active**: `F04 — search active applications by company name or position title`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F03 is complete at `3dae583b4ae05a52684934f0368fca9e0b952b25`. The exact Generator commit passed independent clean-workspace focused/full browser, focused/full unit/integration, static, architecture, accessibility, and production-build verification.
+F04 is active under the sprint contract above. F00 through F03 remain passing; Generator implementation has not yet been accepted.
 
 ## Next Step
 
-1. `Orchestrator may select F04 and write its sprint contract when the user is ready.`
+1. `Generator implements only the F04 sprint contract and returns one logical commit for independent evaluation.`
 
 ## Verification Status
 
-- **Build**: `Passing`
-- **Lint**: `Passing`
-- **Unit/Integration**: `Passing (38 tests)`
-- **E2E**: `Passing (3/3)`
+- **Build**: `Baseline passing; F04 pending`
+- **Lint**: `Baseline passing; F04 pending`
+- **Unit/Integration**: `Baseline passing (38 tests); F04 pending`
+- **E2E**: `Baseline passing (3/3); F04 pending`
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Complete F03 as an active-only default list; active statuses are Applied, Interviewing, and Offer; deterministic applied-date/creation-time/ID descending order; reuse TanStack Query invalidation after F02 creation; defer all search/filter/status/detail/history/pagination behavior.`
-- **Context Summary**: `F00 through F03 are passing. No feature is active, and WIP=1 is clear. F03's exact Generator commit 3dae583b4ae05a52684934f0368fca9e0b952b25 has independent Evaluator PASS evidence.`
+- **Decisions Made**: `Activate F04 as case-insensitive trimmed substring search across active application company names and position titles; blank search restores the full active list; preserve F03 projection, ordering, and active-only semantics; defer filtering, fuzzy ranking, highlighting, pagination, and URL persistence.`
+- **Context Summary**: `F00 through F03 are passing. F04 is the sole active feature with a complete sprint contract; Generator implementation and independent evaluation remain.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Orchestrator selects F04 when requested.`
+- **Next Owner**: `Generator implements F04.`
