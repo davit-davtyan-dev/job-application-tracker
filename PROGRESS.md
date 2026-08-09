@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
+- **Phase**: `active`
 - **Active Feature**: `F07`
 - **Generator Commit**: `98832955b6081eecdb35b33d9e7458b520412ac8`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `FAIL`
 
 ## Active Sprint Contract
 
@@ -44,25 +44,25 @@
 
 ## Evaluator Report
 
-- **Verdict**: `pending`
-- **Commit Verified**: `pending`
-- **Checks Run**: `pending`
-- **Findings**: `pending`
-- **Required Fix**: `pending`
+- **Verdict**: `FAIL`
+- **Commit Verified**: `98832955b6081eecdb35b33d9e7458b520412ac8`
+- **Checks Run**: `Clean isolated exact-commit clone: install offline PASS; migrations PASS; focused F07 Vitest PASS (42/42); format PASS; lint PASS; typecheck PASS; focused F07 plus F03–F06 Playwright PASS (7/7); full Playwright PASS (7/7); production build PASS; diff check PASS; full Vitest FAIL (92 passed, 13 failed).`
+- **Findings**: `The F07 behavior and static acceptance review otherwise pass, and the Generator's Turbopack caveat was not reproduced. Full Vitest fails because src/services/interview.test.ts and src/services/application.test.ts run concurrently against one PostgreSQL database: destructive shared-table cleanup and global forced-history triggers cross-contaminate the files, producing FK, missing-fixture, and forced-trigger failures.`
+- **Required Fix**: `Bounded correction: serialize PostgreSQL-mutating service test files (for example Vitest fileParallelism false, or an equivalently deterministic isolated database/schema/lock), keep cleanup FK-safe across activity_history, interviews, job_applications, and companies, and prevent forced trigger setup from overlapping another integration file. Prove with pnpm test twice, then targeted F07 verification and static checks. Do not change product behavior or scope.`
 
 ## Current Status
 
-- **Active**: `F07 — evaluating Generator commit 98832955b6081eecdb35b33d9e7458b520412ac8`
+- **Active**: `F07 — bounded test-isolation correction after Evaluator FAIL`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F06 are passing. F07 Generator implementation is committed at `98832955b6081eecdb35b33d9e7458b520412ac8` and awaits independent evaluation.
+F00 through F06 are passing. F07 implementation commit `98832955b6081eecdb35b33d9e7458b520412ac8` failed independent evaluation only because the full Vitest suite allows PostgreSQL-mutating service files to interfere concurrently. A bounded isolation correction is assigned.
 
 ## Next Step
 
-1. `Evaluator verifies exact Generator commit 98832955b6081eecdb35b33d9e7458b520412ac8 in a clean workspace and returns PASS, FAIL, or BLOCKED.`
+1. `Generator applies only the required PostgreSQL test-isolation correction and returns one correction commit.`
 
 ## Verification Status
 
@@ -74,6 +74,6 @@ F00 through F06 are passing. F07 Generator implementation is committed at `98832
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F07 for application-scoped interview creation, listing, and direct state changes. Keep the record minimal: scheduled UTC date/time plus fixed state; no rounds or auxiliary interview metadata. Require atomic activity-history entries for creation and real state changes.`
-- **Context Summary**: `F00 through F06 are passing. F07 is evaluating exact Generator commit 98832955b6081eecdb35b33d9e7458b520412ac8.`
+- **Context Summary**: `F00 through F06 are passing. F07 returned to active after Evaluator FAIL on full-suite PostgreSQL test isolation; all other checked acceptance behavior passed.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator independently verifies exact commit 98832955b6081eecdb35b33d9e7458b520412ac8.`
+- **Next Owner**: `Generator makes the bounded test-isolation correction without product-scope changes.`
