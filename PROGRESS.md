@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
-- **Active Feature**: `F03`
+- **Phase**: `passing`
+- **Active Feature**: `none`
 - **Generator Commit**: `3dae583b4ae05a52684934f0368fca9e0b952b25`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `PASS`
 
 ## Active Sprint Contract
 
@@ -41,36 +41,36 @@
 
 ## Evaluator Report
 
-- **Verdict**: `pending`
-- **Commit Verified**: `pending`
-- **Checks Run**: `pending`
-- **Findings**: `pending`
-- **Required Fix**: `pending`
+- **Verdict**: `PASS`
+- **Commit Verified**: `3dae583b4ae05a52684934f0368fca9e0b952b25`
+- **Checks Run**: `PASS in a clean detached workspace: focused F03 Playwright 1/1; affected F02 Playwright 1/1; full Playwright 3/3; full PostgreSQL-backed Vitest 8 files/38 tests; pnpm format:check; pnpm lint; pnpm typecheck; production build; exact-commit clean status.`
+- **Findings**: `All F03 acceptance criteria and architecture constraints pass. The active-only query, deterministic ordering, company projection, service-owned status rule and Zod output validation, structured GET response, accessible list states and semantic dates, TanStack Query invalidation after creation, no-any rule, server-only layering, and scope exclusions were independently verified.`
+- **Required Fix**: `none`
 
 ## Current Status
 
-- **Evaluating**: `F03 — default active-application list view at 3dae583b4ae05a52684934f0368fca9e0b952b25`
-- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS)`
+- **Active**: `none`
+- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F03 implementation is committed at `3dae583b4ae05a52684934f0368fca9e0b952b25` and is evaluating. Generator static and full PostgreSQL-backed Vitest checks pass; independent clean-workspace Playwright, build, and acceptance verification are pending.
+F03 is complete at `3dae583b4ae05a52684934f0368fca9e0b952b25`. The exact Generator commit passed independent clean-workspace focused/full browser, focused/full unit/integration, static, architecture, accessibility, and production-build verification.
 
 ## Next Step
 
-1. `Evaluator verifies exact Generator commit 3dae583b4ae05a52684934f0368fca9e0b952b25 in a clean workspace and returns PASS, FAIL, or BLOCKED.`
+1. `Orchestrator may select F04 and write its sprint contract when the user is ready.`
 
 ## Verification Status
 
 - **Build**: `Passing`
 - **Lint**: `Passing`
-- **Unit/Integration**: `Passing (31 tests)`
-- **E2E**: `Passing (2/2)`
+- **Unit/Integration**: `Passing (38 tests)`
+- **E2E**: `Passing (3/3)`
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Activate F03 as an active-only default list; define active statuses as Applied, Interviewing, and Offer; require deterministic applied-date/creation-time/ID descending order; reuse TanStack Query invalidation after F02 creation; defer all search/filter/status/detail/history/pagination behavior.`
-- **Context Summary**: `F00, F01, and F02 are passing. F03 is the sole evaluating feature at exact Generator commit 3dae583b4ae05a52684934f0368fca9e0b952b25.`
+- **Decisions Made**: `Complete F03 as an active-only default list; active statuses are Applied, Interviewing, and Offer; deterministic applied-date/creation-time/ID descending order; reuse TanStack Query invalidation after F02 creation; defer all search/filter/status/detail/history/pagination behavior.`
+- **Context Summary**: `F00 through F03 are passing. No feature is active, and WIP=1 is clear. F03's exact Generator commit 3dae583b4ae05a52684934f0368fca9e0b952b25 has independent Evaluator PASS evidence.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator independently verifies exact commit 3dae583b4ae05a52684934f0368fca9e0b952b25.`
+- **Next Owner**: `Orchestrator selects F04 when requested.`
