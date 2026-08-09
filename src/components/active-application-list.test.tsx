@@ -440,4 +440,82 @@ describe("ActiveApplicationList", () => {
     expect(selector).toHaveValue("Interviewing");
     expect(patchAttempts).toBe(2);
   });
+
+  it("loads, creates, and updates interviews within one encoded application card", async () => {
+    const applicationId = "app/encoded";
+    const interviewId = "interview/encoded";
+    let interviewStatus = "Scheduled";
+    let interviewCount = 1;
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+      if (url === "/api/applications?view=active")
+        return Promise.resolve(
+          Response.json({
+            applications: [
+              {
+                id: applicationId,
+                companyName: "Interview Co",
+                positionTitle: "Interview role",
+                appliedDate: "2026-08-10",
+                status: "Interviewing",
+              },
+            ],
+          }),
+        );
+      if (init?.method === "POST") {
+        interviewCount = 2;
+        return Promise.resolve(Response.json({}, { status: 201 }));
+      }
+      if (init?.method === "PATCH") {
+        interviewStatus = "Completed";
+        return Promise.resolve(Response.json({}));
+      }
+      return Promise.resolve(
+        Response.json({
+          interviews: Array.from({ length: interviewCount }, (_, index) => ({
+            id: index === 0 ? interviewId : "second",
+            applicationId,
+            scheduledAt:
+              index === 0
+                ? "2026-08-12T09:30:00.000Z"
+                : "2026-08-13T09:30:00.000Z",
+            status: index === 0 ? interviewStatus : "Scheduled",
+            createdAt: "2026-08-10T10:00:00.000Z",
+            updatedAt: "2026-08-10T10:00:00.000Z",
+          })),
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderList();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Manage interviews" }),
+    );
+    expect(
+      screen.getByRole("region", { name: "Interviews for Interview role" }),
+    ).toBeVisible();
+    const selector = await screen.findByRole("combobox", {
+      name: /Status for interview/,
+    });
+    expect(selector).toHaveValue("Scheduled");
+    await userEvent.selectOptions(selector, "Completed");
+    expect(await screen.findByText("Interview updated.")).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/applications/app%2Fencoded/interviews/interview%2Fencoded/status",
+      expect.objectContaining({ method: "PATCH" }),
+    );
+    fireEvent.change(screen.getByLabelText("Schedule interview"), {
+      target: { value: "2026-08-14T10:30" },
+    });
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add interview" }),
+    );
+    expect(await screen.findByText("Interview scheduled.")).toBeVisible();
+    expect(
+      screen.getAllByRole("combobox", { name: /Status for interview/ }),
+    ).toHaveLength(2);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/applications/app%2Fencoded/interviews",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
 });

@@ -13,6 +13,7 @@ import {
   updateApplicationStatusRequest,
 } from "@/lib/application-query";
 import { ApplicationListView, ApplicationStatus } from "@/lib/application";
+import { InterviewSection } from "@/components/interview-section";
 
 function ApplicationStatusControl({
   application,
@@ -210,6 +211,7 @@ export function ActiveApplicationList() {
                     {format(parseISO(application.appliedDate), "MMM d, yyyy")}
                   </time>
                 </p>
+                <InterviewSection application={application} />
               </li>
             ))}
           </ul>

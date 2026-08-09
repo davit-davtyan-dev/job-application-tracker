@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { ApplicationStatus } from "@/lib/application";
+import { InterviewStatus } from "@/lib/interview";
 
 export const companies = pgTable("companies", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -63,11 +64,34 @@ export const jobApplications = pgTable("job_applications", {
     .defaultNow(),
 });
 
+export const interviewStatus = pgEnum("interview_status", InterviewStatus);
+
+export const interviews = pgTable("interviews", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  applicationId: uuid("application_id")
+    .notNull()
+    .references(() => jobApplications.id),
+  scheduledAt: timestamp("scheduled_at", {
+    mode: "date",
+    withTimezone: true,
+  }).notNull(),
+  status: interviewStatus("status")
+    .notNull()
+    .default(InterviewStatus.Scheduled),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const activityHistory = pgTable("activity_history", {
   id: uuid("id").primaryKey().defaultRandom(),
   applicationId: uuid("application_id")
     .notNull()
     .references(() => jobApplications.id),
+  interviewId: uuid("interview_id").references(() => interviews.id),
   eventType: text("event_type").notNull(),
   status: applicationStatus("status").notNull(),
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true })

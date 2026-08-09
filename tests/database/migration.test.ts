@@ -16,3 +16,22 @@ describe("foundation migration", () => {
     expect(migration).not.toContain("timezone('utc', now())");
   });
 });
+
+describe("interview migration", () => {
+  it("creates fixed statuses, UTC timestamps, and nullable history ownership", () => {
+    const migration = readFileSync(
+      resolve("drizzle/0003_puzzling_maddog.sql"),
+      "utf8",
+    );
+    expect(migration).toContain(
+      "CREATE TYPE \"public\".\"interview_status\" AS ENUM('Scheduled', 'Completed', 'Cancelled')",
+    );
+    expect(migration).toContain(
+      '"scheduled_at" timestamp with time zone NOT NULL',
+    );
+    expect(migration).toContain('"interview_id" uuid');
+    expect(migration).toContain(
+      "activity_history_interview_id_interviews_id_fk",
+    );
+  });
+});
