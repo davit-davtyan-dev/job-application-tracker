@@ -296,4 +296,100 @@ describe("ActiveApplicationList", () => {
     expect(await screen.findByText("Done role")).toBeVisible();
     expect(screen.getByText("1 closed")).toBeVisible();
   });
+
+  it("offers all labelled statuses and refreshes a same-group change", async () => {
+    let status = "Applied";
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+      if (init?.method === "PATCH") {
+        status = "Offer";
+        return Promise.resolve(
+          new Response(JSON.stringify({ status }), { status: 200 }),
+        );
+      }
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            applications: [
+              {
+                id: "app/encoded",
+                companyName: "Acme",
+                positionTitle: "Engineer",
+                appliedDate: "2026-08-09",
+                status,
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderList();
+    const selector = await screen.findByRole("combobox", {
+      name: "Status for Engineer",
+    });
+    expect(screen.getAllByRole("option")).toHaveLength(7);
+    await userEvent.selectOptions(selector, "Offer");
+    expect(await screen.findByText("Status updated.")).toBeVisible();
+    expect(selector).toHaveValue("Offer");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/applications/app%2Fencoded/status",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ status: "Offer" }),
+      }),
+    );
+  });
+
+  it("isolates pending controls and removes a cross-group result after refetch", async () => {
+    let resolvePatch: (() => void) | undefined;
+    let moved = false;
+    const applications = [
+      {
+        id: "one",
+        companyName: "One",
+        positionTitle: "First",
+        appliedDate: "2026-08-09",
+        status: "Applied",
+      },
+      {
+        id: "two",
+        companyName: "Two",
+        positionTitle: "Second",
+        appliedDate: "2026-08-08",
+        status: "Interviewing",
+      },
+    ];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_url: string, init?: RequestInit) => {
+        if (init?.method === "PATCH")
+          return new Promise<Response>((resolve) => {
+            resolvePatch = () => {
+              moved = true;
+              resolve(new Response("{}", { status: 200 }));
+            };
+          });
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              applications: moved ? applications.slice(1) : applications,
+            }),
+            { status: 200 },
+          ),
+        );
+      }),
+    );
+    renderList();
+    const first = await screen.findByRole("combobox", {
+      name: "Status for First",
+    });
+    const second = screen.getByRole("combobox", { name: "Status for Second" });
+    await userEvent.selectOptions(first, "Rejected");
+    expect(first).toBeDisabled();
+    expect(second).toBeEnabled();
+    resolvePatch?.();
+    expect(await screen.findByText("1 active")).toBeVisible();
+    expect(screen.queryByText("First")).toBeNull();
+  });
 });

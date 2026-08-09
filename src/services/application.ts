@@ -9,6 +9,7 @@ import {
   insertApplicationWithHistory,
   type JobApplication,
   selectApplicationsByStatuses,
+  updateApplicationStatusWithHistory,
 } from "@/server/db/queries/application";
 
 const activeApplicationStatuses = [
@@ -87,6 +88,44 @@ export class CompanyNotFoundError extends Error {
     super("The selected company does not exist.");
     this.name = "CompanyNotFoundError";
   }
+}
+
+export class ApplicationNotFoundError extends Error {
+  constructor() {
+    super("The application does not exist.");
+    this.name = "ApplicationNotFoundError";
+  }
+}
+
+export const applicationStatusBodySchema = z.strictObject({
+  status: z.enum(ApplicationStatus),
+});
+export const updateApplicationStatusInputSchema =
+  applicationStatusBodySchema.extend({
+    id: z.uuid(),
+  });
+
+const jobApplicationSchema = z.strictObject({
+  id: z.uuid(),
+  companyId: z.uuid(),
+  positionTitle: z.string(),
+  appliedDate: z.iso.date(),
+  status: z.enum(ApplicationStatus),
+  description: z.string().nullable(),
+  referenceLinks: z.array(z.string()),
+  notes: z.string().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export async function updateApplicationStatus(input: unknown) {
+  const parsed = updateApplicationStatusInputSchema.parse(input);
+  const updated = await updateApplicationStatusWithHistory(
+    parsed.id,
+    parsed.status,
+  );
+  if (!updated) throw new ApplicationNotFoundError();
+  return jobApplicationSchema.parse(updated);
 }
 
 export async function createApplication(

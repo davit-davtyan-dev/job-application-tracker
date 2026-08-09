@@ -1,4 +1,7 @@
-import type { ApplicationListView } from "@/lib/application";
+import type {
+  ApplicationListView,
+  ApplicationStatus,
+} from "@/lib/application";
 import type { ApplicationListItem } from "@/services/application";
 
 export const normalizeApplicationSearch = (search: string) => search.trim();
@@ -26,4 +29,19 @@ export async function fetchApplications(
   if (!response.ok) throw new Error("Applications could not be loaded.");
   const body = (await response.json()) as ApplicationsResponse;
   return body.applications;
+}
+
+export async function updateApplicationStatusRequest(
+  id: string,
+  status: ApplicationStatus,
+): Promise<void> {
+  const response = await fetch(
+    `/api/applications/${encodeURIComponent(id)}/status`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    },
+  );
+  if (!response.ok) throw new Error("Status could not be updated.");
 }

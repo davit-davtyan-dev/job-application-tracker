@@ -12,9 +12,11 @@ import {
   jobApplications,
 } from "@/server/db/schema";
 import {
+  ApplicationNotFoundError,
   CompanyNotFoundError,
   createApplication,
   listApplications,
+  updateApplicationStatus,
 } from "@/services/application";
 
 const url = process.env.TEST_DATABASE_URL;
@@ -338,6 +340,96 @@ describe("listApplications", () => {
       await expect(listApplications(input)).rejects.toBeDefined();
     },
   );
+});
+
+describe("updateApplicationStatus", () => {
+  beforeEach(async () => {
+    await db.delete(activityHistory);
+    await db.delete(jobApplications);
+    await db.delete(companies);
+  });
+
+  async function seed(status: ApplicationStatus = ApplicationStatus.Applied) {
+    const [company] = await db
+      .insert(companies)
+      .values({ name: `Status ${randomUUID()}` })
+      .returning();
+    const [application] = await db
+      .insert(jobApplications)
+      .values({
+        companyId: company!.id,
+        positionTitle: "Status role",
+        appliedDate: "2026-08-09",
+        status,
+        updatedAt: new Date("2026-01-01T00:00:00Z"),
+      })
+      .returning();
+    return application!;
+  }
+
+  it.each(Object.values(ApplicationStatus))(
+    "persists %s with exactly one history row",
+    async (status) => {
+      const original = await seed(
+        status === ApplicationStatus.Applied
+          ? ApplicationStatus.Offer
+          : ApplicationStatus.Applied,
+      );
+      const updated = await updateApplicationStatus({
+        id: original.id,
+        status,
+      });
+      expect(updated.status).toBe(status);
+      expect(updated.updatedAt.getTime()).toBeGreaterThan(
+        original.updatedAt.getTime(),
+      );
+      const rows = await db
+        .select()
+        .from(activityHistory)
+        .where(eq(activityHistory.applicationId, original.id));
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({ eventType: "status_changed", status });
+      expect(rows[0]!.createdAt.toISOString()).toMatch(/Z$/);
+    },
+  );
+
+  it("is idempotent without timestamp or history churn", async () => {
+    const original = await seed(ApplicationStatus.Interviewing);
+    const updated = await updateApplicationStatus({
+      id: original.id,
+      status: ApplicationStatus.Interviewing,
+    });
+    expect(updated.updatedAt).toEqual(original.updatedAt);
+    expect(await db.select().from(activityHistory)).toHaveLength(0);
+  });
+
+  it("reports a missing application and validates unknown input", async () => {
+    await expect(
+      updateApplicationStatus({ id: randomUUID(), status: "Applied" }),
+    ).rejects.toBeInstanceOf(ApplicationNotFoundError);
+    await expect(
+      updateApplicationStatus({ id: randomUUID(), status: "Nope" }),
+    ).rejects.toBeDefined();
+  });
+
+  it("rolls back the status update when history insertion fails", async () => {
+    const original = await seed();
+    await client`CREATE OR REPLACE FUNCTION reject_f06_history() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION 'forced history failure'; END; $$ LANGUAGE plpgsql`;
+    await client`CREATE TRIGGER reject_f06_history BEFORE INSERT ON activity_history FOR EACH ROW EXECUTE FUNCTION reject_f06_history()`;
+    try {
+      await expect(
+        updateApplicationStatus({ id: original.id, status: "Rejected" }),
+      ).rejects.toBeDefined();
+      const [persisted] = await db
+        .select()
+        .from(jobApplications)
+        .where(eq(jobApplications.id, original.id));
+      expect(persisted!.status).toBe("Applied");
+    } finally {
+      await client`DROP TRIGGER reject_f06_history ON activity_history`;
+      await client`DROP FUNCTION reject_f06_history()`;
+    }
+  });
 });
 
 afterAll(() => client.end());

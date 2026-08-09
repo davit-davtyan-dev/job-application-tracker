@@ -1,16 +1,69 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { Search, X } from "lucide-react";
 import { useState } from "react";
 
 import {
   applicationsQueryKey,
+  applicationsQueryRoot,
   fetchApplications,
   normalizeApplicationSearch,
+  updateApplicationStatusRequest,
 } from "@/lib/application-query";
-import { ApplicationListView } from "@/lib/application";
+import { ApplicationListView, ApplicationStatus } from "@/lib/application";
+
+function ApplicationStatusControl({
+  application,
+}: {
+  application: { id: string; status: ApplicationStatus; positionTitle: string };
+}) {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (status: ApplicationStatus) =>
+      updateApplicationStatusRequest(application.id, status),
+    onSuccess: async () =>
+      queryClient.invalidateQueries({ queryKey: applicationsQueryRoot }),
+  });
+  return (
+    <div className="text-right">
+      <label className="sr-only" htmlFor={`status-${application.id}`}>
+        Status for {application.positionTitle}
+      </label>
+      <select
+        id={`status-${application.id}`}
+        className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm"
+        value={application.status}
+        disabled={mutation.isPending}
+        onChange={(event) =>
+          mutation.mutate(event.target.value as ApplicationStatus)
+        }
+      >
+        {Object.values(ApplicationStatus).map((status) => (
+          <option key={status} value={status}>
+            {status}
+          </option>
+        ))}
+      </select>
+      {mutation.isPending && (
+        <p role="status" className="mt-1 text-xs">
+          Updating status…
+        </p>
+      )}
+      {mutation.isSuccess && (
+        <p role="status" className="mt-1 text-xs text-emerald-700">
+          Status updated.
+        </p>
+      )}
+      {mutation.isError && (
+        <p role="alert" className="mt-1 text-xs text-rose-700">
+          Status update failed. Select a status to try again.
+        </p>
+      )}
+    </div>
+  );
+}
 
 export function ActiveApplicationList() {
   const [search, setSearch] = useState("");
@@ -151,9 +204,7 @@ export function ActiveApplicationList() {
                       {application.companyName}
                     </p>
                   </div>
-                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800">
-                    {application.status}
-                  </span>
+                  <ApplicationStatusControl application={application} />
                 </div>
                 <p className="mt-5 text-sm text-slate-500">
                   Applied{" "}

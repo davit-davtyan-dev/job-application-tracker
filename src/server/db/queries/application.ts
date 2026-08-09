@@ -30,6 +30,33 @@ export interface ApplicationListRecord {
   status: JobApplication["status"];
 }
 
+export async function updateApplicationStatusWithHistory(
+  id: string,
+  status: JobApplication["status"],
+): Promise<JobApplication | null> {
+  return database.transaction(async (transaction) => {
+    const [current] = await transaction
+      .select()
+      .from(jobApplications)
+      .where(eq(jobApplications.id, id));
+    if (!current) return null;
+    if (current.status === status) return current;
+
+    const [updated] = await transaction
+      .update(jobApplications)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(jobApplications.id, id))
+      .returning();
+    if (!updated) throw new Error("Application update returned no record.");
+    await transaction.insert(activityHistory).values({
+      applicationId: id,
+      eventType: "status_changed",
+      status,
+    });
+    return updated;
+  });
+}
+
 export async function selectApplicationsByStatuses(
   statuses: JobApplication["status"][],
   criteria: { search?: string } = {},
