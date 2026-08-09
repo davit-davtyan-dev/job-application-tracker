@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F07`
-- **Generator Commit**: `98832955b6081eecdb35b33d9e7458b520412ac8`
-- **Evaluator Verdict**: `FAIL`
+- **Generator Commit**: `5271688650be136fd68a4e973b39776ee2403130`
+- **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
 
@@ -37,10 +37,10 @@
 
 ## Generator Report
 
-- **Commit**: `98832955b6081eecdb35b33d9e7458b520412ac8`
-- **Changed Files**: `drizzle/0003_puzzling_maddog.sql and migration metadata; interview domain/query/service modules and PostgreSQL tests; application-scoped interview collection and status Route Handlers with tests; interview TanStack Query utilities; accessible interview section integrated into the application list with focused tests; migration assertion; tests/e2e/interviews.spec.ts.`
-- **Tests Run**: `PASS: test-database migration; feature service Vitest (11/11); focused route/component/page/migration Vitest (31/31); F07 Playwright (1/1); F03–F06 browser regressions (6/6); format:check; lint; typecheck; git diff --check.`
-- **Known Risks**: `Generator build attempts inside and outside its sandbox stopped at an environment-level Turbopack port-binding permission panic without a compile diagnostic. Full Vitest, full Playwright, and build remain for independent Evaluator verification.`
+- **Commit**: `5271688650be136fd68a4e973b39776ee2403130` (bounded correction; initial implementation `98832955b6081eecdb35b33d9e7458b520412ac8`)
+- **Changed Files**: `Initial: migration/schema; interview domain/query/service and tests; application-scoped interview routes and tests; TanStack Query utilities; accessible per-card interview UI and tests; migration assertion; interview E2E. Correction: vitest.config.ts serializes shared-database test files; src/services/application.test.ts cleans interviews in FK-safe order.`
+- **Tests Run**: `Correction PASS: full Vitest twice (105/105 each); focused F07 Vitest (42/42); format:check; lint; typecheck; git diff --check. Initial targeted service, route/component/page/migration, and seven browser scenarios also passed.`
+- **Known Risks**: `Serializing Vitest files increases local suite duration to about 29 seconds. No product behavior changed. Independent full pipeline rerun remains required.`
 
 ## Evaluator Report
 
@@ -52,17 +52,17 @@
 
 ## Current Status
 
-- **Active**: `F07 — bounded test-isolation correction after Evaluator FAIL`
+- **Active**: `F07 — evaluating corrected Generator commit 5271688650be136fd68a4e973b39776ee2403130`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F06 are passing. F07 implementation commit `98832955b6081eecdb35b33d9e7458b520412ac8` failed independent evaluation only because the full Vitest suite allows PostgreSQL-mutating service files to interfere concurrently. A bounded isolation correction is assigned.
+F00 through F06 are passing. F07 test-isolation correction is committed at `5271688650be136fd68a4e973b39776ee2403130` after two full Vitest passes and awaits independent reevaluation.
 
 ## Next Step
 
-1. `Generator applies only the required PostgreSQL test-isolation correction and returns one correction commit.`
+1. `Evaluator verifies exact corrected Generator commit 5271688650be136fd68a4e973b39776ee2403130 in a clean workspace and returns PASS, FAIL, or BLOCKED.`
 
 ## Verification Status
 
@@ -74,6 +74,6 @@ F00 through F06 are passing. F07 implementation commit `98832955b6081eecdb35b33d
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F07 for application-scoped interview creation, listing, and direct state changes. Keep the record minimal: scheduled UTC date/time plus fixed state; no rounds or auxiliary interview metadata. Require atomic activity-history entries for creation and real state changes.`
-- **Context Summary**: `F00 through F06 are passing. F07 returned to active after Evaluator FAIL on full-suite PostgreSQL test isolation; all other checked acceptance behavior passed.`
+- **Context Summary**: `F00 through F06 are passing. F07 is evaluating corrected Generator commit 5271688650be136fd68a4e973b39776ee2403130; the bounded isolation fix passed full Vitest twice.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator makes the bounded test-isolation correction without product-scope changes.`
+- **Next Owner**: `Evaluator independently verifies exact corrected commit 5271688650be136fd68a4e973b39776ee2403130.`
