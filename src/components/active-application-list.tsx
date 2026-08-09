@@ -28,11 +28,9 @@ function ApplicationStatusControl({
   });
   return (
     <div className="text-right">
-      <label className="sr-only" htmlFor={`status-${application.id}`}>
-        Status for {application.positionTitle}
-      </label>
       <select
         id={`status-${application.id}`}
+        aria-label={`Status for ${application.positionTitle}`}
         className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm"
         value={application.status}
         disabled={mutation.isPending}

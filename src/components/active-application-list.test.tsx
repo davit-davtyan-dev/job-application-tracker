@@ -392,4 +392,52 @@ describe("ActiveApplicationList", () => {
     expect(await screen.findByText("1 active")).toBeVisible();
     expect(screen.queryByText("First")).toBeNull();
   });
+
+  it("retains persisted status after failure and permits another selection", async () => {
+    let status = "Applied";
+    let patchAttempts = 0;
+    const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
+      if (init?.method === "PATCH") {
+        patchAttempts += 1;
+        if (patchAttempts === 1) {
+          return Promise.resolve(new Response("no", { status: 500 }));
+        }
+        status = "Interviewing";
+        return Promise.resolve(new Response("{}", { status: 200 }));
+      }
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            applications: [
+              {
+                id: "retry",
+                companyName: "Retry Co",
+                positionTitle: "Retry role",
+                appliedDate: "2026-08-09",
+                status,
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderList();
+
+    const selector = await screen.findByRole("combobox", {
+      name: "Status for Retry role",
+    });
+    await userEvent.selectOptions(selector, "Rejected");
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Status update failed",
+    );
+    expect(selector).toHaveValue("Applied");
+    expect(selector).toBeEnabled();
+
+    await userEvent.selectOptions(selector, "Interviewing");
+    expect(await screen.findByText("Status updated.")).toBeVisible();
+    expect(selector).toHaveValue("Interviewing");
+    expect(patchAttempts).toBe(2);
+  });
 });

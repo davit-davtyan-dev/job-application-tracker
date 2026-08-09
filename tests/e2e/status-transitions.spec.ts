@@ -30,6 +30,31 @@ test("changes status by keyboard across active and closed views without navigati
     );
 
     await selector.focus();
+    await page.route(`**/api/applications/${id}/status`, async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: { code: "INTERNAL_ERROR", message: "Temporary failure." },
+        }),
+      });
+    });
+    await selector.selectOption("Interviewing");
+    await expect(
+      page.getByText("Status update failed. Select a status to try again.", {
+        exact: true,
+      }),
+    ).toHaveAttribute("role", "alert");
+    await expect(selector).toHaveValue("Applied");
+    const [unchanged] = await sql<
+      { status: string }[]
+    >`SELECT status FROM job_applications WHERE id = ${id}`;
+    expect(unchanged?.status).toBe("Applied");
+
+    await page.unroute(`**/api/applications/${id}/status`);
+    await selector.selectOption("Interviewing");
+    await expect(selector).toHaveValue("Interviewing");
+    await expect(page.getByText("Status updated.")).toBeVisible();
     await selector.selectOption("Offer");
     await expect(selector).toHaveValue("Offer");
     await expect(page.getByText("Status updated.")).toBeVisible();
@@ -57,6 +82,7 @@ test("changes status by keyboard across active and closed views without navigati
     >`SELECT status FROM activity_history WHERE application_id = ${id} AND event_type = 'status_changed' ORDER BY created_at`;
     expect(persisted?.status).toBe("Applied");
     expect(history.map((row) => row.status)).toEqual([
+      "Interviewing",
       "Offer",
       "Rejected",
       "Applied",

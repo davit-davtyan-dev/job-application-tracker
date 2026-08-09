@@ -1,7 +1,4 @@
-import type {
-  ApplicationListView,
-  ApplicationStatus,
-} from "@/lib/application";
+import type { ApplicationListView, ApplicationStatus } from "@/lib/application";
 import type { ApplicationListItem } from "@/services/application";
 
 export const normalizeApplicationSearch = (search: string) => search.trim();
