@@ -10,9 +10,9 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F04`
-- **Generator Commit**: `pending`
+- **Generator Commit**: `6dc64877aba9b85a5b451b1596422c1cff44ac28`
 - **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
@@ -35,10 +35,10 @@
 
 ## Generator Report
 
-- **Commit**: `pending`
-- **Changed Files**: `pending`
-- **Tests Run**: `pending`
-- **Known Risks**: `pending`
+- **Commit**: `6dc64877aba9b85a5b451b1596422c1cff44ac28`
+- **Changed Files**: `11 files: server-only application query; application service and PostgreSQL tests; GET route and tests; shared TanStack Query key/fetch utility; active-list search UI and tests; landing-page composition/tests; tests/e2e/search.spec.ts.`
+- **Tests Run**: `PASS: required focused Vitest command (29 tests across five files); focused active-list component Vitest 6/6; search Playwright 1/1; list/create regression Playwright 2/2 on unchanged rerun; pnpm format:check; pnpm lint; pnpm typecheck; git diff --check. One earlier regression Playwright invocation failed during transient Next web-server startup before tests ran, then passed unchanged on immediate rerun.`
+- **Known Risks**: `Evaluator must authoritatively run the exact-commit clean-workspace full pipeline and probe the reported transient browser web-server startup. Generator environment reported Node 26.0.0 while package.json requests Node 22.23.1.`
 
 ## Evaluator Report
 
@@ -56,11 +56,11 @@
 
 ## Current Session Summary
 
-F04 is active under the sprint contract above. F00 through F03 remain passing; Generator implementation has not yet been accepted.
+F04 is evaluating at exact Generator commit `6dc64877aba9b85a5b451b1596422c1cff44ac28`. F00 through F03 remain passing; only an independent Evaluator PASS can complete F04.
 
 ## Next Step
 
-1. `Generator implements only the F04 sprint contract and returns one logical commit for independent evaluation.`
+1. `Evaluator verifies exact Generator commit 6dc64877aba9b85a5b451b1596422c1cff44ac28 in a clean workspace against every F04 criterion and the full completion pipeline.`
 
 ## Verification Status
 
@@ -74,4 +74,4 @@ F04 is active under the sprint contract above. F00 through F03 remain passing; G
 - **Decisions Made**: `Activate F04 as case-insensitive trimmed substring search across active application company names and position titles; blank search restores the full active list; preserve F03 projection, ordering, and active-only semantics; defer filtering, fuzzy ranking, highlighting, pagination, and URL persistence.`
 - **Context Summary**: `F00 through F03 are passing. F04 is the sole active feature with a complete sprint contract; Generator implementation and independent evaluation remain.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator implements F04.`
+- **Next Owner**: `Evaluator verifies exact Generator commit 6dc64877aba9b85a5b451b1596422c1cff44ac28.`
