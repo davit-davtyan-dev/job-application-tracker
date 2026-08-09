@@ -10,57 +10,59 @@
 
 ## Orchestration State
 
-- **Phase**: `passing`
-- **Active Feature**: `none`
-- **Generator Commit**: `d7a40faab134fd82bcadde2348961785d2842aeb`
-- **Evaluator Verdict**: `PASS`
+- **Phase**: `evaluating`
+- **Active Feature**: `F06`
+- **Generator Commit**: `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1`
+- **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
 
-- **Feature ID**: `F05`
-- **Scope**: Add a two-state filter to the existing application list so the single user can switch between Active and Closed applications without full-page navigation. Active remains the default and contains exactly `Applied`, `Interviewing`, and `Offer`; Closed contains exactly `Accepted`, `Rejected`, `Withdrawn`, and `Archived`. The selected filter composes with the existing trimmed case-insensitive company/title search and preserves deterministic ordering and the existing list projection. Extend the existing `GET /api/applications` flow through Route Handler -> Service -> Database Query Module and the current TanStack Query UI. Include PostgreSQL-backed service coverage, focused route/component/page regressions, and `tests/e2e/filters.spec.ts`. Do not add an all-status view, per-status filtering, URL persistence, counts requiring extra queries, status mutation, detail/history, edit/delete, interview records, schema changes, or new dependencies unless an unavoidable defect is first escalated to the Orchestrator.
+- **Feature ID**: `F06`
+- **Scope**: Add status mutation for an existing job application across the complete fixed `ApplicationStatus` vocabulary: `Applied`, `Interviewing`, `Offer`, `Accepted`, `Rejected`, `Withdrawn`, and `Archived`. Expose a dedicated application-status Route Handler, delegate validated business logic through the Service to a server-only Database Query Module, and atomically update the application status and append one `status_changed` activity-history record. Add an accessible per-card status control to the existing Active/Closed list. Use a TanStack Query mutation, keep TanStack Query as the sole network-state owner, and refresh affected list caches so a changed application appears in the correct view without full-page navigation. Include PostgreSQL-backed service tests, focused route/component/page regressions, and `tests/e2e/status-transitions.spec.ts`. Do not add transition restrictions, bulk updates, application detail/history UI, editing of other fields, delete/restore, interview records, undo, URL persistence, schema changes, migrations, or new dependencies unless an unavoidable defect is first escalated to the Orchestrator.
 - **Acceptance Criteria**:
-  1. The server accepts an optional `view` query parameter whose only valid values are `active` and `closed`; omission defaults to `active`. Invalid, empty, repeated/ambiguous, or otherwise unsupported values return the existing structured client-safe `INVALID_REQUEST` response with HTTP 400 and do not call the service. Existing bounded search parsing and normalization remain intact.
-  2. Filtering follows `GET Route Handler -> Service -> Database Query Module`. The service owns both exact status groups, validates normalized input and database output with Zod, and passes the selected status set plus normalized search criteria to the server-only query module. Shared `ApplicationStatus` remains authoritative, pages/client components contain no database access, and no `any` is introduced.
-  3. The database query combines the selected status predicate with the existing parameterized search predicate when present, selects only the existing list projection, and preserves ordering by `appliedDate DESC`, `createdAt DESC`, then `id DESC`. Active results never contain closed statuses and closed results never contain active statuses, including when search text matches both groups.
-  4. Valid active and closed requests return the stable `{ applications: [...] }` response with HTTP 200. Omitted `view` remains backward-compatible with the F03/F04 active list; unexpected failures map to the structured `INTERNAL_ERROR` response without database details; POST behavior is unchanged.
-  5. The landing-page list exposes an accessible, keyboard-operable Active/Closed control with clear selected-state semantics. Active is initially selected; changing it updates results without full-page navigation. Labels, heading/count text, loading, error/retry, and no-applications messaging accurately describe the selected view and remain usable at narrow and wide viewports.
-  6. Filter state composes with the existing search: switching views preserves the entered search term, searching in Closed queries only closed records, clearing search restores the complete selected view, and each view has an unambiguous search-specific no-match state. No stale result from another view/search combination replaces the current result.
-  7. TanStack Query remains the sole network-state owner. Its query key includes both selected view and normalized search, its request uses `URLSearchParams`, and switching back may reuse correctly keyed cached data. Focused component tests cover default selection, switching both ways, accessibility, composed search, clear, loading/error/retry/empty/count copy, request encoding, and existing create/list/search regressions.
-  8. PostgreSQL-backed and route tests prove exact status partitioning, default-active compatibility, closed retrieval, search-plus-filter composition, deterministic ordering, no matches, valid parsing, invalid/repeated values, and safe failure mapping. `tests/e2e/filters.spec.ts` seeds distinguishable records across every status group, verifies default Active and Closed views, search composition, clear behavior, group isolation, empty feedback, keyboard operation, and no full-page reload. Existing F01–F04 regressions, formatting, strict TypeScript, lint, full Vitest, full Playwright, and production build pass with no unrelated scope.
-- **Relevant Constraints**: `Server-only database access; GET Route Handler -> Service -> Database Query Module; service-owned exact active and closed status groups with Zod input/output validation; parameterized database predicates; reuse shared ApplicationStatus; preserve F03 ordering and projection plus F04 search normalization; no schema/migration or dependency changes expected; TanStack Query remains the single network-state owner; strict TypeScript; no any; accessible responsive UI; preserve unrelated work; one logical Generator commit; Generator must read the relevant Next.js 16.3 App Router/Route Handler and data-fetching docs under node_modules/next/dist/docs before coding; Generator must not edit FEATURES.md, PROGRESS.md, or DECISIONS.md.`
-- **Expected Files or Layers**: `src/services/application.ts and PostgreSQL-backed service tests; src/server/db/queries/application.ts only if its generic status/search contract needs adjustment; GET query parsing in src/app/api/applications/route.ts and route tests; src/lib/application-query.ts query-key/request updates; src/components/active-application-list.tsx (rename only if justified) and focused tests; page regressions as needed; tests/e2e/filters.spec.ts; test helpers only when needed for deterministic isolation.`
-- **Targeted Verification**: `pnpm test src/services/application.test.ts src/app/api/applications/route.test.ts src/components/active-application-list.test.tsx src/components/create-application-form.test.tsx src/app/page.test.tsx; pnpm test:e2e tests/e2e/filters.spec.ts; pnpm test:e2e tests/e2e/search.spec.ts tests/e2e/list-view.spec.ts tests/e2e/create-application.spec.ts tests/e2e/landing.spec.ts; pnpm format:check; pnpm lint; pnpm typecheck.`
+  1. A dedicated status endpoint accepts one application UUID and a strict JSON body containing only `status`. Every shared `ApplicationStatus` value is accepted. Malformed JSON, invalid UUIDs, missing/extra fields, and unsupported statuses return the existing client-safe `INVALID_REQUEST` response with HTTP 400 and do not perform a database mutation.
+  2. Mutation follows `Route Handler -> Service -> Database Query Module`. The service revalidates unknown input and database output with Zod, shared `ApplicationStatus` is the only status vocabulary, database code remains server-only, pages/client components contain no direct queries, and no `any` is introduced.
+  3. For an existing application whose status differs, one database transaction updates `job_applications.status` and `updated_at` and inserts exactly one `activity_history` row with `event_type = 'status_changed'`, the new status, the application UUID, and a database-generated UTC timestamp. A forced history-insert failure rolls back the application update. No schema or migration change is made.
+  4. Updating a missing UUID returns a structured `APPLICATION_NOT_FOUND` response with HTTP 404. Requesting the already-current status succeeds idempotently, returns the validated application with no new history row and does not change `updated_at`. Unexpected failures return a structured `INTERNAL_ERROR` response without database details. Existing GET and POST behavior is unchanged.
+  5. Each rendered application card exposes an explicitly labelled native status selector containing all seven fixed states. It is keyboard-operable, reflects the persisted current status, disables only that card while its request is pending, and presents accessible per-card success or failure feedback without losing the existing list/search/filter semantics.
+  6. A successful change updates the visible state without full-page navigation. Crossing from an Active status to a Closed status removes the card from the current Active results; crossing back removes it from Closed; changing within the same group shows the new status. The current search term and selected view remain unchanged, and the list count/empty feedback settles correctly after refetch.
+  7. TanStack Query remains the sole network-state owner. The status request uses JSON and a safely encoded application ID; the mutation invalidates the applications query root so all view/search combinations become stale. Failed mutations do not display an unpersisted status and offer an unambiguous retry path or allow the user to select again. Concurrent controls cannot let a stale response overwrite a newer user choice for the same card.
+  8. PostgreSQL-backed service tests prove all status values, exactly-one history insertion, idempotent same-status behavior, updated UTC timestamp behavior, not-found handling, and rollback atomicity. Route tests prove success, strict validation, not-found mapping, and safe failure mapping. Focused component tests cover selector accessibility/options, pending isolation, same-group and cross-group success, cache invalidation/refetch, error/retry behavior, request encoding, and existing create/list/search/filter regressions.
+  9. `tests/e2e/status-transitions.spec.ts` seeds distinguishable applications and exercises keyboard status updates through representative Active-to-Active, Active-to-Closed, and Closed-to-Active transitions; verifies persistence and exactly one matching history row per real change; verifies current view/search preservation, movement between view groups, no full-page reload, and recoverable failure feedback. F01–F05 regressions, formatting, strict TypeScript, lint, full Vitest, full Playwright, and production build pass with no unrelated scope.
+- **Relevant Constraints**: `Server-only database access; status Route Handler -> Service -> Database Query Module; service-owned Zod input/output validation; application update plus status history insert must be one database transaction; same-status requests are idempotent without history or timestamp churn; UUIDs and database-generated UTC timestamps; reuse shared ApplicationStatus; no schema/migration or dependency changes expected; TanStack Query remains the single network-state owner; strict TypeScript; no any; accessible responsive UI; preserve F03 ordering/projection, F04 search, and F05 view filters; preserve unrelated work; one logical Generator commit; Generator must read the relevant Next.js 16.3 App Router Route Handler, mutating-data, fetching-data, and caching docs under node_modules/next/dist/docs before coding; Generator must not edit FEATURES.md, PROGRESS.md, or DECISIONS.md.`
+- **Expected Files or Layers**: `src/server/db/queries/application.ts; src/services/application.ts and PostgreSQL-backed tests; a dedicated src/app/api/applications/[id]/status/route.ts and focused route tests; src/lib/application-query.ts mutation request support; src/components/active-application-list.tsx and focused tests; page/create-form regressions only as needed; tests/e2e/status-transitions.spec.ts; test helpers only when needed for deterministic isolation.`
+- **Targeted Verification**: `pnpm test src/services/application.test.ts src/app/api/applications/[id]/status/route.test.ts src/app/api/applications/route.test.ts src/components/active-application-list.test.tsx src/components/create-application-form.test.tsx src/app/page.test.tsx; pnpm test:e2e tests/e2e/status-transitions.spec.ts; pnpm test:e2e tests/e2e/filters.spec.ts tests/e2e/search.spec.ts tests/e2e/list-view.spec.ts tests/e2e/create-application.spec.ts tests/e2e/landing.spec.ts; pnpm format:check; pnpm lint; pnpm typecheck; git diff --check.`
 - **Final Verification**: `pnpm lint && pnpm test && pnpm test:e2e && pnpm build`
 
 ## Generator Report
 
-- **Commit**: `d7a40faab134fd82bcadde2348961785d2842aeb`
-- **Changed Files**: `src/lib/application.ts; src/services/application.ts and tests; src/app/api/applications/route.ts and tests; src/lib/application-query.ts; src/components/active-application-list.tsx and tests; create-form and page copy/regression tests; tests/e2e/filters.spec.ts; tests/e2e/landing.spec.ts.`
-- **Tests Run**: `PASS: targeted Vitest (5 files/44 tests); new filters E2E (1/1); search/list/create/landing E2E regressions (4/4); pnpm format:check; pnpm lint; pnpm typecheck; git diff --check.`
-- **Known Risks**: `Environment uses Node v26 instead of required v22.23.1 and emits the existing engine warning. Existing ESLint configuration can scan generated .next-e2e output if lint follows Playwright; Generator removed only that reproducible artifact before lint. Existing generic database query required no change.`
+- **Commit**: `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1`
+- **Changed Files**: `src/server/db/queries/application.ts; src/services/application.ts and tests; src/app/api/applications/[id]/status/route.ts and tests; src/lib/application-query.ts; src/components/active-application-list.tsx and tests; tests/e2e/status-transitions.spec.ts.`
+- **Tests Run**: `PASS: focused status route Vitest (7 tests); focused application-list component Vitest (10 tests); pnpm typecheck; pnpm format:check; git diff --check. Started but no conclusive result: PostgreSQL service tests, combined targeted Vitest, corrected status-transition E2E, and final lint.`
+- **Known Risks**: `Generator verification was incomplete: PostgreSQL service tests, corrected status-transition E2E, remaining E2E regressions, final lint, full Vitest, and build require Evaluator verification. An initial E2E locator was corrected, but the rerun was blocked by a stale .next-e2e/dev/lock left by the prior dev process.`
 
 ## Evaluator Report
 
-- **Verdict**: `PASS`
-- **Commit Verified**: `d7a40faab134fd82bcadde2348961785d2842aeb`
-- **Checks Run**: `Isolated exact-commit git archive using Node 22.23.1 and pnpm 11.20.0: targeted Vitest (5 files/44 tests); focused filters Playwright (1/1); F01–F04 Playwright regressions (4/4); pnpm format:check; pnpm typecheck; pnpm lint; full pnpm test (8 files/56 tests); full pnpm test:e2e (5/5); pnpm build.`
-- **Findings**: `All F05 acceptance criteria and architectural constraints pass. Exact view parsing/defaulting and service-owned status partitions are validated; search/filter predicates compose with preserved projection and ordering; TanStack Query keys isolate view/search state; accessible controls and selected-view states are covered; POST and F01–F04 regressions remain intact. No source or project-state files were modified during evaluation.`
-- **Required Fix**: `none`
+- **Verdict**: `pending`
+- **Commit Verified**: `pending`
+- **Checks Run**: `pending`
+- **Findings**: `pending`
+- **Required Fix**: `pending`
 
 ## Current Status
 
-- **Active**: `none`
+- **Active**: `F06 — update application status through all fixed states`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F05 passed independent evaluation at exact Generator commit `d7a40faab134fd82bcadde2348961785d2842aeb`. F00 through F05 are passing and no feature is active.
+F00 through F05 are passing. F06 Generator commit `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1` is awaiting independent evaluation; Generator verification gaps are recorded above.
 
 ## Next Step
 
-1. `Orchestrator may activate F06 in a new sprint when requested.`
+1. `Evaluator verifies exact Generator commit f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1 in a clean workspace, including every acceptance criterion and the full completion pipeline.`
+2. `Orchestrator accepts only an Evaluator PASS; on FAIL, return one bounded correction to the Generator.`
 
 ## Verification Status
 
@@ -71,7 +73,7 @@ F05 passed independent evaluation at exact Generator commit `d7a40faab134fd82bca
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Activate F05 as a two-state Active/Closed filter; Active is Applied/Interviewing/Offer and remains the default; Closed is Accepted/Rejected/Withdrawn/Archived; filter composes with F04 search; defer all-status/per-status filters, URL persistence, and status mutation.`
-- **Context Summary**: `F00 through F05 are passing. F05 Active/Closed filtering was independently verified at d7a40faab134fd82bcadde2348961785d2842aeb. No feature is active.`
+- **Decisions Made**: `Activate F06 with a dedicated status endpoint; allow every fixed status without transition restrictions; atomically persist each real change with one status_changed history row; treat same-status requests as idempotent without history or updated_at churn; refresh TanStack Query list caches so cards move between Active and Closed views.`
+- **Context Summary**: `F00 through F05 are passing. F06 is evaluating at exact Generator commit f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1; independent verification must cover the Generator's incomplete database, E2E, lint, full-test, and build checks.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Orchestrator activates F06 only when requested.`
+- **Next Owner**: `Evaluator verifies exact Generator commit f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1 without modifying implementation or project state.`
