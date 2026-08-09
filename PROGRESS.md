@@ -10,27 +10,27 @@
 
 ## Orchestration State
 
-- **Phase**: `passing`
-- **Active Feature**: `none`
-- **Generator Commit**: `60a739174effc0f8e5745abce8faf651c15876af`
-- **Evaluator Verdict**: `PASS`
+- **Phase**: `active`
+- **Active Feature**: `F05`
+- **Generator Commit**: `none`
+- **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
 
-- **Feature ID**: `F04`
-- **Scope**: Add search to the existing active-application list so the single user can find applications by company name or position title. Search is a trimmed, case-insensitive substring match across either field and remains limited to the F03 active-status set. A blank or whitespace-only search restores the complete active list. Extend the existing `GET /api/applications` flow through Route Handler -> Service -> Database Query Module, and integrate an accessible search control with the current TanStack Query list while preserving all F02/F03 behavior. Include PostgreSQL-backed service coverage, focused route/component/page regression tests, and `tests/e2e/search.spec.ts`. Do not add active/closed filtering, fuzzy/ranked search, pagination, highlighting, URL persistence, status changes, detail/history, edit/delete, interview records, schema changes, or new dependencies unless an unavoidable defect is first escalated to the Orchestrator.
+- **Feature ID**: `F05`
+- **Scope**: Add a two-state filter to the existing application list so the single user can switch between Active and Closed applications without full-page navigation. Active remains the default and contains exactly `Applied`, `Interviewing`, and `Offer`; Closed contains exactly `Accepted`, `Rejected`, `Withdrawn`, and `Archived`. The selected filter composes with the existing trimmed case-insensitive company/title search and preserves deterministic ordering and the existing list projection. Extend the existing `GET /api/applications` flow through Route Handler -> Service -> Database Query Module and the current TanStack Query UI. Include PostgreSQL-backed service coverage, focused route/component/page regressions, and `tests/e2e/filters.spec.ts`. Do not add an all-status view, per-status filtering, URL persistence, counts requiring extra queries, status mutation, detail/history, edit/delete, interview records, schema changes, or new dependencies unless an unavoidable defect is first escalated to the Orchestrator.
 - **Acceptance Criteria**:
-  1. The server accepts an optional `search` query parameter, normalizes it by trimming surrounding whitespace, and treats an omitted, empty, or whitespace-only value as no search. Non-empty input is validated with a bounded Zod schema; invalid input returns the existing structured client-safe `INVALID_REQUEST` response with HTTP 400 and does not call the service.
-  2. Search follows `GET Route Handler -> Service -> Database Query Module`. The service continues to own the exact active-status set (`Applied`, `Interviewing`, and `Offer`), validates input and database output with Zod, and passes only normalized search criteria to the server-only query module. Pages and client components contain no database imports or queries, shared status definitions remain authoritative, and no `any` is introduced.
-  3. The database query performs a parameterized, case-insensitive substring match against either company name or position title, combines it with the active-status predicate, selects only the existing list projection, and preserves F03 ordering (`appliedDate DESC`, `createdAt DESC`, `id DESC`). Closed applications never appear even when their company or title matches.
-  4. `GET /api/applications?search=...` returns the same stable `{ applications: [...] }` shape with HTTP 200 for valid searches. Unexpected failures still map to the structured `INTERNAL_ERROR` response without database details, and existing unsearched GET and POST behavior remains unchanged.
-  5. The landing page exposes a clearly labelled search input associated with the active-applications region. Typing a query updates the list without full-page navigation; a visible, keyboard-operable clear action appears when useful and restores the complete active list. Search state and results remain usable at narrow and wide viewports.
-  6. TanStack Query owns search request state using a query key that includes the normalized term, URL encoding is delegated to `URLSearchParams`, and stale responses do not replace results for the current term. Loading and recoverable error states remain accessible. A valid search with no matches has an unambiguous search-specific empty state distinct from the existing no-applications state.
-  7. PostgreSQL-backed tests prove company/title matching, mixed case, substring matching, surrounding-whitespace normalization, active-only enforcement, deterministic ordering, no matches, and unsearched regression behavior. Focused route tests cover parsed/normalized search, invalid input, successful response, and safe failure mapping; component/page tests cover search, clear, search-specific empty/error/loading behavior, encoding, and existing list/create regressions.
-  8. `tests/e2e/search.spec.ts` creates or seeds distinguishable active applications plus at least one matching closed application, verifies company and title searches case-insensitively, verifies no-match feedback, verifies clear restores the active list, verifies the closed match never appears, and observes no full-page reload. Existing F01–F03 regressions, formatting, strict TypeScript, lint, full Vitest, full Playwright, and production build pass with no unrelated scope.
-- **Relevant Constraints**: `Server-only database access; GET Route Handler -> Service -> Database Query Module; service-owned active-status rule and Zod input/output validation; parameterized database predicates; reuse shared ApplicationStatus; preserve F03 deterministic ordering and response projection; no schema/migration or dependency changes expected; TanStack Query remains the single network-state owner; strict TypeScript; no any; accessible responsive UI; preserve unrelated work; one logical Generator commit; Generator must read the relevant Next.js 16.3 App Router/Route Handler and data-fetching docs under node_modules/next/dist/docs before coding; Generator must not edit FEATURES.md, PROGRESS.md, or DECISIONS.md.`
-- **Expected Files or Layers**: `src/server/db/queries/application.ts and PostgreSQL-backed service tests; search input schema/service in src/services/application.ts; GET query parsing in src/app/api/applications/route.ts and route tests; src/lib/application-query.ts query-key/request updates; active-list search UI and focused component tests; landing-page regression tests as needed; tests/e2e/search.spec.ts; test helpers only when needed for deterministic isolation.`
-- **Targeted Verification**: `pnpm test src/services/application.test.ts src/app/api/applications/route.test.ts src/components/active-application-list.test.tsx src/components/create-application-form.test.tsx src/app/page.test.tsx; pnpm test:e2e tests/e2e/search.spec.ts; pnpm test:e2e tests/e2e/list-view.spec.ts tests/e2e/create-application.spec.ts; pnpm format:check; pnpm lint; pnpm typecheck.`
+  1. The server accepts an optional `view` query parameter whose only valid values are `active` and `closed`; omission defaults to `active`. Invalid, empty, repeated/ambiguous, or otherwise unsupported values return the existing structured client-safe `INVALID_REQUEST` response with HTTP 400 and do not call the service. Existing bounded search parsing and normalization remain intact.
+  2. Filtering follows `GET Route Handler -> Service -> Database Query Module`. The service owns both exact status groups, validates normalized input and database output with Zod, and passes the selected status set plus normalized search criteria to the server-only query module. Shared `ApplicationStatus` remains authoritative, pages/client components contain no database access, and no `any` is introduced.
+  3. The database query combines the selected status predicate with the existing parameterized search predicate when present, selects only the existing list projection, and preserves ordering by `appliedDate DESC`, `createdAt DESC`, then `id DESC`. Active results never contain closed statuses and closed results never contain active statuses, including when search text matches both groups.
+  4. Valid active and closed requests return the stable `{ applications: [...] }` response with HTTP 200. Omitted `view` remains backward-compatible with the F03/F04 active list; unexpected failures map to the structured `INTERNAL_ERROR` response without database details; POST behavior is unchanged.
+  5. The landing-page list exposes an accessible, keyboard-operable Active/Closed control with clear selected-state semantics. Active is initially selected; changing it updates results without full-page navigation. Labels, heading/count text, loading, error/retry, and no-applications messaging accurately describe the selected view and remain usable at narrow and wide viewports.
+  6. Filter state composes with the existing search: switching views preserves the entered search term, searching in Closed queries only closed records, clearing search restores the complete selected view, and each view has an unambiguous search-specific no-match state. No stale result from another view/search combination replaces the current result.
+  7. TanStack Query remains the sole network-state owner. Its query key includes both selected view and normalized search, its request uses `URLSearchParams`, and switching back may reuse correctly keyed cached data. Focused component tests cover default selection, switching both ways, accessibility, composed search, clear, loading/error/retry/empty/count copy, request encoding, and existing create/list/search regressions.
+  8. PostgreSQL-backed and route tests prove exact status partitioning, default-active compatibility, closed retrieval, search-plus-filter composition, deterministic ordering, no matches, valid parsing, invalid/repeated values, and safe failure mapping. `tests/e2e/filters.spec.ts` seeds distinguishable records across every status group, verifies default Active and Closed views, search composition, clear behavior, group isolation, empty feedback, keyboard operation, and no full-page reload. Existing F01–F04 regressions, formatting, strict TypeScript, lint, full Vitest, full Playwright, and production build pass with no unrelated scope.
+- **Relevant Constraints**: `Server-only database access; GET Route Handler -> Service -> Database Query Module; service-owned exact active and closed status groups with Zod input/output validation; parameterized database predicates; reuse shared ApplicationStatus; preserve F03 ordering and projection plus F04 search normalization; no schema/migration or dependency changes expected; TanStack Query remains the single network-state owner; strict TypeScript; no any; accessible responsive UI; preserve unrelated work; one logical Generator commit; Generator must read the relevant Next.js 16.3 App Router/Route Handler and data-fetching docs under node_modules/next/dist/docs before coding; Generator must not edit FEATURES.md, PROGRESS.md, or DECISIONS.md.`
+- **Expected Files or Layers**: `src/services/application.ts and PostgreSQL-backed service tests; src/server/db/queries/application.ts only if its generic status/search contract needs adjustment; GET query parsing in src/app/api/applications/route.ts and route tests; src/lib/application-query.ts query-key/request updates; src/components/active-application-list.tsx (rename only if justified) and focused tests; page regressions as needed; tests/e2e/filters.spec.ts; test helpers only when needed for deterministic isolation.`
+- **Targeted Verification**: `pnpm test src/services/application.test.ts src/app/api/applications/route.test.ts src/components/active-application-list.test.tsx src/components/create-application-form.test.tsx src/app/page.test.tsx; pnpm test:e2e tests/e2e/filters.spec.ts; pnpm test:e2e tests/e2e/search.spec.ts tests/e2e/list-view.spec.ts tests/e2e/create-application.spec.ts tests/e2e/landing.spec.ts; pnpm format:check; pnpm lint; pnpm typecheck.`
 - **Final Verification**: `pnpm lint && pnpm test && pnpm test:e2e && pnpm build`
 
 ## Generator Report
@@ -50,17 +50,17 @@
 
 ## Current Status
 
-- **Active**: `none`
+- **Active**: `F05 — filter application list between Active and Closed statuses`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F04 passed independent evaluation at exact Generator correction commit `60a739174effc0f8e5745abce8faf651c15876af`. The user intentionally retained the landing-page changes and aligned the page unit test in commit `6acd3a76440ddb39e72cb3bd42a175acb98a610d`; those changes were not restored from `d1e65b4524a1e7206038086a55da9af0d6a47828`. F00 through F04 are passing and no feature is active.
+F00 through F04 are passing. F05 is active under the sprint contract above; implementation is assigned to the Generator next.
 
 ## Next Step
 
-1. `Orchestrator may activate F05 in a new sprint when requested.`
+1. `Generator implements F05 and returns one logical commit plus targeted verification evidence.`
 
 ## Verification Status
 
@@ -71,7 +71,7 @@ F04 passed independent evaluation at exact Generator correction commit `60a73917
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Activate F04 as case-insensitive trimmed substring search across active application company names and position titles; blank search restores the full active list; preserve F03 projection, ordering, and active-only semantics; defer filtering, fuzzy ranking, highlighting, pagination, and URL persistence.`
-- **Context Summary**: `F00 through F04 are passing. F04 search and the intentional landing-page baseline were independently verified at 60a739174effc0f8e5745abce8faf651c15876af. No feature is active.`
+- **Decisions Made**: `Activate F05 as a two-state Active/Closed filter; Active is Applied/Interviewing/Offer and remains the default; Closed is Accepted/Rejected/Withdrawn/Archived; filter composes with F04 search; defer all-status/per-status filters, URL persistence, and status mutation.`
+- **Context Summary**: `F00 through F04 are passing. F05 is active and awaiting Generator implementation under the contract above.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Orchestrator activates F05 only when requested.`
+- **Next Owner**: `Generator implements and commits F05 without editing orchestration state.`
