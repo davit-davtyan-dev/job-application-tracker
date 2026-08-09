@@ -230,6 +230,62 @@ describe("listActiveApplications", () => {
   it("returns an empty list when there are no active applications", async () => {
     expect(await listActiveApplications()).toEqual([]);
   });
+
+  it("searches company or title by trimmed case-insensitive substring while preserving active ordering", async () => {
+    const [matchingCompany, otherCompany] = await db
+      .insert(companies)
+      .values([{ name: "Northstar Labs" }, { name: "Other Company" }])
+      .returning();
+    const orderedIds = [
+      "10000000-0000-4000-8000-000000000001",
+      "20000000-0000-4000-8000-000000000002",
+    ];
+    await db.insert(jobApplications).values([
+      {
+        id: orderedIds[0],
+        companyId: matchingCompany!.id,
+        positionTitle: "Engineer",
+        appliedDate: "2026-08-08",
+        status: ApplicationStatus.Applied,
+        createdAt: new Date("2026-08-08T10:00:00Z"),
+      },
+      {
+        id: orderedIds[1],
+        companyId: otherCompany!.id,
+        positionTitle: "NorthStar platform lead",
+        appliedDate: "2026-08-09",
+        status: ApplicationStatus.Offer,
+      },
+      {
+        companyId: matchingCompany!.id,
+        positionTitle: "Closed match",
+        appliedDate: "2026-08-10",
+        status: ApplicationStatus.Rejected,
+      },
+      {
+        companyId: otherCompany!.id,
+        positionTitle: "Unrelated active",
+        appliedDate: "2026-08-11",
+        status: ApplicationStatus.Interviewing,
+      },
+    ]);
+
+    const matches = await listActiveApplications({
+      search: "  nOrThStAr  ",
+    });
+    expect(matches.map(({ id }) => id)).toEqual([orderedIds[1], orderedIds[0]]);
+    expect(await listActiveApplications({ search: "no matches" })).toEqual([]);
+    expect(await listActiveApplications({ search: "   " })).toHaveLength(3);
+  });
+
+  it("rejects overlong or unexpected search criteria before querying", async () => {
+    await expect(
+      listActiveApplications({ search: "x".repeat(201) }),
+    ).rejects.toBeDefined();
+    await expect(
+      listActiveApplications({ search: "x", unexpected: true }),
+    ).rejects.toBeDefined();
+  });
 });
 
 afterAll(() => client.end());

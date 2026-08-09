@@ -1,6 +1,6 @@
 import "server-only";
 
-import { desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
 
 import { database } from "@/server/db/client";
 import {
@@ -32,6 +32,7 @@ export interface ApplicationListRecord {
 
 export async function selectApplicationsByStatuses(
   statuses: JobApplication["status"][],
+  criteria: { search?: string } = {},
 ): Promise<ApplicationListRecord[]> {
   if (statuses.length === 0) return [];
 
@@ -45,7 +46,17 @@ export async function selectApplicationsByStatuses(
     })
     .from(jobApplications)
     .innerJoin(companies, eq(jobApplications.companyId, companies.id))
-    .where(inArray(jobApplications.status, statuses))
+    .where(
+      and(
+        inArray(jobApplications.status, statuses),
+        criteria.search
+          ? or(
+              ilike(companies.name, `%${criteria.search}%`),
+              ilike(jobApplications.positionTitle, `%${criteria.search}%`),
+            )
+          : undefined,
+      ),
+    )
     .orderBy(
       desc(jobApplications.appliedDate),
       desc(jobApplications.createdAt),

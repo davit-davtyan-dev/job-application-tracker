@@ -1,7 +1,6 @@
 import { format } from "date-fns";
-import { BriefcaseBusiness, Search } from "lucide-react";
+import { BriefcaseBusiness } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { CreateApplicationForm } from "@/components/create-application-form";
 import { ActiveApplicationList } from "@/components/active-application-list";
 
@@ -46,10 +45,12 @@ export default function Home() {
               >
                 Add first application
               </a>
-              <Button variant="outline" disabled>
-                <Search className="size-4" aria-hidden="true" />
+              <a
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 hover:bg-slate-50"
+                href="#active-application-search"
+              >
                 Search applications
-              </Button>
+              </a>
             </div>
           </div>
         </div>

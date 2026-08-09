@@ -30,6 +30,15 @@ export const activeApplicationSchema = z.strictObject({
 export const activeApplicationListSchema = z.array(activeApplicationSchema);
 export type ActiveApplication = z.infer<typeof activeApplicationSchema>;
 
+export const listActiveApplicationsInputSchema = z.strictObject({
+  search: z
+    .string()
+    .trim()
+    .max(200, "Search must be 200 characters or fewer.")
+    .transform((value) => value || undefined)
+    .optional(),
+});
+
 export const createApplicationInputSchema = z
   .strictObject({
     companyId: z.uuid().optional(),
@@ -72,9 +81,13 @@ export async function createApplication(
   return created;
 }
 
-export async function listActiveApplications(): Promise<ActiveApplication[]> {
+export async function listActiveApplications(
+  input: unknown = {},
+): Promise<ActiveApplication[]> {
+  const criteria = listActiveApplicationsInputSchema.parse(input);
   const applications = await selectApplicationsByStatuses(
     activeApplicationStatuses,
+    criteria,
   );
   return activeApplicationListSchema.parse(applications);
 }

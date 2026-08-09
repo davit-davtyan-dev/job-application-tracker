@@ -18,13 +18,7 @@ describe("tracker landing page", () => {
       </QueryClientProvider>,
     );
 
-    expect(
-      screen.getByRole("heading", {
-        level: 1,
-        name: /keep every application moving forward/i,
-      }),
-    ).toBeVisible();
-    expect(screen.getByText("Workspace ready")).toBeVisible();
+    expect(screen.getByText("Job Application Tracker")).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Add first application" }),
     ).toHaveAttribute("href", "#create-application");
@@ -34,5 +28,11 @@ describe("tracker landing page", () => {
     expect(
       screen.getByRole("heading", { name: "Active applications" }),
     ).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Search applications" }),
+    ).toHaveAttribute("href", "#active-application-search");
+    expect(
+      screen.getByRole("searchbox", { name: "Search active applications" }),
+    ).toHaveAttribute("aria-controls", "active-application-results");
   });
 });

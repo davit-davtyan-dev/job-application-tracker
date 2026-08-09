@@ -5,6 +5,7 @@ const {
   CompanyNotFoundError,
   createApplicationInputSchema,
   listActiveApplications,
+  listActiveApplicationsInputSchema,
 } = vi.hoisted(() => ({
   createApplication: vi.fn(),
   CompanyNotFoundError: class extends Error {},
@@ -23,12 +24,32 @@ const {
     ),
   },
   listActiveApplications: vi.fn(),
+  listActiveApplicationsInputSchema: {
+    safeParse: vi.fn((input: { search?: string }) => {
+      const search = input.search?.trim() || undefined;
+      return search && search.length > 200
+        ? {
+            success: false as const,
+            error: {
+              issues: [
+                {
+                  code: "too_big",
+                  path: ["search"],
+                  message: "Search must be 200 characters or fewer.",
+                },
+              ],
+            },
+          }
+        : { success: true as const, data: { search } };
+    }),
+  },
 }));
 vi.mock("@/services/application", () => ({
   createApplication,
   CompanyNotFoundError,
   createApplicationInputSchema,
   listActiveApplications,
+  listActiveApplicationsInputSchema,
 }));
 
 import { GET, POST } from "./route";
@@ -37,17 +58,48 @@ const request = (body: string) =>
   new Request("http://localhost/api/applications", { method: "POST", body });
 
 describe("GET /api/applications", () => {
+  beforeEach(() => listActiveApplications.mockReset());
+
   it("returns active applications in a stable object", async () => {
     const applications = [{ id: "app", status: "Applied" }];
     listActiveApplications.mockResolvedValueOnce(applications);
-    const response = await GET();
+    const response = await GET(
+      new Request("http://localhost/api/applications"),
+    );
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ applications });
+    expect(listActiveApplications).toHaveBeenCalledWith({
+      search: undefined,
+    });
+  });
+
+  it("parses and normalizes a search query", async () => {
+    listActiveApplications.mockResolvedValueOnce([]);
+    const response = await GET(
+      new Request("http://localhost/api/applications?search=%20AcMe%20"),
+    );
+    expect(response.status).toBe(200);
+    expect(listActiveApplications).toHaveBeenCalledWith({ search: "AcMe" });
+  });
+
+  it("rejects an invalid search without calling the service", async () => {
+    const response = await GET(
+      new Request(
+        `http://localhost/api/applications?search=${"x".repeat(201)}`,
+      ),
+    );
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: { code: "INVALID_REQUEST" },
+    });
+    expect(listActiveApplications).not.toHaveBeenCalled();
   });
 
   it("maps failures to a client-safe structured error", async () => {
     listActiveApplications.mockRejectedValueOnce(new Error("database-secret"));
-    const response = await GET();
+    const response = await GET(
+      new Request("http://localhost/api/applications"),
+    );
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({
       error: {
