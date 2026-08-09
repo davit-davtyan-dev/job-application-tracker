@@ -16,7 +16,7 @@ export function ActiveApplicationList() {
 
   return (
     <section aria-labelledby="active-applications-heading">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-emerald-700">Your pipeline</p>
           <h2
