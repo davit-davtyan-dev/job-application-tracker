@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F06`
-- **Generator Commit**: `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1`
-- **Evaluator Verdict**: `FAIL`
+- **Generator Commit**: `efae1d6fece1825788c31f127245019beab073c2`
+- **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
 
@@ -36,10 +36,10 @@
 
 ## Generator Report
 
-- **Commit**: `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1`
-- **Changed Files**: `src/server/db/queries/application.ts; src/services/application.ts and tests; src/app/api/applications/[id]/status/route.ts and tests; src/lib/application-query.ts; src/components/active-application-list.tsx and tests; tests/e2e/status-transitions.spec.ts.`
-- **Tests Run**: `PASS: focused status route Vitest (7 tests); focused application-list component Vitest (10 tests); pnpm typecheck; pnpm format:check; git diff --check. Started but no conclusive result: PostgreSQL service tests, combined targeted Vitest, corrected status-transition E2E, and final lint.`
-- **Known Risks**: `Generator verification was incomplete: PostgreSQL service tests, corrected status-transition E2E, remaining E2E regressions, final lint, full Vitest, and build require Evaluator verification. An initial E2E locator was corrected, but the rerun was blocked by a stale .next-e2e/dev/lock left by the prior dev process.`
+- **Commit**: `efae1d6fece1825788c31f127245019beab073c2` (corrected implementation; initial implementation `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1`)
+- **Changed Files**: `Initial: src/server/db/queries/application.ts; src/services/application.ts and tests; src/app/api/applications/[id]/status/route.ts and tests; src/lib/application-query.ts; src/components/active-application-list.tsx and tests; tests/e2e/status-transitions.spec.ts. Correction: src/components/active-application-list.tsx and tests; src/lib/application-query.ts; tests/e2e/status-transitions.spec.ts.`
+- **Tests Run**: `Initial PASS: focused status route Vitest (7); focused application-list component Vitest (10); typecheck; format:check; diff check. Correction PASS: focused component Vitest (11); F06 Playwright (1/1); F01–F05 Playwright regressions (5/5); affected-file ESLint; typecheck; format:check; diff check.`
+- **Known Risks**: `Initial verification gaps were independently exercised during the first evaluation; correction verification reports no known remaining risk within the bounded scope. Full independent pipeline rerun remains required.`
 
 ## Evaluator Report
 
@@ -57,12 +57,12 @@
 
 ## Current Session Summary
 
-F00 through F05 are passing. F06 returned to active after Evaluator FAIL on `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1`; one bounded correction is assigned.
+F00 through F05 are passing. Corrected F06 Generator commit `efae1d6fece1825788c31f127245019beab073c2` is awaiting independent re-evaluation.
 
 ## Next Step
 
-1. `Generator applies only the Evaluator's bounded accessibility/regression, formatting, and failure/retry-test corrections and returns one correction commit.`
-2. `Orchestrator sends the resulting exact commit containing F06 implementation plus correction to the Evaluator and accepts only PASS.`
+1. `Evaluator verifies exact corrected Generator commit efae1d6fece1825788c31f127245019beab073c2 in a clean workspace, rechecks prior failures, every acceptance criterion, and the full completion pipeline.`
+2. `Orchestrator accepts only an Evaluator PASS; otherwise return one further bounded correction or record an external blocker.`
 
 ## Verification Status
 
@@ -74,6 +74,6 @@ F00 through F05 are passing. F06 returned to active after Evaluator FAIL on `f99
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F06 with a dedicated status endpoint; allow every fixed status without transition restrictions; atomically persist each real change with one status_changed history row; treat same-status requests as idempotent without history or updated_at churn; refresh TanStack Query list caches so cards move between Active and Closed views.`
-- **Context Summary**: `F00 through F05 are passing. F06 is active after Evaluator FAIL on f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1. Core behavior and architecture passed; bounded corrections are limited to selector text semantics, Prettier, and mutation failure/retry coverage.`
+- **Context Summary**: `F00 through F05 are passing. F06 is evaluating at corrected Generator commit efae1d6fece1825788c31f127245019beab073c2 after bounded fixes for selector text semantics, Prettier, and mutation failure/retry coverage.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator applies the recorded bounded correction without changing project-state files.`
+- **Next Owner**: `Evaluator independently verifies exact corrected commit efae1d6fece1825788c31f127245019beab073c2 without modifying implementation or project state.`
