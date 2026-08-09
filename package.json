@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "node --env-file=.env.test ./node_modules/vitest/vitest.mjs run",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --env-file-if-exists=.env.local scripts/migrate.ts",

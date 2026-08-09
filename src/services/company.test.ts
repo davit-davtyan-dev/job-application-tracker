@@ -12,7 +12,7 @@ const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 
 if (!testDatabaseUrl) {
   throw new Error(
-    "Company integration tests require TEST_DATABASE_URL. Fix: define it in .env.local and rerun the test command.",
+    "Company integration tests require TEST_DATABASE_URL. Fix: define it in .env.test and rerun the test command.",
   );
 }
 
