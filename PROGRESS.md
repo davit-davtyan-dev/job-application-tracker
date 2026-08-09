@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
-- **Active Feature**: `F06`
+- **Phase**: `passing`
+- **Active Feature**: `none`
 - **Generator Commit**: `efae1d6fece1825788c31f127245019beab073c2`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `PASS`
 
 ## Active Sprint Contract
 
@@ -43,37 +43,36 @@
 
 ## Evaluator Report
 
-- **Verdict**: `FAIL`
-- **Commit Verified**: `f99bcaa1cbd17bd2fe4aafcd6600ac0a8de185f1`
-- **Checks Run**: `Isolated exact-commit archive: focused Vitest PASS (63/63); full Vitest PASS (75/75); F06 Playwright PASS (1/1); F01–F05 Playwright regressions FAIL (3 failed/2 passed); pnpm lint PASS; pnpm typecheck PASS; pnpm build PASS; git diff --check PASS; pnpm format:check FAIL.`
-- **Findings**: `The per-card visually hidden label repeats the position title and makes existing text locators ambiguous in filters/search/list E2E tests. src/lib/application-query.ts is not Prettier-clean. Contracted failed-mutation coverage is absent from the component test and status-transitions E2E test. Architecture inspection otherwise passed strict layering, Zod validation, shared status vocabulary, atomic transaction, idempotence, UUID/UTC behavior, rollback, dependency/schema constraints, and no-any.`
-- **Required Fix**: `Bounded correction only: preserve an explicit accessible status-selector name without duplicating visible position-title text semantics (or narrowly harden existing E2E locators); format src/lib/application-query.ts; add a component test showing failed PATCH retains persisted status and permits another selection; add Playwright coverage that forces a failed status request, verifies accessible recoverable feedback, retries, and confirms persistence. Prove with focused component/F06 E2E tests, F01–F05 Playwright regressions, format:check, and affected static checks.`
+- **Verdict**: `PASS`
+- **Commit Verified**: `efae1d6fece1825788c31f127245019beab073c2`
+- **Checks Run**: `Clean isolated exact-commit workspace: format:check PASS; lint PASS; typecheck PASS; targeted Vitest PASS (64/64); full Vitest PASS (76/76); F06 Playwright PASS (1/1); F01–F05 Playwright regressions PASS (5/5); full Playwright PASS (6/6); build PASS; git diff --check PASS.`
+- **Findings**: `All F06 acceptance criteria and architectural constraints pass. Prior selector text, formatting, and failure/retry coverage findings are corrected. Strict validation, server-only layering, shared status vocabulary, atomic update/history transaction and rollback, UUID/UTC behavior, same-status idempotence, exactly-one history row, safe errors, cache invalidation, pending isolation, persisted-state recovery, and no-any/schema/migration/dependency constraints were independently verified.`
+- **Required Fix**: `none`
 
 ## Current Status
 
-- **Active**: `F06 — update application status through all fixed states`
-- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS)`
+- **Active**: `none`
+- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F05 are passing. Corrected F06 Generator commit `efae1d6fece1825788c31f127245019beab073c2` is awaiting independent re-evaluation.
+F06 passed independent evaluation at exact corrected Generator commit `efae1d6fece1825788c31f127245019beab073c2`. F00 through F06 are passing and no feature is active.
 
 ## Next Step
 
-1. `Evaluator verifies exact corrected Generator commit efae1d6fece1825788c31f127245019beab073c2 in a clean workspace, rechecks prior failures, every acceptance criterion, and the full completion pipeline.`
-2. `Orchestrator accepts only an Evaluator PASS; otherwise return one further bounded correction or record an external blocker.`
+1. `Orchestrator may activate F07 in a new sprint when requested.`
 
 ## Verification Status
 
-- **Build**: `PASS at d7a40faab134fd82bcadde2348961785d2842aeb`
-- **Lint**: `PASS at d7a40faab134fd82bcadde2348961785d2842aeb`
-- **Unit/Integration**: `PASS (56 tests) at d7a40faab134fd82bcadde2348961785d2842aeb`
-- **E2E**: `PASS (5/5) at d7a40faab134fd82bcadde2348961785d2842aeb`
+- **Build**: `PASS at efae1d6fece1825788c31f127245019beab073c2`
+- **Lint**: `PASS at efae1d6fece1825788c31f127245019beab073c2`
+- **Unit/Integration**: `PASS (76 tests) at efae1d6fece1825788c31f127245019beab073c2`
+- **E2E**: `PASS (6/6) at efae1d6fece1825788c31f127245019beab073c2`
 
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F06 with a dedicated status endpoint; allow every fixed status without transition restrictions; atomically persist each real change with one status_changed history row; treat same-status requests as idempotent without history or updated_at churn; refresh TanStack Query list caches so cards move between Active and Closed views.`
-- **Context Summary**: `F00 through F05 are passing. F06 is evaluating at corrected Generator commit efae1d6fece1825788c31f127245019beab073c2 after bounded fixes for selector text semantics, Prettier, and mutation failure/retry coverage.`
+- **Context Summary**: `F00 through F06 are passing. F06 was independently verified at exact corrected Generator commit efae1d6fece1825788c31f127245019beab073c2. No feature is active.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator independently verifies exact corrected commit efae1d6fece1825788c31f127245019beab073c2 without modifying implementation or project state.`
+- **Next Owner**: `Orchestrator activates F07 only when requested.`

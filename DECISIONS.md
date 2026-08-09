@@ -38,3 +38,8 @@
 
 - **Decision**: Define the fixed job-application status vocabulary once as the string `ApplicationStatus` enum and reuse it across Drizzle, Zod, and UI options. Construct structured Route Handler errors through the shared `src/app/api/responses.ts` utility.
 - **Reasoning**: The installed Drizzle and Zod versions accept enum objects directly, so an `as const` tuple adds no required capability. A single enum prevents status vocabulary drift across persistence, validation, and rendering. Centralizing the common API error envelope removes duplicated response construction while preserving route-specific codes, messages, issues, and statuses.
+
+### 2026-08-10: Atomic and Idempotent Application Status Mutation
+
+- **Decision**: Update one application's status through a dedicated status endpoint. Allow direct movement to any shared `ApplicationStatus`. For a real change, atomically update the application and append exactly one `status_changed` activity-history row; treat a same-status request as a successful no-op without history or `updated_at` churn.
+- **Reasoning**: Direct transitions match the single-user tracker scope without introducing an unrequested workflow policy. The transaction preserves the required status/history invariant, while idempotent same-status requests avoid misleading duplicate activity and timestamp changes. Invalidating the application query root lets existing Active/Closed and search caches settle consistently after a mutation.
