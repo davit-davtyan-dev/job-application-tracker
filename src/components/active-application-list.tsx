@@ -14,6 +14,8 @@ import {
 } from "@/lib/application-query";
 import { ApplicationListView, ApplicationStatus } from "@/lib/application";
 import { InterviewSection } from "@/components/interview-section";
+import { ActivityHistorySection } from "@/components/activity-history-section";
+import { historyQueryKey } from "@/lib/history-query";
 
 function ApplicationStatusControl({
   application,
@@ -24,8 +26,14 @@ function ApplicationStatusControl({
   const mutation = useMutation({
     mutationFn: (status: ApplicationStatus) =>
       updateApplicationStatusRequest(application.id, status),
-    onSuccess: async () =>
-      queryClient.invalidateQueries({ queryKey: applicationsQueryRoot }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: applicationsQueryRoot }),
+        queryClient.invalidateQueries({
+          queryKey: historyQueryKey(application.id),
+        }),
+      ]);
+    },
   });
   return (
     <div className="text-right">
@@ -212,6 +220,7 @@ export function ActiveApplicationList() {
                   </time>
                 </p>
                 <InterviewSection application={application} />
+                <ActivityHistorySection application={application} />
               </li>
             ))}
           </ul>

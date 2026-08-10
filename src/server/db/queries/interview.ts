@@ -3,6 +3,10 @@ import "server-only";
 import { asc, eq } from "drizzle-orm";
 
 import { InterviewStatus } from "@/lib/interview";
+import {
+  ActivityEventType,
+  type ActivityEventType as ActivityEventTypeValue,
+} from "@/lib/history";
 import { database } from "@/server/db/client";
 import {
   activityHistory,
@@ -42,7 +46,7 @@ export async function insertInterviewWithHistory(
     await transaction.insert(activityHistory).values({
       applicationId,
       interviewId: interview.id,
-      eventType: "interview_scheduled",
+      eventType: ActivityEventType.InterviewScheduled,
       status: application.status,
     });
     return interview;
@@ -76,14 +80,14 @@ export async function updateInterviewStatusWithHistory(
       .returning();
     if (!updated) throw new Error("Interview update returned no record.");
     const eventType = {
-      [InterviewStatus.Scheduled]: "interview_scheduled",
-      [InterviewStatus.Completed]: "interview_completed",
-      [InterviewStatus.Cancelled]: "interview_cancelled",
-    }[status];
+      [InterviewStatus.Scheduled]: ActivityEventType.InterviewScheduled,
+      [InterviewStatus.Completed]: ActivityEventType.InterviewCompleted,
+      [InterviewStatus.Cancelled]: ActivityEventType.InterviewCancelled,
+    } satisfies Record<InterviewStatus, ActivityEventTypeValue>;
     await transaction.insert(activityHistory).values({
       applicationId,
       interviewId,
-      eventType,
+      eventType: eventType[status],
       status: current.applicationStatus,
     });
     return updated;

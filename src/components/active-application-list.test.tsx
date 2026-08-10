@@ -518,4 +518,71 @@ describe("ActiveApplicationList", () => {
       expect.objectContaining({ method: "POST" }),
     );
   });
+
+  it("reveals an isolated encoded activity timeline with every label and retry", async () => {
+    let historyAttempts = 0;
+    const events = [
+      "application_created",
+      "status_changed",
+      "interview_scheduled",
+      "interview_completed",
+      "interview_cancelled",
+    ];
+    const fetchMock = vi.fn((url: string) => {
+      if (url === "/api/applications?view=active")
+        return Promise.resolve(
+          Response.json({
+            applications: [
+              {
+                id: "app/encoded",
+                companyName: "History Co",
+                positionTitle: "History role",
+                appliedDate: "2026-08-10",
+                status: "Interviewing",
+              },
+            ],
+          }),
+        );
+      historyAttempts += 1;
+      if (historyAttempts === 1)
+        return Promise.resolve(new Response("no", { status: 500 }));
+      return Promise.resolve(
+        Response.json({
+          history: events.map((eventType, index) => ({
+            id: `event-${index}`,
+            applicationId: "app/encoded",
+            interviewId: eventType.startsWith("interview_")
+              ? "interview-id"
+              : null,
+            eventType,
+            status: "Interviewing",
+            createdAt: `2026-08-10T10:0${index}:00.000Z`,
+          })),
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderList();
+    const button = await screen.findByRole("button", { name: "View activity" });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(button);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Activity could not be loaded",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Retry activity" }),
+    );
+    for (const label of [
+      "Application created",
+      "Application status changed",
+      "Interview scheduled",
+      "Interview completed",
+      "Interview cancelled",
+    ])
+      expect(await screen.findByText(label)).toBeVisible();
+    expect(screen.getAllByText("Interview: interview-id")).toHaveLength(3);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/applications/app%2Fencoded/history",
+    );
+  });
 });

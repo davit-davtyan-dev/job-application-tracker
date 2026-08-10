@@ -11,6 +11,7 @@ import {
   interviewsQueryKey,
   updateInterviewStatusRequest,
 } from "@/lib/interview-query";
+import { historyQueryKey } from "@/lib/history-query";
 
 export function InterviewSection({
   application,
@@ -50,7 +51,14 @@ function InterviewContent({
   const create = useMutation({
     mutationFn: (scheduledAt: string) =>
       createInterviewRequest(application.id, scheduledAt),
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({
+          queryKey: historyQueryKey(application.id),
+        }),
+      ]);
+    },
   });
   const [scheduledAt, setScheduledAt] = useState("");
 
@@ -154,10 +162,16 @@ function InterviewRow({
     scope: { id: `interview-status-${interview.id}` },
     mutationFn: (status: InterviewStatus) =>
       updateInterviewStatusRequest(applicationId, interview.id, status),
-    onSuccess: async () =>
-      queryClient.invalidateQueries({
-        queryKey: interviewsQueryKey(applicationId),
-      }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: interviewsQueryKey(applicationId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: historyQueryKey(applicationId),
+        }),
+      ]);
+    },
   });
 
   return (

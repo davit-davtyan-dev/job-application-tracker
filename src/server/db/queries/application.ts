@@ -2,6 +2,7 @@ import "server-only";
 
 import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
 
+import { ActivityEventType } from "@/lib/history";
 import { database } from "@/server/db/client";
 import {
   activityHistory,
@@ -50,7 +51,7 @@ export async function updateApplicationStatusWithHistory(
     if (!updated) throw new Error("Application update returned no record.");
     await transaction.insert(activityHistory).values({
       applicationId: id,
-      eventType: "status_changed",
+      eventType: ActivityEventType.StatusChanged,
       status,
     });
     return updated;
@@ -129,7 +130,7 @@ export async function insertApplicationWithHistory(
 
     await transaction.insert(activityHistory).values({
       applicationId: application.id,
-      eventType: "application_created",
+      eventType: ActivityEventType.ApplicationCreated,
       status: application.status,
     });
 
