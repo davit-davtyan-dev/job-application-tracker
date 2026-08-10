@@ -73,7 +73,9 @@ test("reveals isolated company history and refreshes it after status changes", a
     ).toHaveCount(1);
 
     await page.getByRole("button", { name: "Closed" }).click();
-    await search.fill(`Older ${suffix}`);
+    await page
+      .getByRole("searchbox", { name: "Search closed applications" })
+      .fill(`Older ${suffix}`);
     await page.getByRole("button", { name: "View company history" }).click();
     const closedRegion = page.getByRole("region", {
       name: `Company history for ${companyName}`,

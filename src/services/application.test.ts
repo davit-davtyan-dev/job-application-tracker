@@ -210,6 +210,7 @@ describe("listApplications", () => {
     expect(await listApplications()).toEqual([
       {
         id: expect.any(String),
+        companyId: company!.id,
         companyName: "List Co",
         positionTitle: "New date",
         appliedDate: "2026-08-09",
@@ -217,6 +218,7 @@ describe("listApplications", () => {
       },
       {
         id: newerId,
+        companyId: company!.id,
         companyName: "List Co",
         positionTitle: "Tie two",
         appliedDate: "2026-08-08",
@@ -224,6 +226,7 @@ describe("listApplications", () => {
       },
       {
         id: olderId,
+        companyId: company!.id,
         companyName: "List Co",
         positionTitle: "Tie one",
         appliedDate: "2026-08-08",
