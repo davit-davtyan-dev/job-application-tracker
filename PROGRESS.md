@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
+- **Phase**: `active`
 - **Active Feature**: `F08`
 - **Generator Commit**: `c87d4893b60dbaa486f28b7a8820769ff3a17aa9`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `FAIL`
 
 ## Active Sprint Contract
 
@@ -44,25 +44,25 @@
 
 ## Evaluator Report
 
-- **Verdict**: `pending`
-- **Commit Verified**: `pending`
-- **Checks Run**: `pending`
-- **Findings**: `pending`
-- **Required Fix**: `pending`
+- **Verdict**: `FAIL`
+- **Commit Verified**: `c87d4893b60dbaa486f28b7a8820769ff3a17aa9`
+- **Checks Run**: `Clean isolated exact-commit workspace: targeted Vitest PASS (6 files/59 tests); targeted Playwright PASS (8/8 parallel); full Vitest PASS (14 files/111 tests); full Playwright PASS (8/8); format:check PASS; lint PASS; typecheck PASS; build PASS. The reported create-application locator collision did not reproduce.`
+- **Findings**: `Implementation behavior and architecture comply, but acceptance criterion 10 test coverage is incomplete: focused component tests omit activity-specific loading and empty states; cache tests do not prove each successful application/interview mutation refreshes only the affected application's timeline while unrelated history caches remain untouched; activity-history E2E does not assert rendered chronological order before and after refresh.`
+- **Required Fix**: `Add focused loading/empty activity assertions; add multi-application cache-spy tests proving application-status and interview mutations refresh only the affected history key; extend activity-history E2E to assert application_created -> status_changed -> interview_scheduled -> interview_completed before and after refresh. Run the evaluator proof commands and produce one bounded correction commit.`
 
 ## Current Status
 
-- **Active**: `F08 — evaluating exact Generator commit c87d4893b60dbaa486f28b7a8820769ff3a17aa9`
+- **Active**: `F08 — bounded test-coverage correction after Evaluator FAIL at c87d4893b60dbaa486f28b7a8820769ff3a17aa9`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F07 are passing. F08 Generator implementation is committed at `c87d4893b60dbaa486f28b7a8820769ff3a17aa9` and awaits independent clean-workspace evaluation.
+F00 through F07 are passing. F08 returned to active after independent evaluation of `c87d4893b60dbaa486f28b7a8820769ff3a17aa9`; one bounded test-coverage correction is required.
 
 ## Next Step
 
-1. `Evaluator verifies exact Generator commit c87d4893b60dbaa486f28b7a8820769ff3a17aa9 in a clean workspace and returns PASS, FAIL, or BLOCKED.`
+1. `Generator adds only the missing F08 loading/empty, cache-scoping/refetch, and chronological-order test coverage, runs the proof commands, and produces one bounded correction commit.`
 
 ## Verification Status
 
@@ -74,6 +74,6 @@ F00 through F07 are passing. F08 Generator implementation is committed at `c87d4
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F08 as a typed, immutable, application-scoped activity timeline. Preserve and consolidate the automatic atomic writers already introduced by F02/F06/F07; add the missing validated read API and per-card UI. Keep F09 company-wide history out of scope.`
-- **Context Summary**: `F00 through F07 are passing. F08 Generator commit c87d4893b60dbaa486f28b7a8820769ff3a17aa9 is ready for independent evaluation; the working tree contains only Orchestrator-owned state edits.`
+- **Context Summary**: `F00 through F07 are passing. F08 implementation at c87d4893b60dbaa486f28b7a8820769ff3a17aa9 passes all behavior/static/full-pipeline checks but failed acceptance criterion 10 for missing explicit test coverage. One bounded correction is next.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator verifies exact Generator commit c87d4893b60dbaa486f28b7a8820769ff3a17aa9.`
+- **Next Owner**: `Generator performs the exact bounded test-coverage correction from the Evaluator report.`
