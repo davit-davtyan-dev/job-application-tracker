@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F09`
-- **Generator Commit**: `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`
-- **Evaluator Verdict**: `FAIL`
+- **Generator Commit**: `b8ce1d17f760eeddf04a02423af980d9f72ee0c4`
+- **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
 
@@ -37,18 +37,18 @@
 
 ## Generator Report
 
-- **Commit**: `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`
-- **Changed Files**: `15 files covering company-history database query/service/API, client schema/query/UI, application-list companyId output, company-scoped mutation cache invalidation, PostgreSQL service tests, route/component/form regressions, and Playwright company-history coverage.`
-- **Tests Run**: `Targeted Vitest PASS; full Vitest PASS; targeted Playwright regression suite PASS (8/8); lint PASS; typecheck PASS; git diff --check PASS. F09 implementation files pass formatting. Production build was attempted but the Generator sandbox denied Turbopack's CSS helper port bind.`
-- **Known Risks**: `Independent clean-workspace format and production build verification are required. Generator host used Node 26.0.0 rather than the declared Node 22.23.1. The Orchestrator corrected only pre-existing FEATURES.md table formatting after the Generator commit; implementation commit remains exact and unchanged.`
+- **Commit**: `b8ce1d17f760eeddf04a02423af980d9f72ee0c4` (bounded test correction; initial implementation `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`)
+- **Changed Files**: `Initial: 15 files covering company-history database query/service/API, client schema/query/UI, application-list companyId output, company-scoped mutation cache invalidation, PostgreSQL service tests, route/component/form regressions, and Playwright company-history coverage. Correction: only src/services/application.test.ts and tests/e2e/company-history.spec.ts for companyId projections and the Closed-view search locator.`
+- **Tests Run**: `Correction PASS: targeted Vitest 51/51; focused F09 Playwright; full Vitest; full Playwright 9/9; format; lint; typecheck; git diff --check. Production build was attempted but the Generator sandbox denied Turbopack's CSS helper port bind; independent build rerun remains required.`
+- **Known Risks**: `Independent clean-workspace production build verification is required. Generator host used Node 26.0.0 rather than the declared Node 22.23.1.`
 
 ## Evaluator Report
 
-- **Verdict**: `FAIL`
-- **Commit Verified**: `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`
-- **Checks Run**: `Clean detached clone; install PASS; PostgreSQL healthy; seed PASS; targeted Vitest FAIL (50 passed, 1 failed); full Vitest FAIL (118 passed, 1 failed); F09 Playwright FAIL (1 timeout); full Playwright FAIL (8 passed, 1 failed); exact-commit format:check FAIL on inherited FEATURES.md formatting; F09 implementation-file formatting PASS; lint PASS; typecheck PASS; production build PASS; git diff --check PASS.`
-- **Findings**: `Application list service exact-projection expectations omit newly required companyId. F09 E2E reuses the Search active applications locator after switching to Closed, where the accessible name correctly changes to Search closed applications. Static review found no additional architecture, validation, ordering, cache-scoping, any, schema, dependency, transaction, UUID, or UTC violation.`
-- **Required Fix**: `Bounded test-only correction: add expected companyId to the three application-list projections in src/services/application.test.ts; reacquire or use a view-independent search locator after switching to Closed in tests/e2e/company-history.spec.ts. Do not change product code or orchestration state. Prove with the targeted Vitest command, focused company-history E2E, full Vitest/Playwright, format, lint, typecheck, build, and git diff --check.`
+- **Verdict**: `pending`
+- **Commit Verified**: `pending`
+- **Checks Run**: `pending reevaluation of exact correction commit`
+- **Findings**: `Prior FAIL retained in git history; bounded corrections are awaiting independent verification.`
+- **Required Fix**: `pending`
 
 ## Current Status
 
@@ -58,11 +58,11 @@
 
 ## Current Session Summary
 
-F00 through F08 are passing. F09 returned to active after Evaluator FAIL on exact Generator commit `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`; one bounded test correction is assigned.
+F00 through F08 are passing. F09 is reevaluating exact corrected Generator commit `b8ce1d17f760eeddf04a02423af980d9f72ee0c4`.
 
 ## Next Step
 
-1. `Generator makes one bounded test-only correction commit for the recorded Evaluator findings.`
+1. `Evaluator independently verifies exact corrected Generator commit b8ce1d17f760eeddf04a02423af980d9f72ee0c4 in a clean workspace.`
 
 ## Verification Status
 
@@ -74,6 +74,6 @@ F00 through F08 are passing. F09 returned to active after Evaluator FAIL on exac
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F09 as a read-only company-scoped chronological list of all applications for one company. Expose position, applied date, and current status from existing cards; preserve the distinct F08 activity-event timeline and avoid new pages, schema, dependencies, and company-history mutation scope.`
-- **Context Summary**: `F00 through F08 are passing. F09 implementation architecture and production build passed evaluation, but exact commit bda863f6db2ff6ace846bb48fc7a4b1cadc4d852 failed one application service expectation, one F09 E2E locator, and inherited state-document formatting. The formatting is already corrected in Orchestrator state; Generator owns only the two test corrections.`
+- **Context Summary**: `F00 through F08 are passing. F09 initial implementation bda863f6db2ff6ace846bb48fc7a4b1cadc4d852 passed architecture/build review but failed two test defects. Exact correction b8ce1d17f760eeddf04a02423af980d9f72ee0c4 changes only the two affected tests and is awaiting independent full reevaluation.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator produces one test-only correction commit, then Orchestrator sends that exact commit to Evaluator.`
+- **Next Owner**: `Evaluator verifies the exact corrected Generator commit and returns PASS, FAIL, or BLOCKED.`
