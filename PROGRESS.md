@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F08`
-- **Generator Commit**: `c87d4893b60dbaa486f28b7a8820769ff3a17aa9`
-- **Evaluator Verdict**: `FAIL`
+- **Generator Commit**: `704e8c96f23c3662d35258b024dc882916137f17`
+- **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
 
@@ -37,32 +37,32 @@
 
 ## Generator Report
 
-- **Commit**: `c87d4893b60dbaa486f28b7a8820769ff3a17aa9`
-- **Changed Files**: `14 files: shared activity-history domain/query utilities; server-only history query and service; application-scoped history Route Handler; per-card activity timeline UI; bounded application/interview history-writer and cache-invalidation refactors; focused service/route/component tests; activity-history E2E.`
-- **Tests Run**: `Focused Vitest PASS (6 files, 59 tests); format:check PASS; lint PASS; typecheck PASS; git diff --check PASS. Targeted Playwright: F08 and six regressions passed; the existing create-application scenario had one parallel-run status-locator collision and then passed standalone 1/1.`
-- **Known Risks**: `Evaluator must rerun the exact targeted Playwright set to test whether the parallel create-application locator collision reproduces. The host runs Node 26 rather than the declared Node 22.23.1 and emitted an engine warning.`
+- **Commit**: `704e8c96f23c3662d35258b024dc882916137f17` (bounded test correction; initial implementation `c87d4893b60dbaa486f28b7a8820769ff3a17aa9`)
+- **Changed Files**: `Initial: 14 files for shared activity-history domain/query/service/API, per-card activity UI, application/interview writer and cache refactors, and focused/E2E tests. Correction: only src/components/active-application-list.test.tsx and tests/e2e/activity-history.spec.ts for explicit loading/empty, affected-only cache invalidation, and chronological-order evidence.`
+- **Tests Run**: `Correction PASS: focused component 15/15; focused E2E 1/1; full Vitest 113/113; full Playwright 8/8; format:check; lint; typecheck; git diff --check. Build attempted twice but the Generator sandbox denied Turbopack's internal port bind; independent build rerun is required. Initial implementation targeted/full verification results are recorded in the prior Evaluator report.`
+- **Known Risks**: `Independent production build remains required for the corrected exact commit. One focused E2E fixture setup was externally interfered with before an isolated retry passed; full Playwright subsequently passed 8/8. Host Node is 26 rather than declared 22.23.1.`
 
 ## Evaluator Report
 
-- **Verdict**: `FAIL`
-- **Commit Verified**: `c87d4893b60dbaa486f28b7a8820769ff3a17aa9`
-- **Checks Run**: `Clean isolated exact-commit workspace: targeted Vitest PASS (6 files/59 tests); targeted Playwright PASS (8/8 parallel); full Vitest PASS (14 files/111 tests); full Playwright PASS (8/8); format:check PASS; lint PASS; typecheck PASS; build PASS. The reported create-application locator collision did not reproduce.`
-- **Findings**: `Implementation behavior and architecture comply, but acceptance criterion 10 test coverage is incomplete: focused component tests omit activity-specific loading and empty states; cache tests do not prove each successful application/interview mutation refreshes only the affected application's timeline while unrelated history caches remain untouched; activity-history E2E does not assert rendered chronological order before and after refresh.`
-- **Required Fix**: `Add focused loading/empty activity assertions; add multi-application cache-spy tests proving application-status and interview mutations refresh only the affected history key; extend activity-history E2E to assert application_created -> status_changed -> interview_scheduled -> interview_completed before and after refresh. Run the evaluator proof commands and produce one bounded correction commit.`
+- **Verdict**: `pending correction evaluation`
+- **Commit Verified**: `pending exact commit 704e8c96f23c3662d35258b024dc882916137f17`
+- **Checks Run**: `Prior FAIL evidence retained in git history at e6b5610; corrected exact-commit verification pending.`
+- **Findings**: `pending`
+- **Required Fix**: `pending`
 
 ## Current Status
 
-- **Active**: `F08 — bounded test-coverage correction after Evaluator FAIL at c87d4893b60dbaa486f28b7a8820769ff3a17aa9`
+- **Active**: `F08 — evaluating exact corrected Generator commit 704e8c96f23c3662d35258b024dc882916137f17`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F07 are passing. F08 returned to active after independent evaluation of `c87d4893b60dbaa486f28b7a8820769ff3a17aa9`; one bounded test-coverage correction is required.
+F00 through F07 are passing. F08 bounded correction is committed at `704e8c96f23c3662d35258b024dc882916137f17` and awaits independent clean-workspace re-evaluation.
 
 ## Next Step
 
-1. `Generator adds only the missing F08 loading/empty, cache-scoping/refetch, and chronological-order test coverage, runs the proof commands, and produces one bounded correction commit.`
+1. `Evaluator verifies exact corrected Generator commit 704e8c96f23c3662d35258b024dc882916137f17 in a clean workspace, including production build, and returns PASS, FAIL, or BLOCKED.`
 
 ## Verification Status
 
@@ -74,6 +74,6 @@ F00 through F07 are passing. F08 returned to active after independent evaluation
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F08 as a typed, immutable, application-scoped activity timeline. Preserve and consolidate the automatic atomic writers already introduced by F02/F06/F07; add the missing validated read API and per-card UI. Keep F09 company-wide history out of scope.`
-- **Context Summary**: `F00 through F07 are passing. F08 implementation at c87d4893b60dbaa486f28b7a8820769ff3a17aa9 passes all behavior/static/full-pipeline checks but failed acceptance criterion 10 for missing explicit test coverage. One bounded correction is next.`
+- **Context Summary**: `F00 through F07 are passing. F08 corrected commit 704e8c96f23c3662d35258b024dc882916137f17 adds only the test evidence required by the prior FAIL and is ready for independent clean-workspace verification.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator performs the exact bounded test-coverage correction from the Evaluator report.`
+- **Next Owner**: `Evaluator verifies exact corrected Generator commit 704e8c96f23c3662d35258b024dc882916137f17.`
