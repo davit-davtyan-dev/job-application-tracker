@@ -10,9 +10,9 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F09`
-- **Generator Commit**: `none`
+- **Generator Commit**: `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`
 - **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
@@ -37,10 +37,10 @@
 
 ## Generator Report
 
-- **Commit**: `pending`
-- **Changed Files**: `pending`
-- **Tests Run**: `pending`
-- **Known Risks**: `pending`
+- **Commit**: `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`
+- **Changed Files**: `15 files covering company-history database query/service/API, client schema/query/UI, application-list companyId output, company-scoped mutation cache invalidation, PostgreSQL service tests, route/component/form regressions, and Playwright company-history coverage.`
+- **Tests Run**: `Targeted Vitest PASS; full Vitest PASS; targeted Playwright regression suite PASS (8/8); lint PASS; typecheck PASS; git diff --check PASS. F09 implementation files pass formatting. Production build was attempted but the Generator sandbox denied Turbopack's CSS helper port bind.`
+- **Known Risks**: `Independent clean-workspace format and production build verification are required. Generator host used Node 26.0.0 rather than the declared Node 22.23.1. The Orchestrator corrected only pre-existing FEATURES.md table formatting after the Generator commit; implementation commit remains exact and unchanged.`
 
 ## Evaluator Report
 
@@ -58,11 +58,11 @@
 
 ## Current Session Summary
 
-F00 through F08 are passing. F09 is active under the sprint contract above; Generator implementation is next.
+F00 through F08 are passing. F09 is evaluating exact Generator commit `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`.
 
 ## Next Step
 
-1. `Generator implements and commits only the active F09 sprint contract.`
+1. `Evaluator independently verifies exact Generator commit bda863f6db2ff6ace846bb48fc7a4b1cadc4d852 in a clean workspace.`
 
 ## Verification Status
 
@@ -74,6 +74,6 @@ F00 through F08 are passing. F09 is active under the sprint contract above; Gene
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F09 as a read-only company-scoped chronological list of all applications for one company. Expose position, applied date, and current status from existing cards; preserve the distinct F08 activity-event timeline and avoid new pages, schema, dependencies, and company-history mutation scope.`
-- **Context Summary**: `F00 through F08 are passing. F09 is active with a complete sprint contract. Startup readiness passed: dependencies current, PostgreSQL containers healthy, seed current, and example company service test 5/5.`
+- **Context Summary**: `F00 through F08 are passing. F09 is evaluating exact Generator commit bda863f6db2ff6ace846bb48fc7a4b1cadc4d852. Startup readiness passed and Generator targeted/full behavioral checks passed; independent clean-workspace verification remains.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator implements F09 and returns one logical commit for independent evaluation.`
+- **Next Owner**: `Evaluator verifies the exact Generator commit and returns PASS, FAIL, or BLOCKED without changing project state.`
