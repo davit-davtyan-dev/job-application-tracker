@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
+- **Phase**: `active`
 - **Active Feature**: `F09`
 - **Generator Commit**: `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `FAIL`
 
 ## Active Sprint Contract
 
@@ -44,11 +44,11 @@
 
 ## Evaluator Report
 
-- **Verdict**: `pending`
-- **Commit Verified**: `pending`
-- **Checks Run**: `pending`
-- **Findings**: `pending`
-- **Required Fix**: `pending`
+- **Verdict**: `FAIL`
+- **Commit Verified**: `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`
+- **Checks Run**: `Clean detached clone; install PASS; PostgreSQL healthy; seed PASS; targeted Vitest FAIL (50 passed, 1 failed); full Vitest FAIL (118 passed, 1 failed); F09 Playwright FAIL (1 timeout); full Playwright FAIL (8 passed, 1 failed); exact-commit format:check FAIL on inherited FEATURES.md formatting; F09 implementation-file formatting PASS; lint PASS; typecheck PASS; production build PASS; git diff --check PASS.`
+- **Findings**: `Application list service exact-projection expectations omit newly required companyId. F09 E2E reuses the Search active applications locator after switching to Closed, where the accessible name correctly changes to Search closed applications. Static review found no additional architecture, validation, ordering, cache-scoping, any, schema, dependency, transaction, UUID, or UTC violation.`
+- **Required Fix**: `Bounded test-only correction: add expected companyId to the three application-list projections in src/services/application.test.ts; reacquire or use a view-independent search locator after switching to Closed in tests/e2e/company-history.spec.ts. Do not change product code or orchestration state. Prove with the targeted Vitest command, focused company-history E2E, full Vitest/Playwright, format, lint, typecheck, build, and git diff --check.`
 
 ## Current Status
 
@@ -58,11 +58,11 @@
 
 ## Current Session Summary
 
-F00 through F08 are passing. F09 is evaluating exact Generator commit `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`.
+F00 through F08 are passing. F09 returned to active after Evaluator FAIL on exact Generator commit `bda863f6db2ff6ace846bb48fc7a4b1cadc4d852`; one bounded test correction is assigned.
 
 ## Next Step
 
-1. `Evaluator independently verifies exact Generator commit bda863f6db2ff6ace846bb48fc7a4b1cadc4d852 in a clean workspace.`
+1. `Generator makes one bounded test-only correction commit for the recorded Evaluator findings.`
 
 ## Verification Status
 
@@ -74,6 +74,6 @@ F00 through F08 are passing. F09 is evaluating exact Generator commit `bda863f6d
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activate F09 as a read-only company-scoped chronological list of all applications for one company. Expose position, applied date, and current status from existing cards; preserve the distinct F08 activity-event timeline and avoid new pages, schema, dependencies, and company-history mutation scope.`
-- **Context Summary**: `F00 through F08 are passing. F09 is evaluating exact Generator commit bda863f6db2ff6ace846bb48fc7a4b1cadc4d852. Startup readiness passed and Generator targeted/full behavioral checks passed; independent clean-workspace verification remains.`
+- **Context Summary**: `F00 through F08 are passing. F09 implementation architecture and production build passed evaluation, but exact commit bda863f6db2ff6ace846bb48fc7a4b1cadc4d852 failed one application service expectation, one F09 E2E locator, and inherited state-document formatting. The formatting is already corrected in Orchestrator state; Generator owns only the two test corrections.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator verifies the exact Generator commit and returns PASS, FAIL, or BLOCKED without changing project state.`
+- **Next Owner**: `Generator produces one test-only correction commit, then Orchestrator sends that exact commit to Evaluator.`
