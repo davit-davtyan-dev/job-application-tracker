@@ -53,16 +53,17 @@
 ## Current Status
 
 - **Active**: `none`
+- **Queued**: `F10 — transactional status/history updates; F11 — server-side Zod validation; F12 — safe Markdown rendering; F13 — exact-status sub-filtering within the existing Active and Closed application views`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS); F08 — complete and expose application-scoped activity history (704e8c96f23c3662d35258b024dc882916137f17 / Evaluator PASS); F09 — company-scoped chronological application history (b8ce1d17f760eeddf04a02423af980d9f72ee0c4 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F09 are passing. F09 passed independent clean-workspace evaluation at exact corrected Generator commit `b8ce1d17f760eeddf04a02423af980d9f72ee0c4`; no feature is active.
+F00 through F09 are passing. F09 passed independent clean-workspace evaluation at exact corrected Generator commit `b8ce1d17f760eeddf04a02423af980d9f72ee0c4`. F10 through F13 are queued as `not_started`; no feature is active.
 
 ## Next Step
 
-1. `No not_started core product feature remains; Orchestrator awaits the next requested scope.`
+1. `When implementation is requested, select one queued feature from F10 through F13, activate only that feature, and replace the completed F09 sprint contract with its bounded contract.`
 
 ## Verification Status
 
@@ -73,7 +74,7 @@ F00 through F09 are passing. F09 passed independent clean-workspace evaluation a
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Activate F09 as a read-only company-scoped chronological list of all applications for one company. Expose position, applied date, and current status from existing cards; preserve the distinct F08 activity-event timeline and avoid new pages, schema, dependencies, and company-history mutation scope.`
-- **Context Summary**: `F00 through F09 are passing. F09 was independently verified in a clean workspace at exact corrected Generator commit b8ce1d17f760eeddf04a02423af980d9f72ee0c4. No feature is active and no not_started core product feature remains.`
+- **Decisions Made**: `Promote F10, F11, and F12 from the separate constraints list into Core Product Features as not_started work alongside queued F13. For F13, add an exact-status filter beneath both Active and Closed: Active exposes All, Applied, Interviewing, and Offer; Closed exposes All, Accepted, Rejected, Withdrawn, and Archived. All is first and selected by default, switching the top-level view resets the exact-status filter to All, and the existing search value is preserved.`
+- **Context Summary**: `F00 through F09 are passing. F09 was independently verified in a clean workspace at exact corrected Generator commit b8ce1d17f760eeddf04a02423af980d9f72ee0c4. F10 through F13 are queued as not_started and no feature is active.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Orchestrator awaits the next requested feature or maintenance scope.`
+- **Next Owner**: `Orchestrator selects one feature from F10 through F13, activates it, and writes its sprint contract when implementation is requested.`
