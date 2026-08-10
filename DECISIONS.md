@@ -53,3 +53,8 @@
 
 - **Decision**: Treat activity history as an immutable application-owned audit trail with one shared fixed event vocabulary for application creation, real application-status changes, interview scheduling, interview completion, and interview cancellation. Expose it through an application-scoped read-only service/API and per-card chronological timeline; refresh only the affected application's history cache after related mutations.
 - **Reasoning**: A typed vocabulary prevents writer, validation, and presentation drift while preserving the existing atomic transaction guarantees. Application-scoped reads keep F08 bounded and cache invalidation precise; cross-application company history remains a separate F09 concern. Immutable, deterministic UTC ordering provides reliable audit evidence without introducing manual history editing or ambiguous derived events.
+
+### 2026-08-10: Company History as a Shared Application Timeline
+
+- **Decision**: Represent company history as a read-only company-scoped chronological list of all persisted applications, ordered by applied date, creation timestamp, and UUID. Expose position, applied date, and current status from existing application cards; use one TanStack Query cache per company and invalidate it only when an application is created or its status really changes.
+- **Reasoning**: The product goal is to review prior roles at the same company before another application, which requires application summaries rather than duplicating the F08 activity-event audit trail. A company UUID prevents ambiguous name lookup, deterministic ordering makes the timeline stable, and shared company-scoped caching keeps multiple cards consistent while avoiding unrelated or interview-driven refetches.
