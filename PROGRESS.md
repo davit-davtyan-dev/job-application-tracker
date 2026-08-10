@@ -10,59 +10,59 @@
 
 ## Orchestration State
 
-- **Phase**: `passing`
-- **Active Feature**: `none`
-- **Generator Commit**: `704e8c96f23c3662d35258b024dc882916137f17`
-- **Evaluator Verdict**: `PASS`
+- **Phase**: `active`
+- **Active Feature**: `F09`
+- **Generator Commit**: `none`
+- **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
 
-- **Feature ID**: `F08`
-- **Scope**: Complete activity history as a first-class, immutable application audit trail. Define one shared fixed event vocabulary for application creation, real application-status changes, interview scheduling, interview completion, and interview cancellation; reuse it in persistence writers, Zod validation, service output validation, and UI rendering. Preserve the already-required transactional writes from F02/F06/F07 while consolidating repeated history-write rules where that improves correctness. Add an application-scoped read-only history Route Handler following `Route Handler -> History Service -> server-only History Database Query Module`, returning a deterministic chronological timeline. Add an accessible per-card activity section to the existing application list so the user can reveal, inspect, retry, and refresh that application's timeline without navigation. TanStack Query remains the sole network-state owner. Include PostgreSQL-backed history service tests, focused route/component/page regressions, and `tests/e2e/activity-history.spec.ts`. Do not add manual history creation/editing/deletion, activity notes, paging, date filters, company-wide or cross-application history, application detail pages, notification/reminder behavior, schema changes or dependencies unless an unavoidable defect is first escalated to the Orchestrator.
+- **Feature ID**: `F09`
+- **Scope**: Add a read-only company-scoped history of every persisted job application belonging to one company so the user can review prior roles, applied dates, and current statuses without leaving the existing application list. Follow `Route Handler -> Company History Service -> server-only Company History Database Query Module`, return a deterministic chronological list, and expose an accessible reveal/load/retry experience from each application card. TanStack Query remains the sole network-state owner and cards for the same company share one company-history cache. Preserve F01–F08 behavior and the separate application activity timeline. Do not add company editing/deletion, application detail or company pages, activity-event aggregation, notes/descriptions/reference links, paging, search/date filters inside company history, schema or dependency changes, or mutation behavior unless an unavoidable defect is first escalated to the Orchestrator.
 - **Acceptance Criteria**:
-  1. Define one shared string `ActivityEventType` vocabulary containing exactly `application_created`, `status_changed`, `interview_scheduled`, `interview_completed`, and `interview_cancelled`. Reuse it in every application/interview history writer, Zod schemas, service output validation, and UI event rendering; no freehand event strings remain in production writers.
-  2. Preserve the existing immutable `activity_history` records: UUID identity, owning application UUID, nullable interview UUID, application-status snapshot, and database-generated timezone-aware creation timestamp. F08 requires no schema or dependency change; any discovered need for one must stop for Orchestrator approval.
-  3. An application-scoped GET endpoint accepts a strict application UUID and returns that application's complete activity timeline ordered deterministically by `created_at` then UUID, oldest first. Each response item contains only validated client-safe fields: history UUID, application UUID, nullable interview UUID, shared event type, shared application status, and UTC ISO timestamp.
-  4. Missing applications return the structured client-safe `APPLICATION_NOT_FOUND` response with HTTP 404, including when no history rows exist. Invalid UUIDs return the existing `INVALID_REQUEST` response with HTTP 400. Unexpected failures return `INTERNAL_ERROR` without database details; existing routes remain unchanged.
-  5. The read flow is strictly `Route Handler -> History Service -> History Database Query Module`. The service accepts unknown input and revalidates both input and database output with Zod. Database access and Drizzle types stay in server-only modules; routes, pages, and client components contain no direct queries; no `any` is introduced.
-  6. Application creation still appends exactly one `application_created` record in the same transaction. Each real application-status change still appends exactly one `status_changed` record in the same transaction; same-state requests remain idempotent without history or timestamp churn. Existing rollback guarantees remain covered.
-  7. Interview creation and each real interview-state change still append exactly one correctly linked shared event in the same transaction. Same-state interview requests remain idempotent, application status remains unchanged, and existing rollback guarantees remain covered.
-  8. Each rendered application card has a keyboard-operable, explicitly labelled activity section that reveals/loads a chronological timeline and renders an understandable label, application-status snapshot, timestamp, and interview association when present. Empty, loading, and accessible error states are isolated to the affected card; failures preserve persisted UI state and expose an unambiguous retry control.
-  9. TanStack Query is the sole network-state owner. Requests safely encode application IDs. Successful application creation, real application-status changes, interview creation, and real interview-state changes make the affected timeline fresh without full-page navigation while preserving search text, Active/Closed view, application/interview controls, counts, and ordering; unrelated application history caches are not invalidated.
-  10. PostgreSQL-backed `src/services/history.test.ts` proves strict validation, missing-application behavior, all five event shapes, UTC serialization, interview linkage, and deterministic chronological ordering. Route tests prove success, invalid UUID, 404, and safe failure mapping. Focused component/page tests cover accessibility, all event labels, loading/empty/error/retry behavior, cache scoping/refetch, ID encoding, and F03–F07 regressions. `tests/e2e/activity-history.spec.ts` exercises creation, a real application-status change, interview scheduling and a representative interview state change; verifies chronological persistence, exactly-once display after refresh, same-state idempotence, current search/view preservation, and no full-page reload. Formatting, strict TypeScript, lint, full Vitest, full Playwright, and production build pass with no unrelated scope.
-- **Relevant Constraints**: `Server-only database access; History Route Handler -> History Service -> History Database Query Module; service-owned Zod input/output validation; existing application/interview mutations and history inserts remain atomic; same-state mutations remain idempotent; UUIDs and database-generated UTC timestamps; shared ActivityEventType; no migration or dependency change; TanStack Query remains the single network-state owner; strict TypeScript; no any; accessible responsive UI; F09 company-wide history is explicitly excluded; preserve F01–F07 behavior and unrelated work; one logical Generator commit; Generator must read the relevant Next.js 16.3 App Router Route Handler, fetching-data, mutating-data, and caching docs under node_modules/next/dist/docs before coding; Generator must not edit FEATURES.md, PROGRESS.md, or DECISIONS.md.`
-- **Expected Files or Layers**: `src/lib/history.ts; src/server/db/queries/history.ts; bounded refactors to application/interview history writers; src/services/history.ts and PostgreSQL-backed tests; src/app/api/applications/[id]/history/route.ts and focused tests; src/lib/history-query.ts; a bounded activity-history component integrated into src/components/active-application-list.tsx plus focused tests; page/create/status/interview regressions only as needed; tests/e2e/activity-history.spec.ts; seed/test helpers only when needed for deterministic isolation.`
-- **Targeted Verification**: `pnpm test src/services/history.test.ts src/app/api/applications/[id]/history/route.test.ts src/components/active-application-list.test.tsx src/app/page.test.tsx src/services/application.test.ts src/services/interview.test.ts; pnpm test:e2e tests/e2e/activity-history.spec.ts tests/e2e/status-transitions.spec.ts tests/e2e/interviews.spec.ts tests/e2e/filters.spec.ts tests/e2e/search.spec.ts tests/e2e/list-view.spec.ts tests/e2e/create-application.spec.ts tests/e2e/landing.spec.ts; pnpm format:check; pnpm lint; pnpm typecheck; git diff --check.`
+  1. A company-scoped GET endpoint accepts a strict company UUID and returns every job application owned by that company. Each item contains only validated client-safe fields: application UUID, company UUID, position title, ISO applied date, and shared `ApplicationStatus`.
+  2. Company history is ordered chronologically by applied date, then application creation timestamp, then UUID, all in one documented direction with deterministic tie-breaking. The UI renders in the same direction and identifies the currently displayed application without excluding it or duplicating records.
+  3. Existing companies with no applications return HTTP 200 with an empty history. Missing companies return structured client-safe `COMPANY_NOT_FOUND` with HTTP 404. Invalid UUIDs return `INVALID_REQUEST` with HTTP 400. Unexpected failures return `INTERNAL_ERROR` without database details.
+  4. The read flow is strictly `Route Handler -> Company History Service -> Company History Database Query Module`. The service accepts unknown input and revalidates both input and database output with Zod. Database access and Drizzle types stay in server-only modules; routes, pages, and client components contain no direct queries; no `any` is introduced.
+  5. The existing application-list response gains the owning company UUID through query and service output validation so company history can be addressed without name-based lookup. Search, Active/Closed filtering, counts, ordering, and all existing client-safe fields remain unchanged.
+  6. Each rendered application card has a keyboard-operable, explicitly labelled company-history section that reveals/loads the shared company timeline and renders company name, position title, applied date, and current status for each application. The current card's application is clearly identified. Empty, loading, and accessible error states are isolated to the section; a failure preserves search/view/UI state and exposes an unambiguous retry control.
+  7. TanStack Query is the sole network-state owner. Requests safely encode company IDs. Cards belonging to the same company use the same company-history query key and cache; unrelated companies remain cache-isolated.
+  8. Successful application creation and real application-status changes invalidate only the affected company-history cache in addition to their existing required invalidations, so revealed company history becomes fresh without full-page navigation. Same-state updates preserve existing idempotence. Interview mutations do not invalidate company history because its fields do not change.
+  9. PostgreSQL-backed company-history service tests prove strict input/output validation, missing and empty companies, cross-company isolation, all fixed statuses, and deterministic ordering/tie-breaking. Route tests prove success, invalid UUID, 404, empty history, and safe failure mapping. Focused component/page tests cover accessibility, shared cache behavior, labels, loading/empty/error/retry, current-item identification, ID encoding, mutation cache scoping, and F03–F08 regressions.
+  10. `tests/e2e/company-history.spec.ts` creates multiple applications for the same company plus another company, verifies deterministic company history and cross-company isolation from Active and Closed views, preserves current search/view state while revealing and retrying/refetching, reflects a real status change exactly once without reload, and remains correct after browser refresh. Formatting, strict TypeScript, lint, full Vitest, full Playwright, and production build pass with no unrelated scope.
+- **Relevant Constraints**: `Server-only database access; Company History Route Handler -> Company History Service -> Company History Database Query Module; service-owned Zod input/output validation; UUIDs; shared ApplicationStatus; deterministic applied-date/created-at/UUID ordering; no migration or dependency change; TanStack Query remains the single network-state owner; exact company-scoped invalidation for application create/status only; preserve F01–F08 and the application activity timeline; strict TypeScript; no any; accessible responsive UI; one logical Generator commit; Generator must read the relevant Next.js 16.3 App Router Route Handler, fetching-data, mutating-data, and caching docs under node_modules/next/dist/docs before coding; Generator must not edit FEATURES.md, PROGRESS.md, or DECISIONS.md.`
+- **Expected Files or Layers**: `src/server/db/queries/company-history.ts (or a clearly bounded company query module); src/services/company-history.ts and PostgreSQL-backed tests; src/app/api/companies/[id]/history/route.ts and focused tests; shared client-safe company-history schema/query helper; bounded companyId extension to application list query/service types; a company-history section integrated into src/components/active-application-list.tsx plus focused tests; create/status cache invalidation regressions; tests/e2e/company-history.spec.ts; seed/test helpers only when required for deterministic isolation.`
+- **Targeted Verification**: `pnpm test src/services/company-history.test.ts src/app/api/companies/[id]/history/route.test.ts src/components/active-application-list.test.tsx src/app/page.test.tsx src/services/application.test.ts; pnpm test:e2e tests/e2e/company-history.spec.ts tests/e2e/activity-history.spec.ts tests/e2e/status-transitions.spec.ts tests/e2e/filters.spec.ts tests/e2e/search.spec.ts tests/e2e/list-view.spec.ts tests/e2e/create-application.spec.ts tests/e2e/landing.spec.ts; pnpm format:check; pnpm lint; pnpm typecheck; git diff --check.`
 - **Final Verification**: `pnpm lint && pnpm test && pnpm test:e2e && pnpm build`
 
 ## Generator Report
 
-- **Commit**: `704e8c96f23c3662d35258b024dc882916137f17` (bounded test correction; initial implementation `c87d4893b60dbaa486f28b7a8820769ff3a17aa9`)
-- **Changed Files**: `Initial: 14 files for shared activity-history domain/query/service/API, per-card activity UI, application/interview writer and cache refactors, and focused/E2E tests. Correction: only src/components/active-application-list.test.tsx and tests/e2e/activity-history.spec.ts for explicit loading/empty, affected-only cache invalidation, and chronological-order evidence.`
-- **Tests Run**: `Correction PASS: focused component 15/15; focused E2E 1/1; full Vitest 113/113; full Playwright 8/8; format:check; lint; typecheck; git diff --check. Build attempted twice but the Generator sandbox denied Turbopack's internal port bind; independent build rerun is required. Initial implementation targeted/full verification results are recorded in the prior Evaluator report.`
-- **Known Risks**: `Independent production build remains required for the corrected exact commit. One focused E2E fixture setup was externally interfered with before an isolated retry passed; full Playwright subsequently passed 8/8. Host Node is 26 rather than declared 22.23.1.`
+- **Commit**: `pending`
+- **Changed Files**: `pending`
+- **Tests Run**: `pending`
+- **Known Risks**: `pending`
 
 ## Evaluator Report
 
-- **Verdict**: `PASS`
-- **Commit Verified**: `704e8c96f23c3662d35258b024dc882916137f17`
-- **Checks Run**: `Fresh isolated exact-commit workspace: correction scope exactly two test files; focused component PASS (15/15); focused activity E2E PASS (1/1); full Vitest PASS (14 files/113 tests); full Playwright PASS (8/8); format:check PASS; lint PASS; typecheck PASS; correction git diff --check PASS; Next.js 16.3 production build PASS.`
-- **Findings**: `All F08 acceptance criteria and architectural constraints pass. The correction explicitly closes loading/empty activity states, affected-only history invalidation for application status/interview creation/interview status with unrelated cache preservation, and chronological four-event rendering before and after refresh. The combined implementation retains shared event vocabulary, strict service validation, server-only query layering, atomic immutable writers, deterministic UTC timeline output, accessible per-card UI, and no schema/dependency/F09 scope drift.`
-- **Required Fix**: `none`
+- **Verdict**: `pending`
+- **Commit Verified**: `pending`
+- **Checks Run**: `pending`
+- **Findings**: `pending`
+- **Required Fix**: `pending`
 
 ## Current Status
 
-- **Active**: `none`
+- **Active**: `F09 — company-scoped chronological application history`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS); F08 — complete and expose application-scoped activity history (704e8c96f23c3662d35258b024dc882916137f17 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F08 are passing. F08 passed independent clean-workspace evaluation at exact corrected Generator commit `704e8c96f23c3662d35258b024dc882916137f17`; no feature is active.
+F00 through F08 are passing. F09 is active under the sprint contract above; Generator implementation is next.
 
 ## Next Step
 
-1. `Orchestrator may activate F09 in a new sprint when requested.`
+1. `Generator implements and commits only the active F09 sprint contract.`
 
 ## Verification Status
 
@@ -73,7 +73,7 @@ F00 through F08 are passing. F08 passed independent clean-workspace evaluation a
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Activate F08 as a typed, immutable, application-scoped activity timeline. Preserve and consolidate the automatic atomic writers already introduced by F02/F06/F07; add the missing validated read API and per-card UI. Keep F09 company-wide history out of scope.`
-- **Context Summary**: `F00 through F08 are passing. F08 was independently verified at exact corrected Generator commit 704e8c96f23c3662d35258b024dc882916137f17. No feature is active.`
+- **Decisions Made**: `Activate F09 as a read-only company-scoped chronological list of all applications for one company. Expose position, applied date, and current status from existing cards; preserve the distinct F08 activity-event timeline and avoid new pages, schema, dependencies, and company-history mutation scope.`
+- **Context Summary**: `F00 through F08 are passing. F09 is active with a complete sprint contract. Startup readiness passed: dependencies current, PostgreSQL containers healthy, seed current, and example company service test 5/5.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Orchestrator activates F09 only when requested.`
+- **Next Owner**: `Generator implements F09 and returns one logical commit for independent evaluation.`

@@ -27,7 +27,7 @@ Exactly one feature may be `active` or `evaluating`.
 | **F06** | Update **Application Status** through all fixed states (Applied, Interviewing, Offer, Accepted, etc.). | `pnpm test:e2e tests/status-transitions.spec.ts`     | `passing`     | `efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS` |
 | **F07** | Manage individual **Interview Records** with states (Scheduled, Completed, Cancelled).                 | `pnpm test src/services/interview.test.ts`           | `passing`     | `5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS` |
 | **F08** | Automatically record **Activity History** for creation, status changes, and interviews.                | `pnpm test src/services/history.test.ts`             | `passing`     | `704e8c96f23c3662d35258b024dc882916137f17 / Evaluator PASS` |
-| **F09** | View a chronological **Company History** of all previous applications for a specific company.          | `pnpm test:e2e tests/company-history.spec.ts`        | `not_started` | —                                                           |
+| **F09** | View a chronological **Company History** of all previous applications for a specific company.          | `pnpm test:e2e tests/company-history.spec.ts`        | `active`      | —                                                           |
 
 ## Feature Constraints & Logic
 
