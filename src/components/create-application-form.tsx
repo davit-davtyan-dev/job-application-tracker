@@ -10,6 +10,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { ApplicationStatus } from "@/lib/application";
 import { applicationsQueryRoot } from "@/lib/application-query";
+import { companyHistoryQueryKey } from "@/lib/company-history-query";
 
 const formSchema = z
   .object({
@@ -105,12 +106,15 @@ export function CreateApplicationForm() {
         throw new Error(
           "Application could not be saved. Check the form and try again.",
         );
-      return body;
+      return z.strictObject({ companyId: z.uuid() }).passthrough().parse(body);
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: applicationsQueryRoot,
-      });
+    onSuccess: async (created) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: applicationsQueryRoot }),
+        queryClient.invalidateQueries({
+          queryKey: companyHistoryQueryKey(created.companyId),
+        }),
+      ]);
     },
   });
   const successCompany =

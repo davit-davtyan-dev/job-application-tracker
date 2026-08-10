@@ -25,6 +25,7 @@ export interface CreateApplicationRecord {
 
 export interface ApplicationListRecord {
   id: string;
+  companyId: string;
   companyName: string;
   positionTitle: string;
   appliedDate: string;
@@ -67,6 +68,7 @@ export async function selectApplicationsByStatuses(
   return database
     .select({
       id: jobApplications.id,
+      companyId: jobApplications.companyId,
       companyName: companies.name,
       positionTitle: jobApplications.positionTitle,
       appliedDate: jobApplications.appliedDate,

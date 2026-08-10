@@ -630,6 +630,93 @@ describe("ActiveApplicationList", () => {
     ).toBeVisible();
   });
 
+  it("shares company history by company, identifies current items, and retries safely", async () => {
+    const companyId = "2b033428-a730-42c8-acf8-02574373b250";
+    let attempts = 0;
+    const fetchMock = vi.fn((url: string) => {
+      if (url === "/api/applications?view=active")
+        return Promise.resolve(
+          Response.json({
+            applications: [
+              {
+                id: "11111111-1111-4111-8111-111111111111",
+                companyId,
+                companyName: "Shared Co",
+                positionTitle: "First role",
+                appliedDate: "2026-08-10",
+                status: "Applied",
+              },
+              {
+                id: "22222222-2222-4222-8222-222222222222",
+                companyId,
+                companyName: "Shared Co",
+                positionTitle: "Second role",
+                appliedDate: "2026-08-11",
+                status: "Interviewing",
+              },
+            ],
+          }),
+        );
+      attempts += 1;
+      if (attempts === 1)
+        return Promise.resolve(new Response("no", { status: 500 }));
+      return Promise.resolve(
+        Response.json({
+          history: [
+            {
+              id: "11111111-1111-4111-8111-111111111111",
+              companyId,
+              positionTitle: "First role",
+              appliedDate: "2026-08-10",
+              status: "Applied",
+            },
+            {
+              id: "22222222-2222-4222-8222-222222222222",
+              companyId,
+              positionTitle: "Second role",
+              appliedDate: "2026-08-11",
+              status: "Interviewing",
+            },
+          ],
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderList();
+    const buttons = await screen.findAllByRole("button", {
+      name: "View company history",
+    });
+    expect(buttons[0]).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(buttons[0]!);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Company history could not be loaded",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Retry company history" }),
+    );
+    const firstRegion = screen.getAllByRole("region", {
+      name: "Company history for Shared Co",
+    })[0]!;
+    expect(
+      (await within(firstRegion).findByText(/Current application/)).closest(
+        "li",
+      ),
+    ).toHaveTextContent("First role");
+    expect(within(firstRegion).getByText("Second role")).toBeVisible();
+    await userEvent.click(buttons[1]!);
+    expect(
+      screen.getAllByText(/Current application/)[1]!.closest("li"),
+    ).toHaveTextContent("Second role");
+    expect(
+      fetchMock.mock.calls.filter(([url]) =>
+        String(url).includes("/api/companies/"),
+      ).length,
+    ).toBe(2);
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/companies/${companyId}/history`,
+    );
+  });
+
   it("refreshes only the affected history cache for application and interview mutations", async () => {
     const firstId = "first-app";
     const secondId = "second-app";
@@ -732,7 +819,10 @@ describe("ActiveApplicationList", () => {
 
     const historyInvalidations = invalidateSpy.mock.calls
       .map(([filters]) => filters?.queryKey)
-      .filter((queryKey) => queryKey?.[2] === "history");
+      .filter(
+        (queryKey) =>
+          queryKey?.[0] === "applications" && queryKey?.[2] === "history",
+      );
     expect(historyInvalidations).toEqual([
       ["applications", firstId, "history"],
       ["applications", firstId, "history"],

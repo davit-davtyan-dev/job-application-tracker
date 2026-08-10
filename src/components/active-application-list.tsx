@@ -16,23 +16,37 @@ import { ApplicationListView, ApplicationStatus } from "@/lib/application";
 import { InterviewSection } from "@/components/interview-section";
 import { ActivityHistorySection } from "@/components/activity-history-section";
 import { historyQueryKey } from "@/lib/history-query";
+import { CompanyHistorySection } from "@/components/company-history-section";
+import { companyHistoryQueryKey } from "@/lib/company-history-query";
 
 function ApplicationStatusControl({
   application,
 }: {
-  application: { id: string; status: ApplicationStatus; positionTitle: string };
+  application: {
+    id: string;
+    companyId: string;
+    status: ApplicationStatus;
+    positionTitle: string;
+  };
 }) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (status: ApplicationStatus) =>
       updateApplicationStatusRequest(application.id, status),
-    onSuccess: async () => {
-      await Promise.all([
+    onSuccess: async (_data, status) => {
+      const invalidations = [
         queryClient.invalidateQueries({ queryKey: applicationsQueryRoot }),
         queryClient.invalidateQueries({
           queryKey: historyQueryKey(application.id),
         }),
-      ]);
+      ];
+      if (status !== application.status)
+        invalidations.push(
+          queryClient.invalidateQueries({
+            queryKey: companyHistoryQueryKey(application.companyId),
+          }),
+        );
+      await Promise.all(invalidations);
     },
   });
   return (
@@ -221,6 +235,7 @@ export function ActiveApplicationList() {
                 </p>
                 <InterviewSection application={application} />
                 <ActivityHistorySection application={application} />
+                <CompanyHistorySection application={application} />
               </li>
             ))}
           </ul>

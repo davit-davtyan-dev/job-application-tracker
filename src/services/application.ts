@@ -32,6 +32,7 @@ const applicationStatusesByView = {
 
 const applicationListItemFields = {
   id: z.uuid(),
+  companyId: z.uuid(),
   companyName: z.string(),
   positionTitle: z.string(),
   appliedDate: z.iso.date(),

@@ -39,7 +39,13 @@ describe("CreateApplicationForm", () => {
         ),
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ id: "app" }), { status: 201 }),
+        new Response(
+          JSON.stringify({
+            id: "app",
+            companyId: "bc76d153-54f0-46d5-86ff-b5d65b60bccb",
+          }),
+          { status: 201 },
+        ),
       );
     vi.stubGlobal("fetch", fetchMock);
     const { client } = renderForm();
@@ -71,6 +77,13 @@ describe("CreateApplicationForm", () => {
     );
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: ["applications"],
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: [
+        "companies",
+        "bc76d153-54f0-46d5-86ff-b5d65b60bccb",
+        "history",
+      ],
     });
   });
 
