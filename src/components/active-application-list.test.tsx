@@ -1,17 +1,21 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ActiveApplicationList } from "./active-application-list";
 
-function renderList() {
+function renderList(
+  client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   return render(
-    <QueryClientProvider
-      client={
-        new QueryClient({ defaultOptions: { queries: { retry: false } } })
-      }
-    >
+    <QueryClientProvider client={client}>
       <ActiveApplicationList />
     </QueryClientProvider>,
   );
@@ -584,5 +588,163 @@ describe("ActiveApplicationList", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/applications/app%2Fencoded/history",
     );
+  });
+
+  it("shows the affected card's activity loading and empty states", async () => {
+    let resolveHistory: ((response: Response) => void) | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string) => {
+        if (url === "/api/applications?view=active")
+          return Promise.resolve(
+            Response.json({
+              applications: [
+                {
+                  id: "pending-app",
+                  companyName: "Pending Co",
+                  positionTitle: "Pending role",
+                  appliedDate: "2026-08-10",
+                  status: "Applied",
+                },
+              ],
+            }),
+          );
+        return new Promise<Response>((resolve) => {
+          resolveHistory = resolve;
+        });
+      }),
+    );
+    renderList();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "View activity" }),
+    );
+    const activity = screen.getByRole("region", {
+      name: "Activity for Pending role",
+    });
+    expect(within(activity).getByRole("status")).toHaveTextContent(
+      "Loading activity",
+    );
+    resolveHistory?.(Response.json({ history: [] }));
+    expect(
+      await within(activity).findByText("No activity recorded."),
+    ).toBeVisible();
+  });
+
+  it("refreshes only the affected history cache for application and interview mutations", async () => {
+    const firstId = "first-app";
+    const secondId = "second-app";
+    const interviewId = "first-interview";
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    queryClient.setQueryData(
+      ["applications", firstId, "history"],
+      [{ id: "first-history" }],
+    );
+    const unrelatedHistory = [{ id: "second-history" }];
+    queryClient.setQueryData(
+      ["applications", secondId, "history"],
+      unrelatedHistory,
+    );
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+    let firstStatus = "Applied";
+    let interviews = [
+      {
+        id: interviewId,
+        applicationId: firstId,
+        scheduledAt: "2026-08-12T09:30:00.000Z",
+        status: "Scheduled",
+        createdAt: "2026-08-10T10:00:00.000Z",
+        updatedAt: "2026-08-10T10:00:00.000Z",
+      },
+    ];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string, init?: RequestInit) => {
+        if (url === "/api/applications?view=active")
+          return Promise.resolve(
+            Response.json({
+              applications: [
+                {
+                  id: firstId,
+                  companyName: "First Co",
+                  positionTitle: "First role",
+                  appliedDate: "2026-08-10",
+                  status: firstStatus,
+                },
+                {
+                  id: secondId,
+                  companyName: "Second Co",
+                  positionTitle: "Second role",
+                  appliedDate: "2026-08-09",
+                  status: "Applied",
+                },
+              ],
+            }),
+          );
+        if (url === `/api/applications/${firstId}/status`) {
+          firstStatus = "Offer";
+          return Promise.resolve(Response.json({}));
+        }
+        if (
+          url === `/api/applications/${firstId}/interviews` &&
+          init?.method === "POST"
+        ) {
+          interviews = [
+            ...interviews,
+            { ...interviews[0]!, id: "second-interview" },
+          ];
+          return Promise.resolve(Response.json({}, { status: 201 }));
+        }
+        if (url.includes(`/interviews/${interviewId}/status`)) {
+          interviews = interviews.map((item) =>
+            item.id === interviewId ? { ...item, status: "Completed" } : item,
+          );
+          return Promise.resolve(Response.json({}));
+        }
+        if (url === `/api/applications/${firstId}/interviews`)
+          return Promise.resolve(Response.json({ interviews }));
+        throw new Error(`Unexpected request: ${url}`);
+      }),
+    );
+    renderList(queryClient);
+    await userEvent.selectOptions(
+      await screen.findByRole("combobox", { name: "Status for First role" }),
+      "Offer",
+    );
+    expect(await screen.findByText("Status updated.")).toBeVisible();
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "Manage interviews" })[0]!,
+    );
+    await screen.findByRole("combobox", { name: /Status for interview/ });
+    fireEvent.change(screen.getByLabelText("Schedule interview"), {
+      target: { value: "2026-08-14T10:30" },
+    });
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add interview" }),
+    );
+    expect(await screen.findByText("Interview scheduled.")).toBeVisible();
+    await userEvent.selectOptions(
+      screen.getAllByRole("combobox", { name: /Status for interview/ })[0]!,
+      "Completed",
+    );
+    expect(await screen.findByText("Interview updated.")).toBeVisible();
+
+    const historyInvalidations = invalidateSpy.mock.calls
+      .map(([filters]) => filters?.queryKey)
+      .filter((queryKey) => queryKey?.[2] === "history");
+    expect(historyInvalidations).toEqual([
+      ["applications", firstId, "history"],
+      ["applications", firstId, "history"],
+      ["applications", firstId, "history"],
+    ]);
+    expect(historyInvalidations).not.toContainEqual([
+      "applications",
+      secondId,
+      "history",
+    ]);
+    expect(
+      queryClient.getQueryData(["applications", secondId, "history"]),
+    ).toBe(unrelatedHistory);
   });
 });

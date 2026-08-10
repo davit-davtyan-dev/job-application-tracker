@@ -50,6 +50,19 @@ test("keeps an exactly-once chronological application activity trail without nav
     );
     await expect(activity.getByText("Interview scheduled")).toHaveCount(1);
     await expect(activity.getByText("Interview completed")).toHaveCount(1);
+    await expect(activity.getByRole("listitem")).toHaveCount(4);
+    await expect(activity.getByRole("listitem").nth(0)).toContainText(
+      "Application created",
+    );
+    await expect(activity.getByRole("listitem").nth(1)).toContainText(
+      "Application status changed",
+    );
+    await expect(activity.getByRole("listitem").nth(2)).toContainText(
+      "Interview scheduled",
+    );
+    await expect(activity.getByRole("listitem").nth(3)).toContainText(
+      "Interview completed",
+    );
     expect(
       await page.evaluate(
         () => performance.getEntriesByType("navigation").length,
@@ -76,6 +89,19 @@ test("keeps an exactly-once chronological application activity trail without nav
     await expect(
       refreshedActivity.getByText("Interview completed"),
     ).toHaveCount(1);
+    await expect(refreshedActivity.getByRole("listitem")).toHaveCount(4);
+    await expect(refreshedActivity.getByRole("listitem").nth(0)).toContainText(
+      "Application created",
+    );
+    await expect(refreshedActivity.getByRole("listitem").nth(1)).toContainText(
+      "Application status changed",
+    );
+    await expect(refreshedActivity.getByRole("listitem").nth(2)).toContainText(
+      "Interview scheduled",
+    );
+    await expect(refreshedActivity.getByRole("listitem").nth(3)).toContainText(
+      "Interview completed",
+    );
   } finally {
     await sql`DELETE FROM activity_history WHERE application_id IN (SELECT id FROM job_applications WHERE company_id IN (SELECT id FROM companies WHERE name = ${company}))`;
     await sql`DELETE FROM interviews WHERE application_id IN (SELECT id FROM job_applications WHERE company_id IN (SELECT id FROM companies WHERE name = ${company}))`;
