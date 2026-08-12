@@ -382,10 +382,12 @@ describe("updateApplicationStatus", () => {
           ? ApplicationStatus.Offer
           : ApplicationStatus.Applied,
       );
+      const transitionStartedAt = new Date();
       const updated = await updateApplicationStatus({
         id: original.id,
         status,
       });
+      const transitionFinishedAt = new Date();
       expect(updated.status).toBe(status);
       expect(updated.updatedAt.getTime()).toBeGreaterThan(
         original.updatedAt.getTime(),
@@ -395,7 +397,17 @@ describe("updateApplicationStatus", () => {
         .from(activityHistory)
         .where(eq(activityHistory.applicationId, original.id));
       expect(rows).toHaveLength(1);
-      expect(rows[0]).toMatchObject({ eventType: "status_changed", status });
+      expect(rows[0]).toMatchObject({
+        applicationId: original.id,
+        eventType: "status_changed",
+        status,
+      });
+      expect(rows[0]!.createdAt.getTime()).toBeGreaterThanOrEqual(
+        transitionStartedAt.getTime(),
+      );
+      expect(rows[0]!.createdAt.getTime()).toBeLessThanOrEqual(
+        transitionFinishedAt.getTime(),
+      );
       expect(rows[0]!.createdAt.toISOString()).toMatch(/Z$/);
     },
   );
@@ -414,6 +426,7 @@ describe("updateApplicationStatus", () => {
     await expect(
       updateApplicationStatus({ id: randomUUID(), status: "Applied" }),
     ).rejects.toBeInstanceOf(ApplicationNotFoundError);
+    expect(await db.select().from(activityHistory)).toHaveLength(0);
     await expect(
       updateApplicationStatus({ id: randomUUID(), status: "Nope" }),
     ).rejects.toBeDefined();
@@ -421,9 +434,9 @@ describe("updateApplicationStatus", () => {
 
   it("rolls back the status update when history insertion fails", async () => {
     const original = await seed();
-    await client`CREATE OR REPLACE FUNCTION reject_f06_history() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION 'forced history failure'; END; $$ LANGUAGE plpgsql`;
-    await client`CREATE TRIGGER reject_f06_history BEFORE INSERT ON activity_history FOR EACH ROW EXECUTE FUNCTION reject_f06_history()`;
     try {
+      await client`CREATE OR REPLACE FUNCTION reject_f10_history() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION 'forced history failure'; END; $$ LANGUAGE plpgsql`;
+      await client`CREATE TRIGGER reject_f10_history BEFORE INSERT ON activity_history FOR EACH ROW EXECUTE FUNCTION reject_f10_history()`;
       await expect(
         updateApplicationStatus({ id: original.id, status: "Rejected" }),
       ).rejects.toBeDefined();
@@ -432,9 +445,11 @@ describe("updateApplicationStatus", () => {
         .from(jobApplications)
         .where(eq(jobApplications.id, original.id));
       expect(persisted!.status).toBe("Applied");
+      expect(persisted!.updatedAt).toEqual(original.updatedAt);
+      expect(await db.select().from(activityHistory)).toHaveLength(0);
     } finally {
-      await client`DROP TRIGGER reject_f06_history ON activity_history`;
-      await client`DROP FUNCTION reject_f06_history()`;
+      await client`DROP TRIGGER IF EXISTS reject_f10_history ON activity_history`;
+      await client`DROP FUNCTION IF EXISTS reject_f10_history()`;
     }
   });
 });
