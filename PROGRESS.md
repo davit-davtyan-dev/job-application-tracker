@@ -10,9 +10,9 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F10`
-- **Generator Commit**: `pending`
+- **Generator Commit**: `f5159c184d92445af1d89edba99ba8a05618d5a9`
 - **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
@@ -35,10 +35,10 @@
 
 ## Generator Report
 
-- **Commit**: `pending`
-- **Changed Files**: `pending`
-- **Tests Run**: `pending`
-- **Known Risks**: `pending`
+- **Commit**: `f5159c184d92445af1d89edba99ba8a05618d5a9`
+- **Changed Files**: `src/services/application.test.ts only; strengthened PostgreSQL-backed evidence for exact status-history fields and bounded UTC timestamp, missing-application history isolation, rollback preservation of status and updated_at, zero leaked history, and failure-injection cleanup.`
+- **Tests Run**: `PASS: pnpm test src/services/application.test.ts (29/29); targeted Playwright status-transitions, activity-history, and company-history specs (3/3); pnpm format:check; pnpm lint; pnpm typecheck; git diff --check.`
+- **Known Risks**: `Generator verification ran under Node 26.0.0 while the project declares Node 22.23.1; independent clean-workspace evaluation under the declared runtime remains required.`
 
 ## Evaluator Report
 
@@ -50,18 +50,18 @@
 
 ## Current Status
 
-- **Active**: `F10 — transactional status/history updates`
+- **Active**: `F10 — transactional status/history updates (evaluating f5159c184d92445af1d89edba99ba8a05618d5a9)`
 - **Queued**: `F11 — server-side Zod validation; F12 — safe Markdown rendering; F13 — exact-status sub-filtering within the existing Active and Closed application views`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS); F08 — complete and expose application-scoped activity history (704e8c96f23c3662d35258b024dc882916137f17 / Evaluator PASS); F09 — company-scoped chronological application history (b8ce1d17f760eeddf04a02423af980d9f72ee0c4 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F09 are passing. F10 is the sole active feature with a bounded transaction-atomicity sprint contract. F11 through F13 remain queued as `not_started`.
+F00 through F09 are passing. F10 is the sole evaluating feature at exact Generator commit `f5159c184d92445af1d89edba99ba8a05618d5a9`. F11 through F13 remain queued as `not_started`.
 
 ## Next Step
 
-1. `Generator implements only the active F10 sprint contract, runs targeted verification, and returns one logical commit for independent evaluation.`
+1. `Evaluator verifies exact Generator commit f5159c184d92445af1d89edba99ba8a05618d5a9 in a clean workspace and returns PASS, FAIL, or BLOCKED.`
 
 ## Verification Status
 
@@ -73,6 +73,6 @@ F00 through F09 are passing. F10 is the sole active feature with a bounded trans
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Select F10 as the next ordered queued feature. Bound it to auditing, proving, and minimally hardening the existing application-status/history transaction without expanding endpoint, UI, schema, cache, application-creation, or interview scope.`
-- **Context Summary**: `F00 through F09 are passing. F10 is active under the sprint contract above. Baseline inspection found an existing database transaction and rollback test, so Generator should make only the smallest changes needed for deterministic commit/rollback evidence.`
+- **Context Summary**: `F00 through F09 are passing. F10 is evaluating exact Generator commit f5159c184d92445af1d89edba99ba8a05618d5a9. The production transaction required no change; the test-only commit strengthens deterministic PostgreSQL commit and rollback proof.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator implements F10 and reports one logical commit.`
+- **Next Owner**: `Evaluator independently verifies exact Generator commit f5159c184d92445af1d89edba99ba8a05618d5a9 in a clean workspace.`
