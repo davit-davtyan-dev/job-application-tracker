@@ -10,9 +10,9 @@
 
 ## Orchestration State
 
-- **Phase**: `active`
+- **Phase**: `evaluating`
 - **Active Feature**: `F11`
-- **Generator Commit**: `pending`
+- **Generator Commit**: `d089a8efced85c944f93a54d50a58c2e62293d38`
 - **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
@@ -35,10 +35,10 @@
 
 ## Generator Report
 
-- **Commit**: `pending`
-- **Changed Files**: `pending`
-- **Tests Run**: `pending`
-- **Known Risks**: `pending`
+- **Commit**: `d089a8efced85c944f93a54d50a58c2e62293d38`
+- **Changed Files**: `src/services/application.test.ts, src/services/company-history.test.ts, src/services/company.test.ts, src/services/history.test.ts, and src/services/interview.test.ts; strengthened PostgreSQL-backed malformed-input and zero-side-effect coverage. Production audit found all service boundaries already accept unknown, use strict reusable Zod schemas, and validate before database access, so no production or Next.js route changes were required.`
+- **Tests Run**: `PASS: pnpm test src/services (5 files, 69 tests); pnpm test src/app/api (7 files, 48 tests); pnpm format:check; pnpm lint; pnpm typecheck; git diff --check. Final Generator worktree clean.`
+- **Known Risks**: `Generator verification ran under Node 26.0.0 while the project declares Node 22.23.1; full Playwright and production-build verification remain for the independent Evaluator.`
 
 ## Evaluator Report
 
@@ -50,18 +50,18 @@
 
 ## Current Status
 
-- **Active**: `F11 — server-side Zod validation`
+- **Active**: `F11 — server-side Zod validation (evaluating)`
 - **Queued**: `F12 — safe Markdown rendering; F13 — exact-status sub-filtering within the existing Active and Closed application views`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS); F08 — complete and expose application-scoped activity history (704e8c96f23c3662d35258b024dc882916137f17 / Evaluator PASS); F09 — company-scoped chronological application history (b8ce1d17f760eeddf04a02423af980d9f72ee0c4 / Evaluator PASS); F10 — transactional status/history updates (f5159c184d92445af1d89edba99ba8a05618d5a9 / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F10 are passing. F11 is active under a bounded validation-audit and service-evidence contract. F12 and F13 remain queued as `not_started`.
+F00 through F10 are passing. F11 Generator commit `d089a8efced85c944f93a54d50a58c2e62293d38` is evaluating. F12 and F13 remain queued as `not_started`.
 
 ## Next Step
 
-1. `Generator implements and commits only the active F11 sprint contract, then reports the exact commit for independent evaluation.`
+1. `Evaluator independently verifies exact Generator commit d089a8efced85c944f93a54d50a58c2e62293d38 in a clean workspace and returns PASS, FAIL, or BLOCKED.`
 
 ## Verification Status
 
@@ -73,6 +73,6 @@ F00 through F10 are passing. F11 is active under a bounded validation-audit and 
 ## Current Session Handoff Report
 
 - **Decisions Made**: `Activated F11 as an evidence-first audit of all existing application/company service validation boundaries. Preserve existing product and API behavior; allow only the smallest schema/service/route correction when a concrete gap is proven. No durable architecture decision is required at activation because server-side Zod validation and layering are already project rules.`
-- **Context Summary**: `F00 through F10 are passing. F11 is active with a complete sprint contract. Readiness passed: pnpm install was clean, PostgreSQL and test PostgreSQL are healthy, seeding is current, and the representative company service test passed 5/5.`
+- **Context Summary**: `F00 through F10 are passing. F11 is evaluating exact Generator commit d089a8efced85c944f93a54d50a58c2e62293d38. The implementation is test-only because the audit found production validation already complete; targeted service/API/static checks passed.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator implements F11 and returns one logical commit with targeted verification evidence.`
+- **Next Owner**: `Evaluator independently verifies the exact F11 Generator commit in a clean workspace.`
