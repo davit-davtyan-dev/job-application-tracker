@@ -44,7 +44,13 @@ describe("createCompany", () => {
     await testDatabase.delete(companies).where(eq(companies.id, created.id));
   });
 
-  it.each([{}, { name: "   " }, { name: 42 }, { name: "Valid", extra: true }])(
+  it.each([
+    {},
+    { name: "   " },
+    { name: 42 },
+    { name: "Valid", notes: 42 },
+    { name: "Valid", extra: true },
+  ])(
     "rejects malformed input without inserting a record: %j",
     async (input) => {
       const [{ countBefore }] = await sqlClient<

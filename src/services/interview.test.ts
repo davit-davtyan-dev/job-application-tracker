@@ -103,6 +103,8 @@ describe("interview service", () => {
       scheduledAt: "2026-08-10T10:00:00",
       extra: true,
     },
+    { applicationId: 42, scheduledAt: "2026-08-10T10:00:00Z" },
+    { applicationId: randomUUID(), scheduledAt: 42 },
   ])(
     "rejects strict invalid creation input without mutation: %j",
     async (input) => {
@@ -192,6 +194,41 @@ describe("interview service", () => {
       status: InterviewStatus.Scheduled,
     });
     expect(updated.updatedAt).toEqual(interview.updatedAt);
+    expect(await db.select().from(activityHistory)).toHaveLength(0);
+  });
+
+  it.each([
+    {},
+    {
+      applicationId: "bad",
+      interviewId: randomUUID(),
+      status: InterviewStatus.Completed,
+    },
+    {
+      applicationId: randomUUID(),
+      interviewId: "bad",
+      status: InterviewStatus.Completed,
+    },
+    {
+      applicationId: randomUUID(),
+      interviewId: randomUUID(),
+      status: "Pending",
+    },
+    {
+      applicationId: randomUUID(),
+      interviewId: randomUUID(),
+      status: InterviewStatus.Completed,
+      extra: true,
+    },
+  ])("rejects invalid status input without mutation: %j", async (input) => {
+    const application = await seedApplication();
+    const interview = await createInterview({
+      applicationId: application.id,
+      scheduledAt: "2026-08-10T10:00:00Z",
+    });
+    await db.delete(activityHistory);
+    await expect(updateInterviewStatus(input)).rejects.toBeDefined();
+    expect(await db.select().from(interviews)).toEqual([interview]);
     expect(await db.select().from(activityHistory)).toHaveLength(0);
   });
 

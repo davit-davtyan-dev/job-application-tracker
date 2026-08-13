@@ -30,12 +30,14 @@ describe("company history service", () => {
   });
 
   it("validates input and distinguishes missing from empty companies", async () => {
-    await expect(
-      listCompanyHistory({ companyId: "bad" }),
-    ).rejects.toBeDefined();
-    await expect(
-      listCompanyHistory({ companyId: randomUUID(), extra: true }),
-    ).rejects.toBeDefined();
+    for (const input of [
+      {},
+      { companyId: "bad" },
+      { companyId: 42 },
+      { companyId: randomUUID(), extra: true },
+    ]) {
+      await expect(listCompanyHistory(input)).rejects.toBeDefined();
+    }
     await expect(
       listCompanyHistory({ companyId: randomUUID() }),
     ).rejects.toBeInstanceOf(CompanyHistoryNotFoundError);

@@ -110,8 +110,18 @@ describe("createApplication", () => {
       appliedDate: "2026-08-07",
       extra: true,
     },
+    { companyId: 42, positionTitle: "X", appliedDate: "2026-08-07" },
+    { companyName: "X", positionTitle: 42, appliedDate: "2026-08-07" },
+    { companyName: "X", positionTitle: "X", appliedDate: 42 },
+    {
+      companyName: "X",
+      positionTitle: "X",
+      appliedDate: "2026-08-07",
+      description: 42,
+    },
   ])("rejects invalid input without writes: %j", async (input) => {
     await expect(createApplication(input)).rejects.toBeDefined();
+    expect(await db.select().from(companies)).toHaveLength(0);
     expect(await db.select().from(jobApplications)).toHaveLength(0);
     expect(await db.select().from(activityHistory)).toHaveLength(0);
   });
@@ -286,13 +296,12 @@ describe("listApplications", () => {
     expect(await listApplications({ search: "   " })).toHaveLength(3);
   });
 
-  it("rejects overlong or unexpected search criteria before querying", async () => {
-    await expect(
-      listApplications({ search: "x".repeat(201) }),
-    ).rejects.toBeDefined();
-    await expect(
-      listApplications({ search: "x", unexpected: true }),
-    ).rejects.toBeDefined();
+  it.each([
+    { search: "x".repeat(201) },
+    { search: 42 },
+    { search: "x", unexpected: true },
+  ])("rejects invalid search criteria: %j", async (input) => {
+    await expect(listApplications(input)).rejects.toBeDefined();
   });
 
   it("returns exactly the closed partition and composes it with search", async () => {
@@ -340,12 +349,14 @@ describe("listApplications", () => {
     ).toEqual([]);
   });
 
-  it.each([{ view: "all" }, { view: "" }, { view: "closed", extra: true }])(
-    "rejects invalid view criteria before querying: %j",
-    async (input) => {
-      await expect(listApplications(input)).rejects.toBeDefined();
-    },
-  );
+  it.each([
+    { view: "all" },
+    { view: "" },
+    { view: 42 },
+    { view: "closed", extra: true },
+  ])("rejects invalid view criteria before querying: %j", async (input) => {
+    await expect(listApplications(input)).rejects.toBeDefined();
+  });
 });
 
 describe("updateApplicationStatus", () => {
@@ -422,14 +433,28 @@ describe("updateApplicationStatus", () => {
     expect(await db.select().from(activityHistory)).toHaveLength(0);
   });
 
-  it("reports a missing application and validates unknown input", async () => {
+  it("reports a missing application", async () => {
     await expect(
       updateApplicationStatus({ id: randomUUID(), status: "Applied" }),
     ).rejects.toBeInstanceOf(ApplicationNotFoundError);
     expect(await db.select().from(activityHistory)).toHaveLength(0);
-    await expect(
-      updateApplicationStatus({ id: randomUUID(), status: "Nope" }),
-    ).rejects.toBeDefined();
+  });
+
+  it.each([
+    {},
+    { id: "bad", status: ApplicationStatus.Rejected },
+    { id: randomUUID(), status: "Nope" },
+    { id: randomUUID(), status: 42 },
+    { id: randomUUID(), status: ApplicationStatus.Rejected, extra: true },
+  ])("rejects invalid status input without mutation: %j", async (input) => {
+    const original = await seed();
+    await expect(updateApplicationStatus(input)).rejects.toBeDefined();
+    const [persisted] = await db
+      .select()
+      .from(jobApplications)
+      .where(eq(jobApplications.id, original.id));
+    expect(persisted).toEqual(original);
+    expect(await db.select().from(activityHistory)).toHaveLength(0);
   });
 
   it("rolls back the status update when history insertion fails", async () => {

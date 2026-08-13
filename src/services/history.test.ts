@@ -82,12 +82,14 @@ describe("history service", () => {
   });
 
   it("rejects strict invalid input and distinguishes missing applications", async () => {
-    await expect(
-      listApplicationHistory({ applicationId: "bad" }),
-    ).rejects.toBeDefined();
-    await expect(
-      listApplicationHistory({ applicationId: randomUUID(), extra: true }),
-    ).rejects.toBeDefined();
+    for (const input of [
+      {},
+      { applicationId: "bad" },
+      { applicationId: 42 },
+      { applicationId: randomUUID(), extra: true },
+    ]) {
+      await expect(listApplicationHistory(input)).rejects.toBeDefined();
+    }
     await expect(
       listApplicationHistory({ applicationId: randomUUID() }),
     ).rejects.toBeInstanceOf(ApplicationNotFoundError);
