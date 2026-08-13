@@ -30,7 +30,7 @@ Exactly one feature may be `active` or `evaluating`.
 | **F09** | View a chronological **Company History** of all previous applications for a specific company.                 | `pnpm test:e2e tests/company-history.spec.ts`        | `passing`     | `b8ce1d17f760eeddf04a02423af980d9f72ee0c4 / Evaluator PASS` |
 | **F10** | Ensure status transitions and history logging occur within a single **Database Transaction**.                 | `pnpm test src/services/application.test.ts`         | `passing`     | `f5159c184d92445af1d89edba99ba8a05618d5a9 / Evaluator PASS` |
 | **F11** | Enforce **Server-Side Validation** via Zod for all application and company data entries.                      | `pnpm test src/services`                             | `passing`     | `d089a8efced85c944f93a54d50a58c2e62293d38 / Evaluator PASS` |
-| **F12** | Render all Markdown-based job descriptions and notes safely.                                                  | `pnpm test:e2e tests/e2e/markdown-rendering.spec.ts` | `evaluating`  |                                                             |
+| **F12** | Render all Markdown-based job descriptions and notes safely.                                                  | `pnpm test:e2e tests/e2e/markdown-rendering.spec.ts` | `passing`     | `3d89edab9b3d006e593fc08de433060f7ba334da / Evaluator PASS` |
 | **F13** | Refine Active and Closed application views with an accessible **Exact Status Filter** and default All option. | `pnpm test:e2e tests/e2e/filters.spec.ts`            | `not_started` |                                                             |
 
 ## State Transitions

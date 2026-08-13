@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `evaluating`
-- **Active Feature**: `F12`
+- **Phase**: `idle`
+- **Active Feature**: `none`
 - **Generator Commit**: `3d89edab9b3d006e593fc08de433060f7ba334da`
-- **Evaluator Verdict**: `pending`
+- **Evaluator Verdict**: `PASS`
 
 ## Active Sprint Contract
 
@@ -42,37 +42,37 @@
 
 ## Evaluator Report
 
-- **Verdict**: `pending`
-- **Commit Verified**: `pending`
-- **Checks Run**: `pending`
-- **Findings**: `pending`
-- **Required Fix**: `pending`
+- **Verdict**: `PASS`
+- **Commit Verified**: `3d89edab9b3d006e593fc08de433060f7ba334da`
+- **Checks Run**: `PASS in a clean isolated checkout: targeted Vitest 3 files / 60 tests; required Markdown Playwright 1/1; pnpm format:check; pnpm lint from a clean generated-output state; pnpm typecheck; full Vitest 17 files / 142 tests; full Playwright 10/10 with the app and tests using localhost:5433/job_tracker_test; pnpm build with explicit DATABASE_URL; git diff --check HEAD^ HEAD; exact-HEAD and clean-worktree checks.`
+- **Findings**: `All F12 acceptance criteria passed. The three nullable Markdown fields flow through Route Handler -> validated Service DTO -> server-only query module. One reusable react-markdown renderer supplies semantic formatting, skips raw HTML, removes unsafe URL schemes, and uses no dangerouslySetInnerHTML. Accessible labels and blank omission are covered. Raw storage and write contracts remain unchanged; no F13 behavior, migration, endpoint, transaction, UUID/UTC change, prohibited any, or unrelated change was introduced. react-markdown 10.1.0 is exactly pinned and React 19 compatible.`
+- **Required Fix**: `none`
 
 ## Current Status
 
-- **Active**: `F12 — safe Markdown rendering (evaluating)`
+- **Active**: `none`
 - **Queued**: `F13 — exact-status sub-filtering within the existing Active and Closed application views`
-- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS); F08 — complete and expose application-scoped activity history (704e8c96f23c3662d35258b024dc882916137f17 / Evaluator PASS); F09 — company-scoped chronological application history (b8ce1d17f760eeddf04a02423af980d9f72ee0c4 / Evaluator PASS); F10 — transactional status/history updates (f5159c184d92445af1d89edba99ba8a05618d5a9 / Evaluator PASS); F11 — server-side Zod validation evidence (d089a8efced85c944f93a54d50a58c2e62293d38 / Evaluator PASS)`
+- **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS); F08 — complete and expose application-scoped activity history (704e8c96f23c3662d35258b024dc882916137f17 / Evaluator PASS); F09 — company-scoped chronological application history (b8ce1d17f760eeddf04a02423af980d9f72ee0c4 / Evaluator PASS); F10 — transactional status/history updates (f5159c184d92445af1d89edba99ba8a05618d5a9 / Evaluator PASS); F11 — server-side Zod validation evidence (d089a8efced85c944f93a54d50a58c2e62293d38 / Evaluator PASS); F12 — safe Markdown rendering (3d89edab9b3d006e593fc08de433060f7ba334da / Evaluator PASS)`
 - **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F11 are passing. F12 Generator commit `3d89edab9b3d006e593fc08de433060f7ba334da` is evaluating. F13 remains queued as `not_started`.
+F00 through F12 are passing. The Evaluator verified exact F12 Generator commit `3d89edab9b3d006e593fc08de433060f7ba334da` in a clean checkout and returned PASS after all targeted checks and the full completion pipeline. F13 remains queued as `not_started`.
 
 ## Next Step
 
-1. `Evaluator verifies exact Generator commit 3d89edab9b3d006e593fc08de433060f7ba334da in a clean workspace, including the full completion pipeline and production build.`
+1. `Activate F13 with a new sprint contract in the next orchestration cycle.`
 
 ## Verification Status
 
-- **Build**: `PASS at d089a8efced85c944f93a54d50a58c2e62293d38`
-- **Lint**: `PASS at d089a8efced85c944f93a54d50a58c2e62293d38`
-- **Unit/Integration**: `PASS (139/139) at d089a8efced85c944f93a54d50a58c2e62293d38`
-- **E2E**: `PASS (9/9) at d089a8efced85c944f93a54d50a58c2e62293d38`
+- **Build**: `PASS at 3d89edab9b3d006e593fc08de433060f7ba334da`
+- **Lint**: `PASS at 3d89edab9b3d006e593fc08de433060f7ba334da`
+- **Unit/Integration**: `PASS (142/142) at 3d89edab9b3d006e593fc08de433060f7ba334da`
+- **E2E**: `PASS (10/10) at 3d89edab9b3d006e593fc08de433060f7ba334da`
 
 ## Current Session Handoff Report
 
-- **Decisions Made**: `Activated F12 with a bounded contract covering safe rendering of the three existing Markdown content fields in application cards while excluding F13 and persistence changes.`
-- **Context Summary**: `F00 through F11 are passing. F12 exact Generator commit 3d89edab9b3d006e593fc08de433060f7ba334da is ready for independent clean-workspace evaluation; all Generator tests and static checks passed, while build could not start because the sandbox denied Turbopack's internal port bind.`
+- **Decisions Made**: `Accepted F12 after independent PASS. Raw persisted Markdown is rendered through one react-markdown boundary that skips raw HTML and applies the library's safe URL transform; the application list read model exposes existing description/application-note/company-note columns without changing write contracts.`
+- **Context Summary**: `F00 through F12 are passing. Exact F12 Generator commit 3d89edab9b3d006e593fc08de433060f7ba334da received Evaluator PASS after targeted tests, 142/142 Vitest tests, 10/10 Playwright tests, formatting, lint, typecheck, production build, diff, and clean-worktree checks passed.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Evaluator.`
+- **Next Owner**: `Orchestrator may activate F13 in the next cycle.`

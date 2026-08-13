@@ -63,3 +63,8 @@
 
 - **Decision**: Add an accessible exact-status filter beneath Active (All, Applied, Interviewing, Offer) and Closed (All, Accepted, Rejected, Withdrawn, Archived). All is the default and resets on view changes while search persists. Validate view/status combinations; keep All UI-only.
 - **Reasoning**: This preserves existing aggregate views while enabling precise filtering. Resetting avoids cross-view status leakage, and a subordinate keyboard-operable control maintains a clear, accessible hierarchy.
+
+### 2026-08-13: Safe Markdown Presentation Boundary
+
+- **Decision**: Keep job descriptions, application notes, and company notes as raw Markdown in persistence and transport, and render them through one reusable `react-markdown` boundary. Skip embedded raw HTML and retain the renderer's safe URL transformation so active HTML and unsafe link protocols do not enter the DOM.
+- **Reasoning**: A single presentation boundary gives all Markdown fields consistent semantic output and security behavior without changing write contracts or storing derived HTML. Allowing raw HTML with a sanitizer would add unnecessary parsing surface and dependencies for the current product; custom Markdown parsing would duplicate mature library behavior and carry greater correctness and security risk.
