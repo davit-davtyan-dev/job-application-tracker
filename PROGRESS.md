@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `blocked`
+- **Phase**: `active`
 - **Active Feature**: `F11`
-- **Generator Commit**: `d089a8efced85c944f93a54d50a58c2e62293d38`
-- **Evaluator Verdict**: `BLOCKED`
+- **Generator Commit**: `pending bounded correction after d089a8efced85c944f93a54d50a58c2e62293d38`
+- **Evaluator Verdict**: `pending`
 
 ## Active Sprint Contract
 
@@ -33,6 +33,12 @@
 - **Targeted Verification**: `pnpm test src/services; pnpm test src/app/api; pnpm format:check; pnpm lint; pnpm typecheck; git diff --check.`
 - **Final Verification**: `pnpm lint && pnpm test && pnpm test:e2e && pnpm build`
 
+### Bounded Correction Assignment
+
+- **Objective**: Reproduce and diagnose the prior Evaluator's Node 22.23.1 hang in `pnpm test src/services` using bounded process-level timeouts and per-file isolation. If the cause is repository-owned, make the smallest in-scope correction and tests; if the suite now completes without a repository change, document deterministic evidence and create no product-code change.
+- **Boundaries**: Preserve the F11 scope and all acceptance criteria above. Do not start F12 or F13. Do not change product behavior, validation policy, database schema/query behavior, dependencies, endpoints, UI, orchestration state files, or durable decisions. Do not weaken, skip, or remove F11 tests merely to make the suite finish.
+- **Verification Evidence Required**: Record Node and pnpm versions; use bounded commands to identify the exact file/test/process if a hang recurs; run every targeted verification command after any correction. Produce one logical commit only if repository files change, otherwise report the existing exact Generator commit `d089a8efced85c944f93a54d50a58c2e62293d38` as the implementation candidate with fresh diagnostic evidence.
+
 ## Generator Report
 
 - **Commit**: `d089a8efced85c944f93a54d50a58c2e62293d38`
@@ -50,18 +56,18 @@
 
 ## Current Status
 
-- **Active**: `none`
+- **Active**: `F11 — bounded diagnosis/correction of the Node 22.23.1 service-suite hang`
 - **Queued**: `F12 — safe Markdown rendering; F13 — exact-status sub-filtering within the existing Active and Closed application views`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS); F08 — complete and expose application-scoped activity history (704e8c96f23c3662d35258b024dc882916137f17 / Evaluator PASS); F09 — company-scoped chronological application history (b8ce1d17f760eeddf04a02423af980d9f72ee0c4 / Evaluator PASS); F10 — transactional status/history updates (f5159c184d92445af1d89edba99ba8a05618d5a9 / Evaluator PASS)`
-- **Blocked**: `F11 — exact Generator commit d089a8efced85c944f93a54d50a58c2e62293d38 could not complete pnpm test src/services under Node 22.23.1; diagnose the hang before reevaluation.`
+- **Blocked**: `none`
 
 ## Current Session Summary
 
-F00 through F10 are passing. F11 is blocked after independent evaluation of Generator commit `d089a8efced85c944f93a54d50a58c2e62293d38`: the service suite hung under Node 22.23.1 and the mandatory pipeline could not complete. F12 and F13 remain queued as `not_started`.
+F00 through F10 are passing. F11 is active again for a bounded Generator diagnosis/correction after independent evaluation of Generator commit `d089a8efced85c944f93a54d50a58c2e62293d38` could not complete the service suite under Node 22.23.1. F12 and F13 remain queued as `not_started`.
 
 ## Next Step
 
-1. `In a fresh session, diagnose the Node 22.23.1 pnpm test src/services hang with bounded process-level timeouts, then resume F11 through the required Generator/Evaluator lifecycle.`
+1. `Generator reproduces and diagnoses the Node 22.23.1 pnpm test src/services hang with bounded process-level timeouts, applies only a repository-owned bounded correction if required, and reports the exact implementation commit for Evaluator verification.`
 
 ## Verification Status
 
