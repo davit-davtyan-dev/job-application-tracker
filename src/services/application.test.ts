@@ -174,7 +174,7 @@ describe("listApplications", () => {
   it("returns the exact active projection with company names and deterministic ordering", async () => {
     const [company] = await db
       .insert(companies)
-      .values({ name: "List Co" })
+      .values({ name: "List Co", notes: "## Trusted company\n\n- Remote" })
       .returning();
     const olderId = "10000000-0000-4000-8000-000000000000";
     const newerId = "20000000-0000-4000-8000-000000000000";
@@ -200,6 +200,8 @@ describe("listApplications", () => {
         positionTitle: "New date",
         appliedDate: "2026-08-09",
         status: ApplicationStatus.Interviewing,
+        description: "# New role",
+        notes: "**Follow up**",
       },
       ...(
         [
@@ -222,25 +224,34 @@ describe("listApplications", () => {
         id: expect.any(String),
         companyId: company!.id,
         companyName: "List Co",
+        companyNotes: "## Trusted company\n\n- Remote",
         positionTitle: "New date",
         appliedDate: "2026-08-09",
         status: "Interviewing",
+        description: "# New role",
+        notes: "**Follow up**",
       },
       {
         id: newerId,
         companyId: company!.id,
         companyName: "List Co",
+        companyNotes: "## Trusted company\n\n- Remote",
         positionTitle: "Tie two",
         appliedDate: "2026-08-08",
         status: "Offer",
+        description: null,
+        notes: null,
       },
       {
         id: olderId,
         companyId: company!.id,
         companyName: "List Co",
+        companyNotes: "## Trusted company\n\n- Remote",
         positionTitle: "Tie one",
         appliedDate: "2026-08-08",
         status: "Applied",
+        description: null,
+        notes: null,
       },
     ]);
   });

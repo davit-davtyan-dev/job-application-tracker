@@ -27,9 +27,12 @@ export interface ApplicationListRecord {
   id: string;
   companyId: string;
   companyName: string;
+  companyNotes: string | null;
   positionTitle: string;
   appliedDate: string;
   status: JobApplication["status"];
+  description: string | null;
+  notes: string | null;
 }
 
 export async function updateApplicationStatusWithHistory(
@@ -70,9 +73,12 @@ export async function selectApplicationsByStatuses(
       id: jobApplications.id,
       companyId: jobApplications.companyId,
       companyName: companies.name,
+      companyNotes: companies.notes,
       positionTitle: jobApplications.positionTitle,
       appliedDate: jobApplications.appliedDate,
       status: jobApplications.status,
+      description: jobApplications.description,
+      notes: jobApplications.notes,
     })
     .from(jobApplications)
     .innerJoin(companies, eq(jobApplications.companyId, companies.id))

@@ -18,6 +18,24 @@ import { ActivityHistorySection } from "@/components/activity-history-section";
 import { historyQueryKey } from "@/lib/history-query";
 import { CompanyHistorySection } from "@/components/company-history-section";
 import { companyHistoryQueryKey } from "@/lib/company-history-query";
+import { MarkdownContent } from "@/components/markdown-content";
+
+function ApplicationMarkdownSection({
+  label,
+  content,
+}: {
+  label: string;
+  content: string | null;
+}) {
+  if (!content?.trim()) return null;
+
+  return (
+    <section className="mt-5" aria-label={label}>
+      <h4 className="mb-2 text-sm font-semibold text-slate-950">{label}</h4>
+      <MarkdownContent>{content}</MarkdownContent>
+    </section>
+  );
+}
 
 function ApplicationStatusControl({
   application,
@@ -233,6 +251,18 @@ export function ActiveApplicationList() {
                     {format(parseISO(application.appliedDate), "MMM d, yyyy")}
                   </time>
                 </p>
+                <ApplicationMarkdownSection
+                  label="Job description"
+                  content={application.description}
+                />
+                <ApplicationMarkdownSection
+                  label="Application notes"
+                  content={application.notes}
+                />
+                <ApplicationMarkdownSection
+                  label="Company notes"
+                  content={application.companyNotes}
+                />
                 <InterviewSection application={application} />
                 <ActivityHistorySection application={application} />
                 <CompanyHistorySection application={application} />

@@ -34,8 +34,11 @@ const applicationListItemFields = {
   id: z.uuid(),
   companyId: z.uuid(),
   companyName: z.string(),
+  companyNotes: z.string().nullable(),
   positionTitle: z.string(),
   appliedDate: z.iso.date(),
+  description: z.string().nullable(),
+  notes: z.string().nullable(),
 };
 
 const activeApplicationSchema = z.strictObject({

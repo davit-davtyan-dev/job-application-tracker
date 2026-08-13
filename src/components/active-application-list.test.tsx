@@ -78,6 +78,63 @@ describe("ActiveApplicationList", () => {
     );
   });
 
+  it("renders labelled Markdown fields and omits null or blank sections", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        Response.json({
+          applications: [
+            {
+              id: "markdown-app",
+              companyId: "company-1",
+              companyName: "Markdown Co",
+              companyNotes: "- Remote-first\n- Kind team",
+              positionTitle: "Markdown Engineer",
+              appliedDate: "2026-08-09",
+              status: "Applied",
+              description: "## Build safely\n\nUse **TypeScript**.",
+              notes: "Remember `pnpm test`.",
+            },
+            {
+              id: "blank-app",
+              companyId: "company-2",
+              companyName: "Blank Co",
+              companyNotes: null,
+              positionTitle: "Blank role",
+              appliedDate: "2026-08-08",
+              status: "Applied",
+              description: "   \n ",
+              notes: null,
+            },
+          ],
+        }),
+      ),
+    );
+    renderList();
+
+    const markdownCard = (await screen.findByText("Markdown Engineer")).closest(
+      "li",
+    );
+    expect(markdownCard).not.toBeNull();
+    const card = within(markdownCard!);
+    expect(card.getByRole("region", { name: "Job description" })).toBeVisible();
+    expect(
+      card.getByRole("region", { name: "Application notes" }),
+    ).toBeVisible();
+    expect(card.getByRole("region", { name: "Company notes" })).toBeVisible();
+    expect(
+      card.getByRole("heading", { level: 2, name: "Build safely" }),
+    ).toBeVisible();
+    expect(card.getByText("TypeScript").tagName).toBe("STRONG");
+    expect(card.getByText("pnpm test").tagName).toBe("CODE");
+
+    const blankCard = screen.getByText("Blank role").closest("li");
+    expect(blankCard).not.toBeNull();
+    expect(
+      within(blankCard!).queryByRole("region", { name: /notes|description/i }),
+    ).toBeNull();
+  });
+
   it("offers a retry after an error", async () => {
     const fetchMock = vi
       .fn()
