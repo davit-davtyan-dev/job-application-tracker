@@ -44,10 +44,29 @@ describe("/api/companies/[id]", () => {
     expect(updateCompany).toHaveBeenCalledWith({ id, name: "Acme", notes: "" });
   });
 
-  it("rejects malformed JSON and validation failures", async () => {
+  it("rejects malformed JSON", async () => {
     expect((await PATCH(patchRequest("{"), context())).status).toBe(400);
-    updateCompany.mockRejectedValue(z.uuid().safeParse("bad").error);
-    expect((await PATCH(patchRequest("{}"), context("bad"))).status).toBe(400);
+    expect(updateCompany).not.toHaveBeenCalled();
+  });
+
+  it("rejects a body id as an extra field without calling the service", async () => {
+    const response = await PATCH(
+      patchRequest(JSON.stringify({ id, name: "Acme" })),
+      context(),
+    );
+
+    expect(response.status).toBe(400);
+    expect(updateCompany).not.toHaveBeenCalled();
+  });
+
+  it("does not let a valid body UUID override an invalid path UUID", async () => {
+    const response = await PATCH(
+      patchRequest(JSON.stringify({ id, name: "Acme" })),
+      context("bad"),
+    );
+
+    expect(response.status).toBe(400);
+    expect(updateCompany).not.toHaveBeenCalled();
   });
 
   it.each([

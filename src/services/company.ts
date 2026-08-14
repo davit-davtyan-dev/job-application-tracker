@@ -16,7 +16,8 @@ export const createCompanyInputSchema = z.strictObject({
 export type CreateCompanyInput = z.input<typeof createCompanyInputSchema>;
 
 export const companyIdSchema = z.uuid();
-export const updateCompanyInputSchema = createCompanyInputSchema.extend({
+export const updateCompanyBodySchema = createCompanyInputSchema;
+export const updateCompanyInputSchema = updateCompanyBodySchema.extend({
   id: companyIdSchema,
 });
 

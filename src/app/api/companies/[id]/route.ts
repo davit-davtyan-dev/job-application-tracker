@@ -2,10 +2,12 @@ import { z } from "zod";
 
 import { apiErrorResponse } from "@/app/api/responses";
 import {
+  companyIdSchema,
   CompanyNameConflictError,
   CompanyNotFoundError,
   deleteCompany,
   updateCompany,
+  updateCompanyBodySchema,
 } from "@/services/company";
 
 type CompanyRouteContext = { params: Promise<{ id: string }> };
@@ -59,14 +61,9 @@ export async function PATCH(
     });
   }
   try {
-    const company = await updateCompany(
-      Object.assign(
-        { id: await routeId(context) },
-        typeof body === "object" && body !== null && !Array.isArray(body)
-          ? body
-          : { body },
-      ),
-    );
+    const id = companyIdSchema.parse(await routeId(context));
+    const companyInput = updateCompanyBodySchema.parse(body);
+    const company = await updateCompany({ id, ...companyInput });
     return Response.json(company);
   } catch (error: unknown) {
     return serviceError(error, "updated");
