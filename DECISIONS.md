@@ -36,35 +36,35 @@
 
 ### 2026-08-07: Shared Application Status and API Error Primitives
 
-- **Decision**: Define the fixed job-application status vocabulary once as the string `ApplicationStatus` enum and reuse it across Drizzle, Zod, and UI options. Construct structured Route Handler errors through the shared `src/app/api/responses.ts` utility.
-- **Reasoning**: The installed Drizzle and Zod versions accept enum objects directly, so an `as const` tuple adds no required capability. A single enum prevents status vocabulary drift across persistence, validation, and rendering. Centralizing the common API error envelope removes duplicated response construction while preserving route-specific codes, messages, issues, and statuses.
+- **Decision**: Reuse one string `ApplicationStatus` enum across Drizzle, Zod, and UI options, and build Route Handler errors with `src/app/api/responses.ts`.
+- **Reasoning**: Shared primitives prevent vocabulary and response-shape drift. An `as const` tuple was unnecessary because Drizzle and Zod accept the enum directly.
 
 ### 2026-08-10: Atomic and Idempotent Application Status Mutation
 
-- **Decision**: Update one application's status through a dedicated status endpoint. Allow direct movement to any shared `ApplicationStatus`. For a real change, atomically update the application and append exactly one `status_changed` activity-history row; treat a same-status request as a successful no-op without history or `updated_at` churn.
-- **Reasoning**: Direct transitions match the single-user tracker scope without introducing an unrequested workflow policy. The transaction preserves the required status/history invariant, while idempotent same-status requests avoid misleading duplicate activity and timestamp changes. Invalidating the application query root lets existing Active/Closed and search caches settle consistently after a mutation.
+- **Decision**: Use a dedicated endpoint for unrestricted status changes; atomically record one history event for real changes and treat same-status requests as no-ops.
+- **Reasoning**: This preserves status/history integrity without imposing an unrequested transition policy or creating duplicate history and timestamp churn.
 
 ### 2026-08-10: Minimal Interview Records and Serialized Database Tests
 
-- **Decision**: Model each interview as an application-owned record with a required UTC scheduled time and one fixed state (`Scheduled`, `Completed`, or `Cancelled`). Allow direct state changes, atomically record each real interview event in activity history, and treat same-state updates as idempotent. Serialize Vitest files because PostgreSQL integration suites share one database and install global failure triggers.
-- **Reasoning**: The minimal record satisfies the product brief without prematurely introducing interview rounds or auxiliary metadata. Transactions preserve interview/history integrity and direct states match the existing unrestricted status model. File serialization prevents destructive cleanup and test-only triggers from crossing integration-file boundaries; isolated schemas would add disproportionate infrastructure complexity at the current suite size.
+- **Decision**: Store application-owned interviews with a UTC schedule and fixed state; record real state changes atomically and serialize database-backed Vitest files.
+- **Reasoning**: The minimal model avoids premature metadata, while transactions preserve history integrity. Serialization prevents shared-database interference; isolated schemas were disproportionate for the suite size.
 
 ### 2026-08-10: Immutable Application-Scoped Activity Timeline
 
-- **Decision**: Treat activity history as an immutable application-owned audit trail with one shared fixed event vocabulary for application creation, real application-status changes, interview scheduling, interview completion, and interview cancellation. Expose it through an application-scoped read-only service/API and per-card chronological timeline; refresh only the affected application's history cache after related mutations.
-- **Reasoning**: A typed vocabulary prevents writer, validation, and presentation drift while preserving the existing atomic transaction guarantees. Application-scoped reads keep F08 bounded and cache invalidation precise; cross-application company history remains a separate F09 concern. Immutable, deterministic UTC ordering provides reliable audit evidence without introducing manual history editing or ambiguous derived events.
+- **Decision**: Keep activity history as an immutable, application-scoped audit trail with a shared event vocabulary, deterministic UTC ordering, and read-only per-card access.
+- **Reasoning**: This prevents event drift and provides reliable audit evidence without manual editing. Company-wide history remains a separate concern.
 
 ### 2026-08-10: Company History as a Shared Application Timeline
 
-- **Decision**: Represent company history as a read-only company-scoped chronological list of all persisted applications, ordered by applied date, creation timestamp, and UUID. Expose position, applied date, and current status from existing application cards; use one TanStack Query cache per company and invalidate it only when an application is created or its status really changes.
-- **Reasoning**: The product goal is to review prior roles at the same company before another application, which requires application summaries rather than duplicating the F08 activity-event audit trail. A company UUID prevents ambiguous name lookup, deterministic ordering makes the timeline stable, and shared company-scoped caching keeps multiple cards consistent while avoiding unrelated or interview-driven refetches.
+- **Decision**: Show company history as a read-only, deterministically ordered list of application summaries, identified and cached by company UUID.
+- **Reasoning**: Application summaries support reviewing prior roles without duplicating activity events. UUID lookup avoids ambiguous names; interview changes need no refetch.
 
 ### 2026-08-10: Exact Status Refinement Within Application Views
 
-- **Decision**: Add an accessible exact-status button group beneath Active (All, Applied, Interviewing, Offer) and Closed (All, Accepted, Rejected, Withdrawn, Archived), matching the existing ApplicationListView button-group pattern. All is the default and resets on view changes while search persists. Validate view/status combinations; keep All UI-only.
-- **Reasoning**: This preserves existing aggregate views while enabling precise filtering. Resetting avoids cross-view status leakage, and a subordinate keyboard-operable `aria-pressed` button group maintains a clear, accessible hierarchy and consistent interaction pattern. A select was rejected in favor of direct, visible status choices consistent with the view controls.
+- **Decision**: Add a subordinate `aria-pressed` exact-status button group to Active and Closed views; keep All UI-only, reset it on view changes, and preserve search.
+- **Reasoning**: This adds precise filtering without status leakage or changing aggregate views. A select was rejected because visible buttons match the existing controls.
 
 ### 2026-08-13: Safe Markdown Presentation Boundary
 
-- **Decision**: Keep job descriptions, application notes, and company notes as raw Markdown in persistence and transport, and render them through one reusable `react-markdown` boundary. Skip embedded raw HTML and retain the renderer's safe URL transformation so active HTML and unsafe link protocols do not enter the DOM.
-- **Reasoning**: A single presentation boundary gives all Markdown fields consistent semantic output and security behavior without changing write contracts or storing derived HTML. Allowing raw HTML with a sanitizer would add unnecessary parsing surface and dependencies for the current product; custom Markdown parsing would duplicate mature library behavior and carry greater correctness and security risk.
+- **Decision**: Store and transport raw Markdown, rendering all supported fields through one reusable `react-markdown` boundary without raw HTML or unsafe URLs.
+- **Reasoning**: This centralizes safe rendering without changing write contracts or storing HTML. Sanitized raw HTML and custom parsing add unnecessary complexity and risk.
