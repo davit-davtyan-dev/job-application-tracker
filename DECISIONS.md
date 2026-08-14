@@ -61,8 +61,8 @@
 
 ### 2026-08-10: Exact Status Refinement Within Application Views
 
-- **Decision**: Add an accessible exact-status filter beneath Active (All, Applied, Interviewing, Offer) and Closed (All, Accepted, Rejected, Withdrawn, Archived). All is the default and resets on view changes while search persists. Validate view/status combinations; keep All UI-only.
-- **Reasoning**: This preserves existing aggregate views while enabling precise filtering. Resetting avoids cross-view status leakage, and a subordinate keyboard-operable control maintains a clear, accessible hierarchy.
+- **Decision**: Add an accessible exact-status button group beneath Active (All, Applied, Interviewing, Offer) and Closed (All, Accepted, Rejected, Withdrawn, Archived), matching the existing ApplicationListView button-group pattern. All is the default and resets on view changes while search persists. Validate view/status combinations; keep All UI-only.
+- **Reasoning**: This preserves existing aggregate views while enabling precise filtering. Resetting avoids cross-view status leakage, and a subordinate keyboard-operable `aria-pressed` button group maintains a clear, accessible hierarchy and consistent interaction pattern. A select was rejected in favor of direct, visible status choices consistent with the view controls.
 
 ### 2026-08-13: Safe Markdown Presentation Boundary
 
