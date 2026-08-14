@@ -11,6 +11,7 @@
 - **Identifiers**: All tables must use **UUIDs** as primary keys for record identifiers.
 - **Timestamps**: All stored timestamps must be in **UTC**.
 - **Hard Deletion**: Record deletion is permanent; there is no soft-delete mechanism unless specified.
+- **Company Names**: Store trimmed names and enforce case-insensitive uniqueness in PostgreSQL.
 
 ## Transaction Rules
 
@@ -21,6 +22,7 @@ Operations involving multiple tables or related records must use the `.transacti
 - Job Application creation (Application + Initial History entry).
 - Status changes (Application Update + Status History entry).
 - Interview management (Interview Record + Activity History entry).
+- Company deletion (Company + related Applications, Interviews, and Activity History).
 
 ## Migrations
 

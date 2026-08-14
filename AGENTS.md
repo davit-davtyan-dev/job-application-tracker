@@ -14,6 +14,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 The **Job Application Tracker** is a full-stack web application designed for a single user to track and manage job applications after submission. The core experience involves a list of active applications that can be searched by company name or position title and filtered by status. It provides a chronological history of significant events for each application, such as status changes and interview records.
 
+Companies are independently managed; deleting one also deletes its related application data.
+
 ## **Technical Stack & Versions**
 
 - **Node.js**: `22.23.1`

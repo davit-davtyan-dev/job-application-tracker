@@ -98,6 +98,10 @@ Job descriptions and notes are stored as Markdown.
 
 Markdown content must be rendered safely before display.
 
+## Company Management
+
+`/companies` supports creating, renaming, editing Markdown notes, and confirmed deletion. Names are case-insensitively unique; deletion atomically removes related applications, interviews, and activity history.
+
 ## Testing
 
 The project includes:
@@ -121,6 +125,7 @@ The initial end-to-end suite covers:
 3. Changing a job application's status
 4. Adding an interview
 5. Viewing a company's job-application history
+6. Creating, editing, and permanently deleting companies
 
 ## Agent Orchestration
 

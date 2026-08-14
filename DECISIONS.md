@@ -68,3 +68,8 @@
 
 - **Decision**: Store and transport raw Markdown, rendering all supported fields through one reusable `react-markdown` boundary without raw HTML or unsafe URLs.
 - **Reasoning**: This centralizes safe rendering without changing write contracts or storing HTML. Sanitized raw HTML and custom parsing add unnecessary complexity and risk.
+
+### 2026-08-14: Dedicated Company Management and Ownership-Tree Deletion
+
+- **Decision**: Manage companies on `/companies`, enforce case-insensitive name uniqueness, and make confirmed deletion atomically remove all related application data.
+- **Reasoning**: This keeps shared records discoverable and unambiguous while preventing partial deletion. Blocking deletion and soft deletion were rejected in favor of the requested permanent cascade.

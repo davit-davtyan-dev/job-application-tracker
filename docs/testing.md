@@ -58,3 +58,4 @@ Every new feature must be added to the Playwright suite, ensuring the following 
 - Status Transitions
 - Interview Records
 - Company History
+- Company Management

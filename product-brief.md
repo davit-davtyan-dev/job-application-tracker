@@ -12,6 +12,8 @@ The default experience is a list of active job applications. Users can search jo
 
 The application provides a clear history of previous job applications for each company so users can review earlier applications before submitting another one.
 
+A Companies page, linked beside Search applications, provides company management.
+
 ## Core Records
 
 ### Company
@@ -21,9 +23,12 @@ A company is stored independently from its job applications.
 A company can have:
 
 - Multiple job applications
-- General company notes
+- A unique name, compared case-insensitively
+- Optional Markdown notes
 
 When creating a job application, the user selects an existing company or creates a new company.
+
+The Companies page supports creating, renaming, editing notes, and deleting companies. Confirmed deletion permanently removes the company and all related applications, interviews, and activity history.
 
 ### Job Application
 
