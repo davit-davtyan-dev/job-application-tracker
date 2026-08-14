@@ -25,25 +25,37 @@ const {
   },
   listApplications: vi.fn(),
   listApplicationsInputSchema: {
-    safeParse: vi.fn((input: { view?: unknown; search?: string }) => {
-      const search = input.search?.trim() || undefined;
-      const view = input.view ?? "active";
-      return (view !== "active" && view !== "closed") ||
-        (search && search.length > 200)
-        ? {
-            success: false as const,
-            error: {
-              issues: [
-                {
-                  code: "too_big",
-                  path: ["search"],
-                  message: "Search must be 200 characters or fewer.",
-                },
-              ],
-            },
-          }
-        : { success: true as const, data: { view, search } };
-    }),
+    safeParse: vi.fn(
+      (input: { view?: unknown; search?: string; status?: unknown }) => {
+        const search = input.search?.trim() || undefined;
+        const view = input.view ?? "active";
+        const allowedStatuses =
+          view === "closed"
+            ? ["Accepted", "Rejected", "Withdrawn", "Archived"]
+            : ["Applied", "Interviewing", "Offer"];
+        return (view !== "active" && view !== "closed") ||
+          (search && search.length > 200) ||
+          (input.status !== undefined &&
+            (!allowedStatuses.includes(String(input.status)) ||
+              Array.isArray(input.status)))
+          ? {
+              success: false as const,
+              error: {
+                issues: [
+                  {
+                    code: "too_big",
+                    path: ["search"],
+                    message: "Search must be 200 characters or fewer.",
+                  },
+                ],
+              },
+            }
+          : {
+              success: true as const,
+              data: { view, search, status: input.status },
+            };
+      },
+    ),
   },
 }));
 vi.mock("@/services/application", () => ({
@@ -73,6 +85,7 @@ describe("GET /api/applications", () => {
     expect(listApplications).toHaveBeenCalledWith({
       view: "active",
       search: undefined,
+      status: undefined,
     });
   });
 
@@ -85,6 +98,7 @@ describe("GET /api/applications", () => {
     expect(listApplications).toHaveBeenCalledWith({
       view: "active",
       search: "AcMe",
+      status: undefined,
     });
   });
 
@@ -97,8 +111,44 @@ describe("GET /api/applications", () => {
     expect(listApplications).toHaveBeenCalledWith({
       view: "closed",
       search: undefined,
+      status: undefined,
     });
   });
+
+  it("parses one exact status with its view and search", async () => {
+    listApplications.mockResolvedValueOnce([]);
+    const response = await GET(
+      new Request(
+        "http://localhost/api/applications?view=closed&search=Acme&status=Rejected",
+      ),
+    );
+    expect(response.status).toBe(200);
+    expect(listApplications).toHaveBeenCalledWith({
+      view: "closed",
+      search: "Acme",
+      status: "Rejected",
+    });
+  });
+
+  it.each([
+    "status=",
+    "status=Unknown",
+    "status=Applied&status=Offer",
+    "view=active&status=Rejected",
+    "view=closed&status=Applied",
+  ])(
+    "rejects an invalid, ambiguous, or cross-view status (%s) before the service",
+    async (query) => {
+      const response = await GET(
+        new Request(`http://localhost/api/applications?${query}`),
+      );
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({
+        error: { code: "INVALID_REQUEST" },
+      });
+      expect(listApplications).not.toHaveBeenCalled();
+    },
+  );
 
   it("rejects an invalid search without calling the service", async () => {
     const response = await GET(

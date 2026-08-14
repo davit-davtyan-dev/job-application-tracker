@@ -71,7 +71,9 @@ describe("ActiveApplicationList", () => {
     renderList();
     expect(await screen.findByText("Engineer")).toBeVisible();
     expect(screen.getByText("Acme")).toBeVisible();
-    expect(screen.getByText("Interviewing")).toBeVisible();
+    expect(
+      screen.getByRole("combobox", { name: "Status for Engineer" }),
+    ).toHaveValue("Interviewing");
     expect(screen.getByText("Aug 9, 2026").closest("time")).toHaveAttribute(
       "datetime",
       "2026-08-09",
@@ -323,6 +325,75 @@ describe("ActiveApplicationList", () => {
     );
   });
 
+  it("offers exact statuses by view, composes with search, and resets to All", async () => {
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(Response.json({ applications: [] })),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    renderList();
+
+    const filter = screen.getByRole("group", {
+      name: "Filter active applications by exact status",
+    });
+    expect(
+      within(filter)
+        .getAllByRole("button")
+        .map((option) => option.textContent),
+    ).toEqual(["All", "Applied", "Interviewing", "Offer"]);
+    expect(within(filter).getByRole("button", { name: "All" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    const search = screen.getByRole("searchbox", {
+      name: "Search active applications",
+    });
+    await userEvent.type(search, "Acme & Sons");
+    await userEvent.click(
+      within(filter).getByRole("button", { name: "Interviewing" }),
+    );
+    expect(
+      within(filter).getByRole("button", { name: "Interviewing" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/applications?view=active&search=Acme+%26+Sons&status=Interviewing",
+    );
+    expect(
+      await screen.findByText(
+        "No active applications with status “Interviewing” match “Acme & Sons”.",
+      ),
+    ).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "Closed" }));
+    expect(search).toHaveValue("Acme & Sons");
+    expect(filter).toHaveAccessibleName(
+      "Filter closed applications by exact status",
+    );
+    expect(
+      within(filter)
+        .getAllByRole("button")
+        .map((option) => option.textContent),
+    ).toEqual(["All", "Accepted", "Rejected", "Withdrawn", "Archived"]);
+    expect(within(filter).getByRole("button", { name: "All" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/applications?view=closed&search=Acme+%26+Sons",
+    );
+
+    await userEvent.click(
+      within(filter).getByRole("button", { name: "Rejected" }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/applications?view=closed&search=Acme+%26+Sons&status=Rejected",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Closed" }));
+    expect(
+      within(filter).getByRole("button", { name: "Rejected" }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
   it("uses selected-view loading, count, empty, error, and retry copy", async () => {
     const fetchMock = vi
       .fn()
@@ -389,7 +460,7 @@ describe("ActiveApplicationList", () => {
     const selector = await screen.findByRole("combobox", {
       name: "Status for Engineer",
     });
-    expect(screen.getAllByRole("option")).toHaveLength(7);
+    expect(within(selector).getAllByRole("option")).toHaveLength(7);
     await userEvent.selectOptions(selector, "Offer");
     expect(await screen.findByText("Status updated.")).toBeVisible();
     expect(selector).toHaveValue("Offer");

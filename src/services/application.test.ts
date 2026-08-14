@@ -360,6 +360,49 @@ describe("listApplications", () => {
     ).toEqual([]);
   });
 
+  it("filters by one exact status and composes it with search", async () => {
+    const [company] = await db
+      .insert(companies)
+      .values({ name: "Exact Filter Co" })
+      .returning();
+    await db.insert(jobApplications).values([
+      {
+        companyId: company!.id,
+        positionTitle: "Matching offer",
+        appliedDate: "2026-08-09",
+        status: ApplicationStatus.Offer,
+      },
+      {
+        companyId: company!.id,
+        positionTitle: "Other offer",
+        appliedDate: "2026-08-08",
+        status: ApplicationStatus.Offer,
+      },
+      {
+        companyId: company!.id,
+        positionTitle: "Matching applied",
+        appliedDate: "2026-08-07",
+        status: ApplicationStatus.Applied,
+      },
+    ]);
+
+    expect(
+      await listApplications({ status: "Offer", search: "Matching" }),
+    ).toMatchObject([
+      { positionTitle: "Matching offer", status: ApplicationStatus.Offer },
+    ]);
+  });
+
+  it.each([
+    { status: "" },
+    { status: "Unknown" },
+    { status: ["Applied", "Offer"] },
+    { view: "active", status: "Rejected" },
+    { view: "closed", status: "Applied" },
+  ])("rejects invalid or cross-view exact status: %j", async (input) => {
+    await expect(listApplications(input)).rejects.toBeDefined();
+  });
+
   it.each([
     { view: "all" },
     { view: "" },

@@ -7,8 +7,14 @@ export const applicationsQueryRoot = ["applications"] as const;
 export const applicationsQueryKey = (
   view: ApplicationListView,
   search: string,
+  status?: ApplicationStatus,
 ) =>
-  [...applicationsQueryRoot, view, normalizeApplicationSearch(search)] as const;
+  [
+    ...applicationsQueryRoot,
+    view,
+    normalizeApplicationSearch(search),
+    status ?? null,
+  ] as const;
 
 interface ApplicationsResponse {
   applications: ApplicationListItem[];
@@ -17,10 +23,12 @@ interface ApplicationsResponse {
 export async function fetchApplications(
   view: ApplicationListView,
   search: string,
+  status?: ApplicationStatus,
 ): Promise<ApplicationListItem[]> {
   const normalizedSearch = normalizeApplicationSearch(search);
   const parameters = new URLSearchParams({ view });
   if (normalizedSearch) parameters.set("search", normalizedSearch);
+  if (status) parameters.set("status", status);
   const query = parameters.toString();
   const response = await fetch(`/api/applications${query ? `?${query}` : ""}`);
   if (!response.ok) throw new Error("Applications could not be loaded.");

@@ -109,14 +109,34 @@ export function ActiveApplicationList() {
   const [view, setView] = useState<ApplicationListView>(
     ApplicationListView.Active,
   );
+  const [status, setStatus] = useState<ApplicationStatus | undefined>();
   const normalizedSearch = normalizeApplicationSearch(search);
   const selectedLabel =
     view === ApplicationListView.Active ? "Active" : "Closed";
   const selectedLabelLower = selectedLabel.toLowerCase();
   const applications = useQuery({
-    queryKey: applicationsQueryKey(view, normalizedSearch),
-    queryFn: () => fetchApplications(view, normalizedSearch),
+    queryKey: applicationsQueryKey(view, normalizedSearch, status),
+    queryFn: () => fetchApplications(view, normalizedSearch, status),
   });
+  const statusOptions =
+    view === ApplicationListView.Active
+      ? [
+          ApplicationStatus.Applied,
+          ApplicationStatus.Interviewing,
+          ApplicationStatus.Offer,
+        ]
+      : [
+          ApplicationStatus.Accepted,
+          ApplicationStatus.Rejected,
+          ApplicationStatus.Withdrawn,
+          ApplicationStatus.Archived,
+        ];
+
+  const selectView = (nextView: ApplicationListView) => {
+    if (nextView === view) return;
+    setStatus(undefined);
+    setView(nextView);
+  };
 
   return (
     <section aria-labelledby="applications-heading">
@@ -155,12 +175,47 @@ export function ActiveApplicationList() {
                   ? "bg-slate-950 text-white"
                   : "text-slate-700 hover:bg-white"
               }`}
-              onClick={() => setView(option)}
+              onClick={() => selectView(option)}
             >
               {label}
             </button>
           );
         })}
+      </div>
+
+      <div className="mt-4">
+        <p
+          id="application-status-filter-label"
+          className="text-sm font-medium text-slate-700"
+        >
+          Filter {selectedLabelLower} applications by exact status
+        </p>
+        <div
+          id="application-status-filter"
+          className="mt-2 inline-flex flex-wrap rounded-xl border border-slate-300 bg-slate-50 p-1"
+          role="group"
+          aria-labelledby="application-status-filter-label"
+        >
+          {[undefined, ...statusOptions].map((option) => {
+            const isSelected = status === option;
+            return (
+              <button
+                key={option ?? "all"}
+                type="button"
+                aria-pressed={isSelected}
+                aria-controls="application-results"
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  isSelected
+                    ? "bg-slate-950 text-white"
+                    : "text-slate-700 hover:bg-white"
+                }`}
+                onClick={() => setStatus(option)}
+              >
+                {option ?? "All"}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="mt-6 max-w-xl">
@@ -219,11 +274,15 @@ export function ActiveApplicationList() {
         )}
         {applications.isSuccess && applications.data.length === 0 && (
           <p className="mt-6 rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-600">
-            {normalizedSearch
-              ? `No ${selectedLabelLower} applications match “${normalizedSearch}”.`
-              : view === ApplicationListView.Active
-                ? "No active applications yet. Add one to start your pipeline."
-                : "No closed applications yet."}
+            {normalizedSearch && status
+              ? `No ${selectedLabelLower} applications with status “${status}” match “${normalizedSearch}”.`
+              : normalizedSearch
+                ? `No ${selectedLabelLower} applications match “${normalizedSearch}”.`
+                : status
+                  ? `No ${selectedLabelLower} applications have status “${status}”.`
+                  : view === ApplicationListView.Active
+                    ? "No active applications yet. Add one to start your pipeline."
+                    : "No closed applications yet."}
           </p>
         )}
         {applications.isSuccess && applications.data.length > 0 && (

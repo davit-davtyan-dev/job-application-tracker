@@ -47,6 +47,19 @@ test("filters active and closed applications while preserving search without nav
 
     await expect(activeButton).toHaveAttribute("aria-pressed", "true");
     await expect(closedButton).toHaveAttribute("aria-pressed", "false");
+    const statusFilter = page.locator("#application-status-filter");
+    await expect(statusFilter).toHaveAccessibleName(
+      "Filter active applications by exact status",
+    );
+    await expect(statusFilter.getByRole("button")).toHaveText([
+      "All",
+      "Applied",
+      "Interviewing",
+      "Offer",
+    ]);
+    await expect(
+      statusFilter.getByRole("button", { name: "All" }),
+    ).toHaveAttribute("aria-pressed", "true");
     for (const status of statuses.slice(0, 3)) {
       await expect(results.getByText(positions[status])).toBeVisible();
     }
@@ -54,12 +67,35 @@ test("filters active and closed applications while preserving search without nav
       await expect(results.getByText(positions[status])).toHaveCount(0);
     }
 
+    const interviewingFilter = statusFilter.getByRole("button", {
+      name: "Interviewing",
+    });
+    await interviewingFilter.focus();
+    await interviewingFilter.press("Enter");
+    await expect(interviewingFilter).toHaveAttribute("aria-pressed", "true");
+    await expect(results.getByText(positions.Interviewing)).toBeVisible();
+    await expect(results.getByText(positions.Applied)).toHaveCount(0);
+    await expect(results.getByText(positions.Offer)).toHaveCount(0);
+
     await closedButton.focus();
     await closedButton.press("Enter");
     await expect(closedButton).toHaveAttribute("aria-pressed", "true");
     await expect(
       page.getByRole("heading", { name: "Closed applications" }),
     ).toBeVisible();
+    await expect(statusFilter).toHaveAccessibleName(
+      "Filter closed applications by exact status",
+    );
+    await expect(statusFilter.getByRole("button")).toHaveText([
+      "All",
+      "Accepted",
+      "Rejected",
+      "Withdrawn",
+      "Archived",
+    ]);
+    await expect(
+      statusFilter.getByRole("button", { name: "All" }),
+    ).toHaveAttribute("aria-pressed", "true");
     for (const status of statuses.slice(3)) {
       await expect(results.getByText(positions[status])).toBeVisible();
     }
@@ -69,7 +105,13 @@ test("filters active and closed applications while preserving search without nav
 
     const search = page.locator("#application-search");
     await expect(search).toHaveAccessibleName("Search closed applications");
-    await search.fill(`Rejected filter ${suffix}`);
+    await search.fill(`filter ${suffix}`);
+    const rejectedFilter = statusFilter.getByRole("button", {
+      name: "Rejected",
+    });
+    await rejectedFilter.focus();
+    await rejectedFilter.press(" ");
+    await expect(rejectedFilter).toHaveAttribute("aria-pressed", "true");
     await expect(results.getByText(positions.Rejected)).toBeVisible();
     await expect(results.getByText(positions.Accepted)).toHaveCount(0);
 
@@ -77,13 +119,19 @@ test("filters active and closed applications while preserving search without nav
     await activeButton.press(" ");
     await expect(activeButton).toHaveAttribute("aria-pressed", "true");
     await expect(search).toHaveAccessibleName("Search active applications");
-    await expect(search).toHaveValue(`Rejected filter ${suffix}`);
+    await expect(search).toHaveValue(`filter ${suffix}`);
     await expect(
-      results.getByText(/No active applications match/),
-    ).toBeVisible();
+      statusFilter.getByRole("button", { name: "All" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    for (const status of statuses.slice(0, 3)) {
+      await expect(results.getByText(positions[status])).toBeVisible();
+    }
 
     await activeButton.press(" ");
     await closedButton.press(" ");
+    await expect(
+      statusFilter.getByRole("button", { name: "All" }),
+    ).toHaveAttribute("aria-pressed", "true");
     await expect(results.getByText(positions.Rejected)).toBeVisible();
     await page.getByRole("button", { name: "Clear" }).click();
     await expect(search).toHaveValue("");

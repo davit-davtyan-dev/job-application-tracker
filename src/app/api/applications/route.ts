@@ -21,10 +21,17 @@ const isZodError = (error: unknown): error is z.ZodError =>
 export async function GET(request: Request): Promise<Response> {
   const parameters = new URL(request.url).searchParams;
   const views = parameters.getAll("view");
+  const statuses = parameters.getAll("status");
   const parsed = listApplicationsInputSchema.safeParse({
     view:
       views.length === 0 ? undefined : views.length === 1 ? views[0] : views,
     search: parameters.get("search") ?? undefined,
+    status:
+      statuses.length === 0
+        ? undefined
+        : statuses.length === 1
+          ? statuses[0]
+          : statuses,
   });
   if (!parsed.success) {
     return apiErrorResponse({

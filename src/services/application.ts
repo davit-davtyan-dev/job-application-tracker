@@ -55,15 +55,31 @@ export type ApplicationListItem =
   | z.infer<typeof activeApplicationSchema>
   | z.infer<typeof closedApplicationSchema>;
 
-export const listApplicationsInputSchema = z.strictObject({
-  view: z.enum(ApplicationListView).default(ApplicationListView.Active),
-  search: z
-    .string()
-    .trim()
-    .max(200, "Search must be 200 characters or fewer.")
-    .transform((value) => value || undefined)
-    .optional(),
-});
+export const listApplicationsInputSchema = z
+  .strictObject({
+    view: z.enum(ApplicationListView).default(ApplicationListView.Active),
+    status: z.enum(ApplicationStatus).optional(),
+    search: z
+      .string()
+      .trim()
+      .max(200, "Search must be 200 characters or fewer.")
+      .transform((value) => value || undefined)
+      .optional(),
+  })
+  .superRefine(({ view, status }, context) => {
+    if (
+      status &&
+      !applicationStatusesByView[view].some(
+        (allowedStatus) => allowedStatus === status,
+      )
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["status"],
+        message: `${status} is not a valid status for the ${view} view.`,
+      });
+    }
+  });
 
 export const createApplicationInputSchema = z
   .strictObject({
@@ -149,9 +165,9 @@ export async function listApplications(
   input: unknown = {},
 ): Promise<ApplicationListItem[]> {
   const criteria = listApplicationsInputSchema.parse(input);
-  const { view, search } = criteria;
+  const { view, search, status } = criteria;
   const applications = await selectApplicationsByStatuses(
-    [...applicationStatusesByView[view]],
+    status ? [status] : [...applicationStatusesByView[view]],
     { search },
   );
   return view === ApplicationListView.Active
