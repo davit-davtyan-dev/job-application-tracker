@@ -5,23 +5,31 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 import { ApplicationStatus } from "@/lib/application";
 import { InterviewStatus } from "@/lib/interview";
 
-export const companies = pgTable("companies", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  notes: text("notes"),
-  createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const companies = pgTable(
+  "companies",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("companies_name_lower_unique").on(sql`lower(${table.name})`),
+  ],
+);
 
 export const systemMetadata = pgTable("system_metadata", {
   id: uuid("id").primaryKey().defaultRandom(),

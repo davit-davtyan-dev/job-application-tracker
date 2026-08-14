@@ -19,6 +19,10 @@ describe("tracker landing page", () => {
     );
 
     expect(screen.getByText("Job Application Tracker")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Companies" })).toHaveAttribute(
+      "href",
+      "/companies",
+    );
     expect(
       screen.getByRole("link", { name: "Add first application" }),
     ).toHaveAttribute("href", "#create-application");

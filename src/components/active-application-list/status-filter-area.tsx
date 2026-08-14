@@ -2,6 +2,7 @@ import { ApplicationListView, ApplicationStatus } from "@/lib/application";
 
 interface StatusFilterAreaProps {
   view: ApplicationListView;
+  status: ApplicationStatus | undefined;
   handleSelectView: (view: ApplicationListView) => void;
   selectedLabelLower: string;
   setStatus: (status: ApplicationStatus | undefined) => void;
@@ -9,6 +10,7 @@ interface StatusFilterAreaProps {
 
 export function StatusFilterArea({
   view,
+  status,
   handleSelectView,
   selectedLabelLower,
   setStatus,

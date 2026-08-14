@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ApplicationStatus } from "@/lib/application";
 import { applicationsQueryRoot } from "@/lib/application-query";
 import { companyHistoryQueryKey } from "@/lib/company-history-query";
+import { companiesQueryKey, fetchCompanies } from "@/lib/company-query";
 
 const formSchema = z
   .object({
@@ -40,8 +41,6 @@ const formSchema = z
   });
 
 type FormValues = z.input<typeof formSchema>;
-type Company = { id: string; name: string };
-
 const localDate = () => {
   const now = new Date();
   return new Date(now.getTime() - now.getTimezoneOffset() * 60_000)
@@ -56,12 +55,8 @@ async function responseJson(response: Response): Promise<unknown> {
 export function CreateApplicationForm() {
   const queryClient = useQueryClient();
   const companies = useQuery({
-    queryKey: ["companies"],
-    queryFn: async () => {
-      const response = await fetch("/api/companies");
-      if (!response.ok) throw new Error("Companies could not be loaded.");
-      return (await responseJson(response)) as Company[];
-    },
+    queryKey: companiesQueryKey,
+    queryFn: fetchCompanies,
   });
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

@@ -41,6 +41,7 @@ test("renders persisted Markdown formatting without executable content", async (
       .fill(position);
     const card = page.locator("li", { hasText: position });
 
+    await card.getByRole("button", { name: "Job description" }).click();
     await expect(
       card.getByRole("heading", { level: 2, name: "Build secure tools" }),
     ).toBeVisible();
@@ -49,6 +50,7 @@ test("renders persisted Markdown formatting without executable content", async (
     await expect(
       card.getByRole("link", { name: "Safe job link" }),
     ).toHaveAttribute("href", "https://example.com/job");
+    await card.getByRole("button", { name: "Company notes" }).click();
     await expect(
       card.getByRole("heading", { level: 3, name: "Company principles" }),
     ).toBeVisible();

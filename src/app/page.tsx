@@ -3,6 +3,7 @@ import { BriefcaseBusiness } from "lucide-react";
 
 import { CreateApplicationForm } from "@/components/create-application-form";
 import { ActiveApplicationList } from "@/components/active-application-list/active-application-list";
+import { SiteNavigation } from "@/components/site-navigation";
 
 export default function Home() {
   return (
@@ -24,12 +25,15 @@ export default function Home() {
             </p>
           </div>
         </div>
-        <time
-          className="hidden text-sm text-slate-500 sm:block"
-          dateTime={new Date().toISOString()}
-        >
-          {format(new Date(), "MMMM d, yyyy")}
-        </time>
+        <div className="flex flex-col items-end gap-2">
+          <SiteNavigation />
+          <time
+            className="hidden text-sm text-slate-500 sm:block"
+            dateTime={new Date().toISOString()}
+          >
+            {format(new Date(), "MMMM d, yyyy")}
+          </time>
+        </div>
       </header>
 
       <section

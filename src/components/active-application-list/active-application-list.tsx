@@ -62,6 +62,7 @@ export function ActiveApplicationList() {
 
       <StatusFilterArea
         view={view}
+        status={status}
         handleSelectView={selectView}
         selectedLabelLower={selectedLabelLower}
         setStatus={setStatus}

@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 import { apiErrorResponse } from "@/app/api/responses";
-import { createCompany, listCompanies } from "@/services/company";
+import {
+  CompanyNameConflictError,
+  createCompany,
+  listCompanies,
+} from "@/services/company";
 
 export async function POST(request: Request): Promise<Response> {
   let input: unknown;
@@ -26,6 +30,14 @@ export async function POST(request: Request): Promise<Response> {
         message: "Company input is invalid.",
         status: 400,
         issues: error.issues,
+      });
+    }
+
+    if (error instanceof CompanyNameConflictError) {
+      return apiErrorResponse({
+        code: "COMPANY_NAME_CONFLICT",
+        message: error.message,
+        status: 409,
       });
     }
 

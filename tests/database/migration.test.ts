@@ -35,3 +35,16 @@ describe("interview migration", () => {
     );
   });
 });
+
+describe("company uniqueness migration", () => {
+  it("enforces a case-insensitive unique company name index", () => {
+    const migration = readFileSync(
+      resolve("drizzle/0004_wooden_franklin_storm.sql"),
+      "utf8",
+    );
+    expect(migration).toContain(
+      'CREATE UNIQUE INDEX "companies_name_lower_unique"',
+    );
+    expect(migration).toContain('lower("name")');
+  });
+});

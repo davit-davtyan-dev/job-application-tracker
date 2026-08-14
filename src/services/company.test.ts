@@ -5,8 +5,21 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { afterAll, describe, expect, it } from "vitest";
 
-import { companies } from "@/server/db/schema";
-import { createCompany } from "@/services/company";
+import { ApplicationStatus } from "@/lib/application";
+import {
+  activityHistory,
+  companies,
+  interviews,
+  jobApplications,
+} from "@/server/db/schema";
+import {
+  CompanyNameConflictError,
+  CompanyNotFoundError,
+  createCompany,
+  deleteCompany,
+  listCompanies,
+  updateCompany,
+} from "@/services/company";
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 
@@ -65,4 +78,108 @@ describe("createCompany", () => {
       expect(countAfter).toBe(countBefore);
     },
   );
+
+  it("enforces case-insensitive uniqueness and allows an unchanged self-rename", async () => {
+    const name = `Unique ${randomUUID()}`;
+    const created = await createCompany({ name, notes: " one " });
+
+    await expect(
+      createCompany({ name: name.toUpperCase() }),
+    ).rejects.toBeInstanceOf(CompanyNameConflictError);
+    await expect(
+      updateCompany({ id: created.id, name, notes: " updated " }),
+    ).resolves.toMatchObject({ name, notes: "updated" });
+
+    await testDatabase.delete(companies).where(eq(companies.id, created.id));
+  });
+
+  it("lists companies in deterministic case-insensitive name order", async () => {
+    const suffix = randomUUID();
+    const created = await Promise.all([
+      createCompany({ name: `zulu ${suffix}` }),
+      createCompany({ name: `Alpha ${suffix}` }),
+    ]);
+
+    const listed = (await listCompanies()).filter((company) =>
+      company.name.endsWith(suffix),
+    );
+    expect(listed.map(({ name }) => name)).toEqual([
+      `Alpha ${suffix}`,
+      `zulu ${suffix}`,
+    ]);
+
+    await testDatabase
+      .delete(companies)
+      .where(eq(companies.id, created[0]!.id));
+    await testDatabase
+      .delete(companies)
+      .where(eq(companies.id, created[1]!.id));
+  });
+
+  it("rejects invalid and missing updates without inappropriate writes", async () => {
+    await expect(
+      updateCompany({ id: "bad", name: "Valid" }),
+    ).rejects.toBeDefined();
+    await expect(
+      updateCompany({ id: randomUUID(), name: "Valid" }),
+    ).rejects.toBeInstanceOf(CompanyNotFoundError);
+  });
+
+  it("deletes only the selected company's complete ownership tree", async () => {
+    const selected = await createCompany({ name: `Delete ${randomUUID()}` });
+    const isolated = await createCompany({ name: `Keep ${randomUUID()}` });
+    const [{ id: selectedApplicationId }] = await testDatabase
+      .insert(jobApplications)
+      .values({
+        companyId: selected.id,
+        positionTitle: "Engineer",
+        appliedDate: "2026-08-14",
+      })
+      .returning({ id: jobApplications.id });
+    const [{ id: isolatedApplicationId }] = await testDatabase
+      .insert(jobApplications)
+      .values({
+        companyId: isolated.id,
+        positionTitle: "Designer",
+        appliedDate: "2026-08-14",
+      })
+      .returning({ id: jobApplications.id });
+    const [{ id: interviewId }] = await testDatabase
+      .insert(interviews)
+      .values({
+        applicationId: selectedApplicationId!,
+        scheduledAt: new Date("2026-08-15T12:00:00Z"),
+      })
+      .returning({ id: interviews.id });
+    await testDatabase.insert(activityHistory).values({
+      applicationId: selectedApplicationId!,
+      interviewId,
+      eventType: "interview_scheduled",
+      status: ApplicationStatus.Applied,
+    });
+
+    await expect(deleteCompany(selected.id)).resolves.toMatchObject({
+      id: selected.id,
+    });
+    const [{ count: selectedRows }] = await sqlClient<
+      { count: number }[]
+    >`SELECT (
+      (SELECT count(*) FROM companies WHERE id = ${selected.id}) +
+      (SELECT count(*) FROM job_applications WHERE company_id = ${selected.id}) +
+      (SELECT count(*) FROM interviews WHERE application_id = ${selectedApplicationId}) +
+      (SELECT count(*) FROM activity_history WHERE application_id = ${selectedApplicationId})
+    )::int AS count`;
+    expect(selectedRows).toBe(0);
+    expect(
+      await testDatabase
+        .select()
+        .from(jobApplications)
+        .where(eq(jobApplications.id, isolatedApplicationId!)),
+    ).toHaveLength(1);
+
+    await testDatabase
+      .delete(jobApplications)
+      .where(eq(jobApplications.id, isolatedApplicationId!));
+    await testDatabase.delete(companies).where(eq(companies.id, isolated.id));
+  });
 });

@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { CompanyNameConflictError } from "@/services/company";
 
 const { createCompany, listCompanies } = vi.hoisted(() => ({
   createCompany: vi.fn(),
   listCompanies: vi.fn(),
 }));
 
-vi.mock("@/services/company", () => ({ createCompany, listCompanies }));
+vi.mock("@/services/company", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/services/company")>()),
+  createCompany,
+  listCompanies,
+}));
 
 import { GET, POST } from "./route";
 
@@ -87,6 +92,18 @@ describe("POST /api/companies", () => {
       error: {
         code: "INTERNAL_ERROR",
         message: "Company could not be created.",
+      },
+    });
+  });
+
+  it("maps duplicate names to a structured conflict", async () => {
+    createCompany.mockRejectedValue(new CompanyNameConflictError());
+    const response = await POST(request(JSON.stringify({ name: "Acme" })));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: {
+        code: "COMPANY_NAME_CONFLICT",
+        message: "A company with that name already exists.",
       },
     });
   });
