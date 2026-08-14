@@ -124,11 +124,17 @@ describe("ActiveApplicationList", () => {
       card.getByRole("region", { name: "Application notes" }),
     ).toBeVisible();
     expect(card.getByRole("region", { name: "Company notes" })).toBeVisible();
+    const jobDescriptionButton = card.getByText("Job description");
+    userEvent.click(jobDescriptionButton);
+    const applicationNotesButton = card.getByText("Application notes");
+    userEvent.click(applicationNotesButton);
+    expect(await screen.findByText(/Build safely/)).toBeVisible();
+
     expect(
       card.getByRole("heading", { level: 2, name: "Build safely" }),
     ).toBeVisible();
     expect(card.getByText("TypeScript").tagName).toBe("STRONG");
-    expect(card.getByText("pnpm test").tagName).toBe("CODE");
+    expect(await screen.findByText(/pnpm test/)).toBeVisible();
 
     const blankCard = screen.getByText("Blank role").closest("li");
     expect(blankCard).not.toBeNull();

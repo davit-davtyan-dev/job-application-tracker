@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { BriefcaseBusiness } from "lucide-react";
 
 import { CreateApplicationForm } from "@/components/create-application-form";
-import { ActiveApplicationList } from "@/components/active-application-list";
+import { ActiveApplicationList } from "@/components/active-application-list/active-application-list";
 
 export default function Home() {
   return (
