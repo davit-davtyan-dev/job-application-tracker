@@ -10,10 +10,10 @@
 
 ## Orchestration State
 
-- **Phase**: `implementation`
-- **Active Feature**: `F15`
-- **Generator Commit**: `pending`
-- **Evaluator Verdict**: `pending`
+- **Phase**: `complete`
+- **Active Feature**: `none`
+- **Generator Commit**: `17d7c4b`
+- **Evaluator Verdict**: `PASS at 17d7c4b`
 
 ## Active Sprint Contract
 
@@ -33,44 +33,45 @@
 
 ## Generator Report
 
-- **Commit**: `pending`
-- **Changed Files**: `pending`
-- **Tests Run**: `pending`
-- **Known Risks**: `pending`
+- **Commit**: `17d7c4b (bounded correction atop 6692265)`
+- **Changed Files**: `Initial F15: src/app/api/job-posting-extraction/route.ts; src/app/api/job-posting-extraction/route.test.ts; src/services/job-posting-extraction.ts; src/services/job-posting-extraction.test.ts; src/components/create-application-form.tsx; src/components/create-application-form.test.tsx; tests/e2e/job-posting-import.spec.ts. Correction: src/services/job-posting-extraction.ts; src/services/job-posting-extraction.test.ts.`
+- **Tests Run**: `Initial PASS targeted Vitest 28/28, targeted Playwright 2/2, format, lint, typecheck, and full Vitest 200/200. Correction PASS focused Vitest 30/30, Prettier, lint, typecheck, and git diff --check.`
+- **Known Risks**: `Evaluator must independently establish the full Playwright and exact production-build gates and verify exhaustive reserved CIDRs plus per-hop DNS address pinning.`
 
 ## Evaluator Report
 
-- **Verdict**: `pending`
-- **Commit Verified**: `pending`
-- **Checks Run**: `pending`
-- **Findings**: `pending`
-- **Required Fix**: `pending`
+- **Verdict**: `PASS`
+- **Commit Verified**: `17d7c4b`
+- **Checks Run**: `PASS formatting, ESLint, strict TypeScript, correction-focused and F15 Vitest, full Vitest, full Playwright (14/14), exact production build, and no-prohibited-any inspection.`
+- **Findings**: `All F15 criteria pass. IPv4/IPv6 special-purpose ranges are blocked, every DNS result is validated, each connection is pinned to an approved address per redirect hop, and HTTPS hostname/SNI verification is preserved.`
+- **Required Fix**: `none`
 
 ## Current Status
 
-- **Active**: `F15 — import job-posting details from a public link without AI`
+- **Active**: `none`
 - **Queued**: `none`
 - **Completed**: `F00 — project foundation bootstrap (de12250608b3210ec4b4506bfb6176a1360a2eab / Evaluator PASS); F01 — company creation and persistence (22c535fd8ebd5cbcaf64d91ef65b8aab641d923f / Evaluator PASS); F02 — manual job-application creation (cd0333b99f212f10771fefdd7fb6460eb1316387 / Evaluator PASS); F03 — default active-application list view (3dae583b4ae05a52684934f0368fca9e0b952b25 / Evaluator PASS); F04 — search active applications by company name or position title (60a739174effc0f8e5745abce8faf651c15876af / Evaluator PASS); F05 — filter between Active and Closed statuses (d7a40faab134fd82bcadde2348961785d2842aeb / Evaluator PASS); F06 — update application status through all fixed states (efae1d6fece1825788c31f127245019beab073c2 / Evaluator PASS); F07 — manage individual interview records (5271688650be136fd68a4e973b39776ee2403130 / Evaluator PASS); F08 — complete and expose application-scoped activity history (704e8c96f23c3662d35258b024dc882916137f17 / Evaluator PASS); F09 — company-scoped chronological application history (b8ce1d17f760eeddf04a02423af980d9f72ee0c4 / Evaluator PASS); F10 — transactional status/history updates (f5159c184d92445af1d89edba99ba8a05618d5a9 / Evaluator PASS); F11 — server-side Zod validation evidence (d089a8efced85c944f93a54d50a58c2e62293d38 / Evaluator PASS); F12 — safe Markdown rendering (3d89edab9b3d006e593fc08de433060f7ba334da / Evaluator PASS); F13 — exact-status button-group filtering (7fcfc4220be3ac454354d11e69c0fa7ccf8512d0 / Evaluator PASS); F14 — dedicated company management and ownership-tree deletion (6f3aaf4d060b3cdb4640650d1e06391a77ef6153 / Evaluator PASS)`
 - **Blocked**: `none`
+- **Completed Latest**: `F15 — deterministic public job-posting import (17d7c4b / Evaluator PASS)`
 
 ## Current Session Summary
 
-F00 through F14 are passing. F15 is active with a bounded contract for deterministic, server-side job-posting extraction and safe replacement of extractable form fields.
+F00 through F15 are passing. F15 adds deterministic server-side job-posting extraction with DNS-pinned SSRF protection and safe replacement of extractable form fields.
 
 ## Next Step
 
-1. `Generator implements the active F15 sprint contract and produces one logical commit.`
+1. `No feature is active or queued.`
 
 ## Verification Status
 
-- **Build**: `PASS at 6f3aaf4d060b3cdb4640650d1e06391a77ef6153`
-- **Lint**: `PASS at 6f3aaf4d060b3cdb4640650d1e06391a77ef6153`
-- **Unit/Integration**: `PASS (175/175) at 6f3aaf4d060b3cdb4640650d1e06391a77ef6153`
-- **E2E**: `PASS (12/12) at 6f3aaf4d060b3cdb4640650d1e06391a77ef6153`
+- **Build**: `PASS at 17d7c4b`
+- **Lint**: `PASS at 17d7c4b`
+- **Unit/Integration**: `PASS at 17d7c4b`
+- **E2E**: `PASS (14/14) at 17d7c4b`
 
 ## Current Session Handoff Report
 
 - **Decisions Made**: `F15 uses deterministic server-side extraction with schema.org JobPosting priority, generic fallbacks, and bounded public-network fetching. Successful imports replace extractable fields and references while preserving user-owned application metadata.`
-- **Context Summary**: `F00 through F14 are passing. F15 is active; its sprint contract, feature state, and durable extraction decision are recorded.`
+- **Context Summary**: `F00 through F15 are passing. F15 was implemented in 6692265, corrected for reserved-address rejection and DNS pinning in 17d7c4b, and independently verified PASS at 17d7c4b.`
 - **Remaining Blockers**: `none`
-- **Next Owner**: `Generator implements F15 and reports one logical commit.`
+- **Next Owner**: `Orchestrator may activate the next explicitly approved feature when one is queued.`

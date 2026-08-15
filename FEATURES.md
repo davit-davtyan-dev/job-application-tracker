@@ -33,7 +33,7 @@ Exactly one feature may be `active` or `evaluating`.
 | **F12** | Render all Markdown-based job descriptions and notes safely.                                                                                                        | `pnpm test:e2e tests/e2e/markdown-rendering.spec.ts` | `passing` | `3d89edab9b3d006e593fc08de433060f7ba334da / Evaluator PASS` |
 | **F13** | Refine Active and Closed application views with an accessible **Exact Status Filter** and default All option.                                                       | `pnpm test:e2e tests/e2e/filters.spec.ts`            | `passing` | `7fcfc4220be3ac454354d11e69c0fa7ccf8512d0 / Evaluator PASS` |
 | **F14** | Manage **Companies** on a dedicated page: create, rename, edit Markdown notes, and permanently delete a company with all owned application data after confirmation. | `pnpm test:e2e tests/e2e/company-management.spec.ts` | `passing` | `6f3aaf4d060b3cdb4640650d1e06391a77ef6153 / Evaluator PASS` |
-| **F15** | **Import Job Posting Details** from a public link without AI, replacing extractable application fields and retaining the source as a reference link.                | `pnpm test:e2e tests/e2e/job-posting-import.spec.ts` | `active`  |                                                             |
+| **F15** | **Import Job Posting Details** from a public link without AI, replacing extractable application fields and retaining the source as a reference link.                | `pnpm test:e2e tests/e2e/job-posting-import.spec.ts` | `passing` | `17d7c4bae79c2b9c0dc74217ec39fd56725c0450 / Evaluator PASS` |
 
 ## State Transitions
 
