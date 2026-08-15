@@ -73,3 +73,8 @@
 
 - **Decision**: Manage companies on `/companies`, enforce case-insensitive name uniqueness, and make confirmed deletion atomically remove all related application data.
 - **Reasoning**: This keeps shared records discoverable and unambiguous while preventing partial deletion. Blocking deletion and soft deletion were rejected in favor of the requested permanent cascade.
+
+### 2026-08-15: Deterministic Job-Posting Import
+
+- **Decision**: Extract public job postings server-side, preferring schema.org `JobPosting` data and using generic metadata or semantic HTML only as fallback.
+- **Reasoning**: Structured data provides useful fields without AI or site-specific maintenance. Public-network validation and strict fetch limits reduce SSRF and resource risks; browser execution and per-site scrapers were rejected as unsafe and brittle.
