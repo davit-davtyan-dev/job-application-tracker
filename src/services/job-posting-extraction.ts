@@ -1,7 +1,9 @@
 import "server-only";
 
 import { lookup } from "node:dns/promises";
-import { isIP } from "node:net";
+import { request as httpRequest, type IncomingMessage } from "node:http";
+import { request as httpsRequest } from "node:https";
+import { isIP, type LookupFunction } from "node:net";
 
 import { z } from "zod";
 
@@ -47,6 +49,45 @@ export class JobPostingExtractionError extends Error {
 }
 
 type JsonObject = Record<string, unknown>;
+type ValidatedAddress = { address: string; family: 4 | 6 };
+
+const blockedIpv4Cidrs = [
+  "0.0.0.0/8",
+  "10.0.0.0/8",
+  "100.64.0.0/10",
+  "127.0.0.0/8",
+  "169.254.0.0/16",
+  "172.16.0.0/12",
+  "192.0.0.0/24",
+  "192.0.2.0/24",
+  "192.31.196.0/24",
+  "192.52.193.0/24",
+  "192.88.99.0/24",
+  "192.168.0.0/16",
+  "192.175.48.0/24",
+  "198.18.0.0/15",
+  "198.51.100.0/24",
+  "203.0.113.0/24",
+  "224.0.0.0/4",
+  "240.0.0.0/4",
+] as const;
+
+const blockedIpv6Cidrs = [
+  "::/128",
+  "::1/128",
+  "::ffff:0:0/96",
+  "64:ff9b::/96",
+  "64:ff9b:1::/48",
+  "100::/64",
+  "2001::/23",
+  "2001:db8::/32",
+  "2002::/16",
+  "3fff::/20",
+  "5f00::/16",
+  "fc00::/7",
+  "fe80::/10",
+  "ff00::/8",
+] as const;
 
 export async function extractJobPosting(
   input: unknown,
@@ -76,23 +117,12 @@ async function fetchHtml(initialUrl: URL): Promise<string> {
   let currentUrl = initialUrl;
   for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects += 1) {
     validateUrlShape(currentUrl);
-    await assertPublicDestination(currentUrl.hostname);
-    let response: Response;
+    const addresses = await resolvePublicDestination(currentUrl.hostname);
+    let response: IncomingMessage;
     try {
-      response = await fetch(currentUrl, {
-        redirect: "manual",
-        cache: "no-store",
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-        headers: {
-          accept: "text/html,application/xhtml+xml",
-          "user-agent": "JobApplicationTracker/1.0",
-        },
-      });
+      response = await requestPinned(currentUrl, addresses);
     } catch (error: unknown) {
-      if (
-        error instanceof DOMException &&
-        (error.name === "TimeoutError" || error.name === "AbortError")
-      ) {
+      if (error instanceof RequestTimeoutError) {
         throw new JobPostingExtractionError(
           "FETCH_TIMEOUT",
           "The job posting took too long to respond.",
@@ -104,8 +134,10 @@ async function fetchHtml(initialUrl: URL): Promise<string> {
       );
     }
 
-    if (response.status >= 300 && response.status < 400) {
-      const location = response.headers.get("location");
+    const status = response.statusCode ?? 0;
+    if (status >= 300 && status < 400) {
+      response.resume();
+      const location = response.headers.location;
       if (!location) {
         throw new JobPostingExtractionError(
           "FETCH_FAILED",
@@ -122,13 +154,14 @@ async function fetchHtml(initialUrl: URL): Promise<string> {
       continue;
     }
 
-    if (!response.ok) {
+    if (status < 200 || status >= 300) {
+      response.resume();
       throw new JobPostingExtractionError(
         "FETCH_FAILED",
         "The job posting could not be fetched.",
       );
     }
-    const contentType = response.headers.get("content-type")?.toLowerCase();
+    const contentType = response.headers["content-type"]?.toLowerCase();
     if (
       !contentType ||
       (!contentType.includes("text/html") &&
@@ -139,7 +172,7 @@ async function fetchHtml(initialUrl: URL): Promise<string> {
         "The URL must return an HTML page.",
       );
     }
-    const contentLength = Number(response.headers.get("content-length"));
+    const contentLength = Number(response.headers["content-length"]);
     if (Number.isFinite(contentLength) && contentLength > MAX_BYTES) {
       throw new JobPostingExtractionError(
         "RESPONSE_TOO_LARGE",
@@ -154,31 +187,59 @@ async function fetchHtml(initialUrl: URL): Promise<string> {
   );
 }
 
-async function readBoundedText(response: Response): Promise<string> {
-  if (!response.body) return "";
-  const reader = response.body.getReader();
-  const chunks: Uint8Array[] = [];
+async function readBoundedText(response: IncomingMessage): Promise<string> {
+  const chunks: Buffer[] = [];
   let size = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
+  for await (const value of response) {
+    const chunk = Buffer.isBuffer(value) ? value : Buffer.from(value);
+    size += chunk.byteLength;
     if (size > MAX_BYTES) {
-      await reader.cancel();
+      response.destroy();
       throw new JobPostingExtractionError(
         "RESPONSE_TOO_LARGE",
         "The job posting page is too large to import safely.",
       );
     }
-    chunks.push(value);
+    chunks.push(chunk);
   }
-  const bytes = new Uint8Array(size);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return new TextDecoder().decode(bytes);
+  return Buffer.concat(chunks, size).toString("utf8");
+}
+
+class RequestTimeoutError extends Error {}
+
+function requestPinned(
+  url: URL,
+  addresses: readonly ValidatedAddress[],
+): Promise<IncomingMessage> {
+  const selected = addresses[0];
+  const pinnedLookup: LookupFunction = (_hostname, options, callback) => {
+    if (options.all) {
+      callback(null, [{ address: selected.address, family: selected.family }]);
+    } else {
+      callback(null, selected.address, selected.family);
+    }
+  };
+  const request = url.protocol === "https:" ? httpsRequest : httpRequest;
+  return new Promise((resolve, reject) => {
+    const outgoing = request(
+      url,
+      {
+        agent: false,
+        headers: {
+          accept: "text/html,application/xhtml+xml",
+          "user-agent": "JobApplicationTracker/1.0",
+        },
+        lookup: pinnedLookup,
+        servername: url.hostname,
+      },
+      resolve,
+    );
+    outgoing.once("error", reject);
+    outgoing.setTimeout(REQUEST_TIMEOUT_MS, () => {
+      outgoing.destroy(new RequestTimeoutError());
+    });
+    outgoing.end();
+  });
 }
 
 function validateUrlShape(url: URL) {
@@ -194,13 +255,16 @@ function validateUrlShape(url: URL) {
   }
 }
 
-async function assertPublicDestination(hostname: string) {
+async function resolvePublicDestination(
+  hostname: string,
+): Promise<ValidatedAddress[]> {
   const normalized = hostname.replace(/^\[|\]$/g, "").toLowerCase();
   if (normalized === "localhost" || normalized.endsWith(".localhost")) {
     throw unsafeDestination();
   }
-  const addresses = isIP(normalized)
-    ? [{ address: normalized }]
+  const literalFamily = isIP(normalized);
+  const addresses = literalFamily
+    ? [{ address: normalized, family: literalFamily }]
     : await lookup(normalized, { all: true, verbatim: true }).catch(() => {
         throw new JobPostingExtractionError(
           "FETCH_FAILED",
@@ -213,6 +277,10 @@ async function assertPublicDestination(hostname: string) {
   ) {
     throw unsafeDestination();
   }
+  return addresses.map(({ address, family }) => ({
+    address,
+    family: family === 6 ? 6 : 4,
+  }));
 }
 
 function unsafeDestination() {
@@ -225,38 +293,50 @@ function unsafeDestination() {
 function isPublicIp(address: string): boolean {
   const version = isIP(address);
   if (version === 4) {
-    const [a, b, c] = address.split(".").map(Number);
-    return !(
-      a === 0 ||
-      a === 10 ||
-      a === 127 ||
-      (a === 100 && b >= 64 && b <= 127) ||
-      (a === 169 && b === 254) ||
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && b === 0) ||
-      (a === 192 && b === 168) ||
-      (a === 192 && b === 88 && c === 99) ||
-      (a === 198 && (b === 18 || b === 19)) ||
-      (a === 198 && b === 51 && c === 100) ||
-      (a === 203 && b === 0 && c === 113) ||
-      a >= 224
-    );
+    return !blockedIpv4Cidrs.some((cidr) => addressInCidr(address, cidr, 32));
   }
   if (version === 6) {
-    const value = address.toLowerCase();
-    if (value.startsWith("::ffff:")) return isPublicIp(value.slice(7));
-    return !(
-      value === "::" ||
-      value === "::1" ||
-      value.startsWith("100:") ||
-      value.startsWith("fc") ||
-      value.startsWith("fd") ||
-      /^fe[89ab]/.test(value) ||
-      value.startsWith("ff") ||
-      value.startsWith("2001:db8:")
-    );
+    return !blockedIpv6Cidrs.some((cidr) => addressInCidr(address, cidr, 128));
   }
   return false;
+}
+
+function addressInCidr(address: string, cidr: string, bits: 32 | 128) {
+  const [base, prefixText] = cidr.split("/");
+  const prefix = Number(prefixText);
+  const shift = BigInt(bits - prefix);
+  return ipToBigInt(address) >> shift === ipToBigInt(base) >> shift;
+}
+
+function ipToBigInt(address: string): bigint {
+  if (isIP(address) === 4) {
+    return address
+      .split(".")
+      .reduce(
+        (result, octet) => (result << BigInt(8)) | BigInt(octet),
+        BigInt(0),
+      );
+  }
+  let value = address.toLowerCase();
+  const ipv4 = value.match(/(\d+\.\d+\.\d+\.\d+)$/)?.[1];
+  if (ipv4) {
+    const encoded = ipToBigInt(ipv4);
+    value = value.replace(
+      ipv4,
+      `${((encoded >> BigInt(16)) & BigInt(0xffff)).toString(16)}:${(encoded & BigInt(0xffff)).toString(16)}`,
+    );
+  }
+  const [left = "", right = ""] = value.split("::");
+  const leftParts = left ? left.split(":") : [];
+  const rightParts = right ? right.split(":") : [];
+  const zeros = Array.from(
+    { length: Math.max(0, 8 - leftParts.length - rightParts.length) },
+    () => "0",
+  );
+  return [...leftParts, ...zeros, ...rightParts].reduce(
+    (result, part) => (result << BigInt(16)) | BigInt(`0x${part || "0"}`),
+    BigInt(0),
+  );
 }
 
 function extractFromHtml(html: string) {
