@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { format, parseISO } from "date-fns";
 import { useState } from "react";
 
 import {
@@ -10,13 +9,9 @@ import {
   normalizeApplicationSearch,
 } from "@/lib/application-query";
 import { ApplicationListView, ApplicationStatus } from "@/lib/application";
-import { InterviewSection } from "@/components/interview-section";
-import { ActivityHistorySection } from "@/components/activity-history-section";
-import { CompanyHistorySection } from "@/components/company-history-section";
-import { ApplicationStatusControl } from "./application-status-control";
-import { ApplicationMarkdownSection } from "./application-markdown-section";
 import { SearchArea } from "./search-area";
 import { StatusFilterArea } from "./status-filter-area";
+import { ApplicationItem } from "./application-item";
 
 export function ActiveApplicationList() {
   const [search, setSearch] = useState("");
@@ -24,6 +19,7 @@ export function ActiveApplicationList() {
     ApplicationListView.Active,
   );
   const [status, setStatus] = useState<ApplicationStatus | undefined>();
+
   const normalizedSearch = normalizeApplicationSearch(search);
   const selectedLabel =
     view === ApplicationListView.Active ? "Active" : "Closed";
@@ -45,7 +41,6 @@ export function ActiveApplicationList() {
     <section aria-labelledby="applications-heading">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-emerald-700">Your pipeline</p>
           <h2
             id="applications-heading"
             className="text-2xl font-semibold text-slate-950"
@@ -111,44 +106,7 @@ export function ActiveApplicationList() {
         {applications.isSuccess && applications.data.length > 0 && (
           <ul className="mt-6 grid gap-4 md:grid-cols-2">
             {applications.data.map((application) => (
-              <li
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-                key={application.id}
-                data-application-id={application.id}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="font-semibold text-slate-950">
-                      {application.positionTitle}
-                    </h3>
-                    <p className="mt-1 text-slate-600">
-                      {application.companyName}
-                    </p>
-                  </div>
-                  <ApplicationStatusControl application={application} />
-                </div>
-                <p className="mt-5 text-sm text-slate-500">
-                  Applied{" "}
-                  <time dateTime={application.appliedDate}>
-                    {format(parseISO(application.appliedDate), "MMM d, yyyy")}
-                  </time>
-                </p>
-                <ApplicationMarkdownSection
-                  label="Job description"
-                  content={application.description}
-                />
-                <ApplicationMarkdownSection
-                  label="Application notes"
-                  content={application.notes}
-                />
-                <ApplicationMarkdownSection
-                  label="Company notes"
-                  content={application.companyNotes}
-                />
-                <InterviewSection application={application} />
-                <ActivityHistorySection application={application} />
-                <CompanyHistorySection application={application} />
-              </li>
+              <ApplicationItem key={application.id} application={application} />
             ))}
           </ul>
         )}

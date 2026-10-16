@@ -21,7 +21,7 @@ export function InterviewSection({
   const [expanded, setExpanded] = useState(false);
   return (
     <section
-      className="mt-5 border-t border-slate-100 pt-4"
+      className="mt-1 border-t border-slate-100 pt-1"
       aria-label={`Interviews for ${application.positionTitle}`}
     >
       <button

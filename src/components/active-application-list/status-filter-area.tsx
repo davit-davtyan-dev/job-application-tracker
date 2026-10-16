@@ -32,7 +32,7 @@ export function StatusFilterArea({
   return (
     <>
       <div
-        className="mt-6 inline-flex rounded-xl border border-slate-300 bg-slate-50 p-1"
+        className="mt-4 inline-flex rounded-xl border border-slate-300 bg-slate-50 p-1"
         role="group"
         aria-label="Application view"
       >

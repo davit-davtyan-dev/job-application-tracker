@@ -209,14 +209,14 @@ export function CreateApplicationForm() {
 
   return (
     <section
-      className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
       aria-labelledby="create-heading"
     >
       <h2 id="create-heading" className="text-xl font-semibold">
         Add an application
       </h2>
       <form
-        className="mt-5 space-y-4"
+        className="mt-4 space-y-2"
         onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
         noValidate
       >

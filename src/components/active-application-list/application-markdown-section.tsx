@@ -13,7 +13,7 @@ export function ApplicationMarkdownSection({
   if (!content?.trim()) return null;
 
   return (
-    <section className="mt-5 border-t border-slate-100 pt-4" aria-label={label}>
+    <section className="mt-1 border-t border-slate-100 pt-1" aria-label={label}>
       <button
         type="button"
         className="text-sm font-semibold text-slate-800"

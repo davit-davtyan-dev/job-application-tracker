@@ -26,7 +26,7 @@ export function ActivityHistorySection({
   const [expanded, setExpanded] = useState(false);
   return (
     <section
-      className="mt-5 border-t border-slate-100 pt-4"
+      className="mt-1 border-t border-slate-100 pt-1"
       aria-label={`Activity for ${application.positionTitle}`}
     >
       <button

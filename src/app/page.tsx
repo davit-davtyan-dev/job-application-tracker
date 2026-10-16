@@ -37,7 +37,7 @@ export default function Home() {
       </header>
 
       <section
-        className="flex flex-1 items-center py-6"
+        className="flex flex-1 items-center py-4"
         aria-labelledby="tracker-heading"
       >
         <div className="grid w-full gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
