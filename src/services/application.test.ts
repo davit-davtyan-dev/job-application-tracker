@@ -201,6 +201,7 @@ describe("listApplications", () => {
         appliedDate: "2026-08-09",
         status: ApplicationStatus.Interviewing,
         description: "# New role",
+        referenceLinks: ["https://example.com/job"],
         notes: "**Follow up**",
       },
       ...(
@@ -229,6 +230,7 @@ describe("listApplications", () => {
         appliedDate: "2026-08-09",
         status: "Interviewing",
         description: "# New role",
+        referenceLinks: ["https://example.com/job"],
         notes: "**Follow up**",
       },
       {
@@ -240,6 +242,7 @@ describe("listApplications", () => {
         appliedDate: "2026-08-08",
         status: "Offer",
         description: null,
+        referenceLinks: [],
         notes: null,
       },
       {
@@ -251,6 +254,7 @@ describe("listApplications", () => {
         appliedDate: "2026-08-08",
         status: "Applied",
         description: null,
+        referenceLinks: [],
         notes: null,
       },
     ]);

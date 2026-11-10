@@ -32,6 +32,7 @@ export interface ApplicationListRecord {
   appliedDate: string;
   status: JobApplication["status"];
   description: string | null;
+  referenceLinks: string[];
   notes: string | null;
 }
 
@@ -78,6 +79,7 @@ export async function selectApplicationsByStatuses(
       appliedDate: jobApplications.appliedDate,
       status: jobApplications.status,
       description: jobApplications.description,
+      referenceLinks: jobApplications.referenceLinks,
       notes: jobApplications.notes,
     })
     .from(jobApplications)

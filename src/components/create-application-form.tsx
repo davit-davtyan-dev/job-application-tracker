@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
-import { cloneElement, useState } from "react";
+import { useState } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -12,52 +12,16 @@ import { ApplicationStatus } from "@/lib/application";
 import { applicationsQueryRoot } from "@/lib/application-query";
 import { companyHistoryQueryKey } from "@/lib/company-history-query";
 import { companiesQueryKey, fetchCompanies } from "@/lib/company-query";
+import { Field } from "./ui/field";
+import { CompanyNameField } from "./company-name-field";
+import {
+  apiErrorSchema,
+  formSchema,
+  FormValues,
+  importResultSchema,
+  importUrlSchema,
+} from "@/lib/forms";
 
-const formSchema = z
-  .object({
-    companyMode: z.enum(["existing", "new"]),
-    companyId: z.string(),
-    companyName: z.string(),
-    positionTitle: z.string().trim().min(1, "Position title is required."),
-    appliedDate: z.string().min(1, "Applied date is required."),
-    status: z.enum(ApplicationStatus),
-    description: z.string(),
-    referenceLinks: z.array(
-      z.object({
-        value: z.union([z.literal(""), z.url("Enter a valid URL.")]),
-      }),
-    ),
-    notes: z.string(),
-  })
-  .superRefine((value, context) => {
-    const field =
-      value.companyMode === "existing" ? "companyId" : "companyName";
-    if (!value[field].trim())
-      context.addIssue({
-        code: "custom",
-        path: [field],
-        message: "Company is required.",
-      });
-  });
-
-type FormValues = z.input<typeof formSchema>;
-const importUrlSchema = z
-  .url("Enter a valid job-posting URL.")
-  .refine(
-    (value) =>
-      URL.canParse(value) &&
-      ["http:", "https:"].includes(new URL(value).protocol),
-    { message: "Only HTTP(S) job-posting URLs are supported." },
-  );
-const importResultSchema = z.strictObject({
-  sourceUrl: z.url(),
-  companyName: z.string().nullable(),
-  positionTitle: z.string().nullable(),
-  description: z.string().nullable(),
-});
-const apiErrorSchema = z.object({
-  error: z.object({ message: z.string() }),
-});
 const localDate = () => {
   const now = new Date();
   return new Date(now.getTime() - now.getTimezoneOffset() * 60_000)
@@ -82,7 +46,6 @@ export function CreateApplicationForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      companyMode: "existing",
       companyId: "",
       companyName: "",
       positionTitle: "",
@@ -97,7 +60,7 @@ export function CreateApplicationForm() {
     control: form.control,
     name: "referenceLinks",
   });
-  const mode = useWatch({ control: form.control, name: "companyMode" });
+  const companyId = useWatch({ control: form.control, name: "companyId" });
   const importMutation = useMutation({
     mutationFn: async (url: string) => {
       const response = await fetch("/api/job-posting-extraction", {
@@ -125,17 +88,14 @@ export function CreateApplicationForm() {
           )
         : undefined;
       if (company) {
-        form.setValue("companyMode", "existing", { shouldDirty: true });
         form.setValue("companyId", company.id, { shouldDirty: true });
         form.setValue("companyName", "", { shouldDirty: true });
       } else if (imported.companyName) {
-        form.setValue("companyMode", "new", { shouldDirty: true });
         form.setValue("companyId", "", { shouldDirty: true });
         form.setValue("companyName", imported.companyName, {
           shouldDirty: true,
         });
       } else {
-        form.setValue("companyMode", "existing", { shouldDirty: true });
         form.setValue("companyId", "", { shouldDirty: true });
         form.setValue("companyName", "", { shouldDirty: true });
       }
@@ -172,7 +132,7 @@ export function CreateApplicationForm() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          ...(values.companyMode === "existing"
+          ...(values.companyId
             ? { companyId: values.companyId }
             : { companyName: values.companyName }),
           positionTitle: values.positionTitle,
@@ -201,11 +161,9 @@ export function CreateApplicationForm() {
       ]);
     },
   });
-  const successCompany =
-    mode === "existing"
-      ? companies.data?.find(({ id }) => id === form.getValues("companyId"))
-          ?.name
-      : form.getValues("companyName");
+  const successCompany = companyId
+    ? companies.data?.find(({ id }) => id === companyId)?.name
+    : form.getValues("companyName");
 
   return (
     <section
@@ -268,53 +226,7 @@ export function CreateApplicationForm() {
             </p>
           )}
         </div>
-        <fieldset>
-          <legend className="text-sm font-medium">Company choice</legend>
-          <div className="mt-2 flex gap-4">
-            <label>
-              <input
-                type="radio"
-                value="existing"
-                {...form.register("companyMode")}
-              />{" "}
-              Existing company
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="new"
-                {...form.register("companyMode")}
-              />{" "}
-              New company
-            </label>
-          </div>
-        </fieldset>
-        {mode === "existing" ? (
-          <Field
-            label="Company"
-            error={form.formState.errors.companyId?.message}
-          >
-            <select
-              className="input"
-              {...form.register("companyId")}
-              disabled={companies.isPending}
-            >
-              <option value="">Select a company</option>
-              {companies.data?.map((company) => (
-                <option key={company.id} value={company.id}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-        ) : (
-          <Field
-            label="New company name"
-            error={form.formState.errors.companyName?.message}
-          >
-            <input className="input" {...form.register("companyName")} />
-          </Field>
-        )}
+        <CompanyNameField companies={companies.data} form={form} />
         <Field
           label="Position title"
           error={form.formState.errors.positionTitle?.message}
@@ -421,38 +333,5 @@ export function CreateApplicationForm() {
         </Button>
       </form>
     </section>
-  );
-}
-
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactElement<{
-    id?: string;
-    "aria-invalid"?: boolean;
-    "aria-describedby"?: string;
-  }>;
-}) {
-  const id = label.toLowerCase().replaceAll(/[^a-z]+/g, "-");
-  return (
-    <label className="block text-sm font-medium" htmlFor={id}>
-      {label}
-      <span className="mt-1 block">
-        {cloneElement(children, {
-          id,
-          "aria-invalid": Boolean(error),
-          "aria-describedby": error ? `${id}-error` : undefined,
-        })}
-      </span>
-      {error && (
-        <span className="error" id={`${id}-error`}>
-          {error}
-        </span>
-      )}
-    </label>
   );
 }

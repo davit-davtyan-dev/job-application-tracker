@@ -8,6 +8,20 @@ interface StatusFilterAreaProps {
   setStatus: (status: ApplicationStatus | undefined) => void;
 }
 
+const StatusesByListView = {
+  [ApplicationListView.Active]: [
+    ApplicationStatus.Applied,
+    ApplicationStatus.Interviewing,
+    ApplicationStatus.Offer,
+  ],
+  [ApplicationListView.Closed]: [
+    ApplicationStatus.Accepted,
+    ApplicationStatus.Rejected,
+    ApplicationStatus.Withdrawn,
+    ApplicationStatus.Archived,
+  ],
+};
+
 export function StatusFilterArea({
   view,
   status,
@@ -15,20 +29,6 @@ export function StatusFilterArea({
   selectedLabelLower,
   setStatus,
 }: StatusFilterAreaProps) {
-  const statusOptions =
-    view === ApplicationListView.Active
-      ? [
-          ApplicationStatus.Applied,
-          ApplicationStatus.Interviewing,
-          ApplicationStatus.Offer,
-        ]
-      : [
-          ApplicationStatus.Accepted,
-          ApplicationStatus.Rejected,
-          ApplicationStatus.Withdrawn,
-          ApplicationStatus.Archived,
-        ];
-
   return (
     <>
       <div
@@ -51,6 +51,11 @@ export function StatusFilterArea({
               }`}
               onClick={() => handleSelectView(option)}
             >
+              {/* TODO: show exact number here */}
+              {/* TODO: show exact number here */}
+              {/* TODO: show exact number here */}
+              {/* TODO: show exact number here */}
+              {/* TODO: show exact number here */}
               {label}
             </button>
           );
@@ -70,7 +75,7 @@ export function StatusFilterArea({
           role="group"
           aria-labelledby="application-status-filter-label"
         >
-          {[undefined, ...statusOptions].map((option) => {
+          {[undefined, ...StatusesByListView[view]].map((option) => {
             const isSelected = status === option;
             return (
               <button

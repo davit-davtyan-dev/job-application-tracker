@@ -38,6 +38,7 @@ const applicationListItemFields = {
   positionTitle: z.string(),
   appliedDate: z.iso.date(),
   description: z.string().nullable(),
+  referenceLinks: z.array(z.string()),
   notes: z.string().nullable(),
 };
 

@@ -4,9 +4,10 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { ApplicationMarkdownSection } from "./application-markdown-section";
 import { InterviewSection } from "../interview-section";
 import { ActivityHistorySection } from "../activity-history-section";
-import { CompanyHistorySection } from "../company-history-section";
+// import { CompanyHistorySection } from "../company-history-section";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
+import { ReferenceLinksSection } from "../reference-links-section";
 
 interface ApplicationItemProps {
   application: ApplicationListItem;
@@ -68,7 +69,8 @@ export function ApplicationItem({ application }: ApplicationItemProps) {
               />
               <InterviewSection application={application} />
               <ActivityHistorySection application={application} />
-              <CompanyHistorySection application={application} />
+              {/* <CompanyHistorySection application={application} /> */}
+              <ReferenceLinksSection application={application} />
             </div>
           )}
         </div>
