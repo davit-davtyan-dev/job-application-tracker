@@ -6,6 +6,7 @@ interface StatusFilterAreaProps {
   handleSelectView: (view: ApplicationListView) => void;
   selectedLabelLower: string;
   setStatus: (status: ApplicationStatus | undefined) => void;
+  applicationCountByView: Record<ApplicationListView, number | undefined>;
 }
 
 const StatusesByListView = {
@@ -28,6 +29,7 @@ export function StatusFilterArea({
   handleSelectView,
   selectedLabelLower,
   setStatus,
+  applicationCountByView,
 }: StatusFilterAreaProps) {
   return (
     <>
@@ -51,12 +53,7 @@ export function StatusFilterArea({
               }`}
               onClick={() => handleSelectView(option)}
             >
-              {/* TODO: show exact number here */}
-              {/* TODO: show exact number here */}
-              {/* TODO: show exact number here */}
-              {/* TODO: show exact number here */}
-              {/* TODO: show exact number here */}
-              {label}
+              {label} {applicationCountByView[option]}
             </button>
           );
         })}

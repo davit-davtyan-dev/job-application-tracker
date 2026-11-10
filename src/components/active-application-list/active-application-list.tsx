@@ -24,10 +24,29 @@ export function ActiveApplicationList() {
   const selectedLabel =
     view === ApplicationListView.Active ? "Active" : "Closed";
   const selectedLabelLower = selectedLabel.toLowerCase();
-  const applications = useQuery({
-    queryKey: applicationsQueryKey(view, normalizedSearch, status),
-    queryFn: () => fetchApplications(view, normalizedSearch, status),
+  const activeApplications = useQuery({
+    queryKey: applicationsQueryKey(
+      ApplicationListView.Active,
+      normalizedSearch,
+      status,
+    ),
+    queryFn: () =>
+      fetchApplications(ApplicationListView.Active, normalizedSearch, status),
   });
+  const closedApplications = useQuery({
+    queryKey: applicationsQueryKey(
+      ApplicationListView.Closed,
+      normalizedSearch,
+      status,
+    ),
+    queryFn: () =>
+      fetchApplications(ApplicationListView.Closed, normalizedSearch, status),
+  });
+
+  const applications =
+    view === ApplicationListView.Active
+      ? activeApplications
+      : closedApplications;
 
   const selectView = (nextView: ApplicationListView) => {
     if (nextView === view) {
@@ -48,11 +67,6 @@ export function ActiveApplicationList() {
             {selectedLabel} applications
           </h2>
         </div>
-        {applications.data && applications.data.length > 0 && (
-          <p className="text-sm text-slate-500">
-            {applications.data.length} {selectedLabelLower}
-          </p>
-        )}
       </div>
 
       <StatusFilterArea
@@ -61,6 +75,10 @@ export function ActiveApplicationList() {
         handleSelectView={selectView}
         selectedLabelLower={selectedLabelLower}
         setStatus={setStatus}
+        applicationCountByView={{
+          [ApplicationListView.Active]: activeApplications.data?.length,
+          [ApplicationListView.Closed]: closedApplications.data?.length,
+        }}
       />
 
       <SearchArea
